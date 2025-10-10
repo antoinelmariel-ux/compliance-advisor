@@ -1,6 +1,6 @@
 # Compliance Advisor
 
-Cette version du prototype peut être lancée sans outil de build. Ouvrez simplement `index.html` dans un navigateur moderne pour charger l'application React via les CDN.
+Cette version du prototype peut être lancée sans outil de build. Ouvrez simplement `index.html` dans un navigateur moderne pour charger l'application React via les CDN. Le fichier `app.jsx` est compilé à la volée par Babel (préréglages `env` et `react`) ce qui permet d'utiliser directement la syntaxe JSX et les fonctionnalités modernes de JavaScript.
 
 ## Développement
 
