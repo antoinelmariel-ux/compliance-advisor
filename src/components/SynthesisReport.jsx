@@ -282,7 +282,7 @@ const buildMailtoLink = ({ projectName, relevantTeams, emailBody }) => {
   return `${prefix}?${paramString}`;
 };
 
-export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart }) => {
+export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart, onBack }) => {
   const relevantTeams = teams.filter(team => analysis.teams.includes(team.id));
 
   const priorityColors = {
@@ -336,11 +336,20 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-4xl font-bold text-gray-800">Rapport de Compliance</h1>
             <div className="flex space-x-3">
+              {onBack && (
+                <button
+                  type="button"
+                  onClick={onBack}
+                  className="px-4 py-2 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg font-medium text-gray-700 transition-all hv-button hv-focus-ring"
+                >
+                  Retour au questionnaire
+                </button>
+              )}
               <button
                 type="button"
                 onClick={handleSubmitByEmail}
                 className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-all flex items-center hv-button hv-button-primary"
-                >
+              >
                 <Send className="w-4 h-4 mr-2" />
                 Soumettre par e-mail
               </button>

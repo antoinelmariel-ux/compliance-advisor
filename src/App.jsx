@@ -123,6 +123,19 @@ export const App = () => {
     setIsHighVisibility(prev => !prev);
   };
 
+  const handleBackToQuestionnaire = () => {
+    if (activeQuestions.length > 0) {
+      const lastIndex = activeQuestions.length - 1;
+      setCurrentQuestionIndex(prevIndex => {
+        if (prevIndex > lastIndex) {
+          return lastIndex;
+        }
+        return prevIndex;
+      });
+    }
+    setScreen('questionnaire');
+  };
+
   return (
     <div className="min-h-screen">
       <a href="#main-content" className="skip-link">Aller au contenu principal</a>
@@ -201,6 +214,7 @@ export const App = () => {
               teams={teams}
               questions={activeQuestions}
               onRestart={handleRestart}
+              onBack={handleBackToQuestionnaire}
             />
           )
         ) : (
