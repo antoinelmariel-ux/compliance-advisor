@@ -330,22 +330,24 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-8 hv-background">
       <div className="max-w-6xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
+        <div className="bg-white rounded-2xl shadow-xl p-8 mb-6 hv-surface" role="region" aria-label="Synthèse du projet">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-4xl font-bold text-gray-800">Rapport de Compliance</h1>
             <div className="flex space-x-3">
               <button
+                type="button"
                 onClick={handleSubmitByEmail}
-                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-all flex items-center"
-              >
+                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-all flex items-center hv-button hv-button-primary"
+                >
                 <Send className="w-4 h-4 mr-2" />
                 Soumettre par e-mail
               </button>
               <button
+                type="button"
                 onClick={onRestart}
-                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium text-gray-700 transition-all"
+                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium text-gray-700 transition-all hv-button"
               >
                 Nouveau projet
               </button>
@@ -353,15 +355,15 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
           </div>
 
           {/* Vue d'ensemble */}
-          <div className="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl p-6 mb-8 border border-indigo-200">
-            <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+          <section className="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl p-6 mb-8 border border-indigo-200 hv-surface" aria-labelledby="overview-heading">
+            <h2 id="overview-heading" className="text-xl font-bold text-gray-800 mb-4 flex items-center">
               <FileText className="w-6 h-6 mr-2 text-indigo-600" />
               Vue d'ensemble du projet
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {questions.map(q =>
                 answers[q.id] ? (
-                  <div key={q.id} className="bg-white rounded-lg p-4 border border-gray-200">
+                  <div key={q.id} className="bg-white rounded-lg p-4 border border-gray-200 hv-surface">
                     <p className="text-sm text-gray-600 mb-1">{q.question}</p>
                     <p className="font-semibold text-gray-900 whitespace-pre-line">
                       {renderTextWithLinks(formatAnswer(q, answers[q.id]))}
@@ -370,28 +372,28 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
                 ) : null
               )}
             </div>
-            <div className="mt-6 flex items-center justify-between bg-white rounded-lg p-4 border border-gray-200">
+            <div className="mt-6 flex items-center justify-between bg-white rounded-lg p-4 border border-gray-200 hv-surface" role="status" aria-live="polite">
               <span className="font-medium text-gray-700">Niveau de complexité compliance :</span>
               <span className={`text-xl font-bold ${complexityColors[analysis.complexity]}`}>
                 {analysis.complexity}
               </span>
             </div>
-          </div>
+          </section>
 
           {hasTimelineData && (
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+            <section className="mb-8" aria-labelledby="timeline-heading">
+              <h2 id="timeline-heading" className="text-2xl font-bold text-gray-800 mb-4 flex items-center">
                 <Calendar className="w-6 h-6 mr-2 text-indigo-600" />
                 Délais compliance recommandés
               </h2>
               {firstTimelineDetail?.diff ? (
-                <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-4 text-sm text-gray-700">
+                <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-4 text-sm text-gray-700 hv-surface">
                   <span className="font-semibold text-gray-800">Buffer projet calculé :</span>{' '}
                   {formatWeeksValue(firstTimelineDetail.diff.diffInWeeks)}
                   {' '}({formatDaysValue(firstTimelineDetail.diff.diffInDays)}) entre la soumission et le lancement.
                 </div>
               ) : (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-4 text-sm text-yellow-800">
+                <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-4 text-sm text-yellow-800 hv-surface" role="status" aria-live="polite">
                   Les dates projet ne sont pas complètes. Les exigences de délais sont indiquées à titre informatif.
                 </div>
               )}
@@ -402,10 +404,10 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
 
                   if (!timelineInfo) {
                     return (
-                      <div key={team.id} className="bg-white rounded-xl border border-gray-200 p-5">
+                      <div key={team.id} className="bg-white rounded-xl border border-gray-200 p-5 hv-surface">
                         <div className="flex justify-between items-start mb-2">
                           <h3 className="text-lg font-bold text-gray-800">{team.name}</h3>
-                          <span className="px-3 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-600 border border-gray-200">
+                          <span className="px-3 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-600 border border-gray-200 hv-badge">
                             Pas d'exigence
                           </span>
                         </div>
@@ -421,7 +423,7 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
                     : 'bg-red-50 text-red-700 border-red-200';
 
                   return (
-                    <div key={team.id} className="bg-white rounded-xl border border-gray-200 p-5">
+                    <div key={team.id} className="bg-white rounded-xl border border-gray-200 p-5 hv-surface" role="article" aria-label={`Exigences de délai pour ${team.name}`}>
                       <div className="flex justify-between items-start mb-3">
                         <div>
                           <h3 className="text-lg font-bold text-gray-800">{team.name}</h3>
@@ -432,7 +434,7 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
                         </span>
                       </div>
 
-                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm text-gray-700 mb-3">
+                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm text-gray-700 mb-3 hv-surface">
                         <div className="flex justify-between">
                           <span className="font-medium text-gray-800">Buffer actuel</span>
                           <span>{formatWeeksValue(timelineInfo.actualWeeks)} ({formatDaysValue(timelineInfo.actualDays)})</span>
@@ -449,7 +451,7 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
                           return (
                             <div
                               key={`${entry.profileId}-${entry.requiredWeeks ?? entry.requiredDays ?? 'req'}`}
-                              className={`border rounded-lg p-3 text-sm ${entry.satisfied ? 'border-green-200 bg-green-50 text-green-800' : 'border-orange-200 bg-orange-50 text-orange-800'}`}
+                              className={`border rounded-lg p-3 text-sm hv-surface ${entry.satisfied ? 'border-green-200 bg-green-50 text-green-800' : 'border-orange-200 bg-orange-50 text-orange-800'}`}
                             >
                               <div className="flex justify-between items-center mb-1">
                                 <span className="font-semibold">{entry.profileLabel}</span>
@@ -469,12 +471,12 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
                   );
                 })}
               </div>
-            </div>
+            </section>
           )}
 
           {/* Équipes à solliciter */}
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+          <section className="mb-8" aria-labelledby="teams-heading">
+            <h2 id="teams-heading" className="text-2xl font-bold text-gray-800 mb-4 flex items-center">
               <Users className="w-6 h-6 mr-2 text-indigo-600" />
               Équipes à solliciter ({relevantTeams.length})
             </h2>
@@ -484,10 +486,10 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
                 const teamQuestions = analysis.questions?.[team.id];
 
                 return (
-                  <div key={team.id} className="bg-white rounded-xl p-6 border-2 border-gray-200 hover:border-indigo-300 transition-all">
+                  <div key={team.id} className="bg-white rounded-xl p-6 border-2 border-gray-200 hover:border-indigo-300 transition-all hv-surface" role="article" aria-label={`Équipe ${team.name}`}>
                     <div className="flex justify-between items-start mb-3">
                       <h3 className="text-lg font-bold text-gray-800">{team.name}</h3>
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${priorityColors[teamPriority]}`}>
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold border hv-badge ${priorityColors[teamPriority]}`}>
                         {teamPriority}
                       </span>
                     </div>
@@ -500,11 +502,11 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
                       📧 {renderTextWithLinks(team.contact)}
                     </div>
 
-                    {teamQuestions && (
-                      <div className="mt-4">
-                        <h4 className="text-sm font-semibold text-gray-800 mb-2">Points à préparer :</h4>
-                        <ul className="space-y-1">
-                          {teamQuestions.map((question, idx) => (
+                      {teamQuestions && (
+                        <div className="mt-4">
+                          <h4 className="text-sm font-semibold text-gray-800 mb-2">Points à préparer :</h4>
+                          <ul className="space-y-1">
+                            {teamQuestions.map((question, idx) => (
                             <li key={idx} className="text-sm text-gray-700 flex">
                               <span className="text-indigo-500 mr-2">•</span>
                               <span>{renderTextWithLinks(question)}</span>
@@ -517,20 +519,20 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
                 );
               })}
             </div>
-          </div>
+          </section>
 
           {/* Risques identifiés */}
-          <div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+          <section aria-labelledby="risks-heading">
+            <h2 id="risks-heading" className="text-2xl font-bold text-gray-800 mb-4 flex items-center">
               <AlertTriangle className="w-6 h-6 mr-2 text-red-500" />
               Risques identifiés ({analysis.risks.length})
             </h2>
             <div className="space-y-3">
               {analysis.risks.map((risk, idx) => (
-                <div key={idx} className={`p-4 rounded-xl border ${riskColors[risk.level]}`}>
+                <div key={idx} className={`p-4 rounded-xl border hv-surface ${riskColors[risk.level]}`} role="article" aria-label={`Risque ${risk.level}`}>
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm font-semibold text-gray-700">{risk.level}</span>
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${priorityColors[risk.priority]}`}>
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold border hv-badge ${priorityColors[risk.priority]}`}>
                       {risk.priority}
                     </span>
                   </div>
@@ -542,7 +544,7 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
                 </div>
               ))}
             </div>
-          </div>
+          </section>
         </div>
       </div>
     </div>

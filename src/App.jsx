@@ -16,6 +16,7 @@ export const App = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [analysis, setAnalysis] = useState(null);
+  const [isHighVisibility, setIsHighVisibility] = useState(false);
 
   const [questions, setQuestions] = useState(initialQuestions);
   const [rules, setRules] = useState(initialRules);
@@ -39,6 +40,7 @@ export const App = () => {
     if (Array.isArray(savedState.questions)) setQuestions(savedState.questions);
     if (Array.isArray(savedState.rules)) setRules(savedState.rules);
     if (Array.isArray(savedState.teams)) setTeams(savedState.teams);
+    if (typeof savedState.isHighVisibility === 'boolean') setIsHighVisibility(savedState.isHighVisibility);
 
     setIsHydrated(true);
   }, []);
@@ -54,9 +56,21 @@ export const App = () => {
       analysis,
       questions,
       rules,
-      teams
+      teams,
+      isHighVisibility
     });
-  }, [mode, screen, currentQuestionIndex, answers, analysis, questions, rules, teams, isHydrated]);
+  }, [mode, screen, currentQuestionIndex, answers, analysis, questions, rules, teams, isHighVisibility, isHydrated]);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const body = document.body;
+    if (!body) return;
+    if (isHighVisibility) {
+      body.classList.add('high-visibility');
+    } else {
+      body.classList.remove('high-visibility');
+    }
+  }, [isHighVisibility]);
 
   const activeQuestions = questions.filter(q => shouldShowQuestion(q, answers));
 
@@ -105,9 +119,14 @@ export const App = () => {
     setAnalysis(null);
   };
 
+  const handleToggleHighVisibility = () => {
+    setIsHighVisibility(prev => !prev);
+  };
+
   return (
     <div className="min-h-screen">
-      <nav className="bg-white shadow-sm border-b border-gray-200">
+      <a href="#main-content" className="skip-link">Aller au contenu principal</a>
+      <nav className="bg-white shadow-sm border-b border-gray-200 hv-surface">
         <div className="max-w-7xl mx-auto px-8 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-3">
@@ -120,62 +139,81 @@ export const App = () => {
               </div>
             </div>
 
-            <div className="flex space-x-3">
+            <div className="flex space-x-3" role="group" aria-label="Sélection du mode d'affichage">
               <button
+                type="button"
                 onClick={() => setMode('user')}
                 className={`px-4 py-2 rounded-lg font-medium transition-all ${
                   mode === 'user'
                     ? 'bg-indigo-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+                } hv-button ${mode === 'user' ? 'hv-button-primary' : ''}`
+                aria-pressed={mode === 'user'}
+                aria-label="Basculer vers le mode chef de projet"
               >
                 Mode Chef de Projet
               </button>
               <button
+                type="button"
                 onClick={() => setMode('admin')}
                 className={`px-4 py-2 rounded-lg font-medium transition-all ${
                   mode === 'admin'
                     ? 'bg-indigo-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+                } hv-button ${mode === 'admin' ? 'hv-button-primary' : ''}`
+                aria-pressed={mode === 'admin'}
+                aria-label="Basculer vers le mode back-office"
               >
                 Back-Office
+              </button>
+              <button
+                type="button"
+                onClick={handleToggleHighVisibility}
+                className={`px-4 py-2 rounded-lg font-medium transition-all hv-button hv-focus-ring ${
+                  isHighVisibility ? 'hv-button-primary' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+                aria-pressed={isHighVisibility}
+                aria-label="Activer ou désactiver le mode haute visibilité"
+              >
+                Mode haute visibilité {isHighVisibility ? 'activé' : 'désactivé'}
               </button>
             </div>
           </div>
         </div>
       </nav>
 
-      {mode === 'user' ? (
-        screen === 'questionnaire' ? (
-          <QuestionnaireScreen
-            questions={activeQuestions}
-            currentIndex={currentQuestionIndex}
-            answers={answers}
-            onAnswer={handleAnswer}
-            onNext={handleNext}
-            onBack={handleBack}
-            allQuestions={questions}
-          />
+      <main id="main-content" tabIndex="-1" className="focus:outline-none hv-background">
+        {mode === 'user' ? (
+          screen === 'questionnaire' ? (
+            <QuestionnaireScreen
+              questions={activeQuestions}
+              currentIndex={currentQuestionIndex}
+              answers={answers}
+              onAnswer={handleAnswer}
+              onNext={handleNext}
+              onBack={handleBack}
+              allQuestions={questions}
+            />
+          ) : (
+            <SynthesisReport
+              answers={answers}
+              analysis={analysis}
+              teams={teams}
+              questions={activeQuestions}
+              onRestart={handleRestart}
+            />
+          )
         ) : (
-          <SynthesisReport
-            answers={answers}
-            analysis={analysis}
+          <BackOffice
+            questions={questions}
+            setQuestions={setQuestions}
+            rules={rules}
+            setRules={setRules}
             teams={teams}
-            questions={activeQuestions}
-            onRestart={handleRestart}
+            setTeams={setTeams}
           />
-        )
-      ) : (
-        <BackOffice
-          questions={questions}
-          setQuestions={setQuestions}
-          rules={rules}
-          setRules={setRules}
-          teams={teams}
-          setTeams={setTeams}
-        />
-      )}
+        )}
+      </main>
     </div>
   );
 };
