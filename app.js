@@ -103,6 +103,24 @@ const initialQuestions = [
 ];
 
 // Fonction pour évaluer si une question doit être affichée
+const normalizeAnswerForComparison = (answer) => {
+  if (Array.isArray(answer)) {
+    return answer;
+  }
+
+  if (answer && typeof answer === 'object') {
+    if (typeof answer.value !== 'undefined') {
+      return answer.value;
+    }
+
+    if (typeof answer.name !== 'undefined') {
+      return answer.name;
+    }
+  }
+
+  return answer;
+};
+
 const shouldShowQuestion = (question, answers) => {
   if (!question.conditions || question.conditions.length === 0) {
     return true; // Pas de condition = toujours afficher
@@ -110,16 +128,31 @@ const shouldShowQuestion = (question, answers) => {
 
   // Toutes les conditions doivent être remplies (logique ET)
   return question.conditions.every(condition => {
-    const answer = answers[condition.question];
-    if (!answer) return false;
+    const rawAnswer = answers[condition.question];
+    if (Array.isArray(rawAnswer) && rawAnswer.length === 0) return false;
+    if (rawAnswer === null || rawAnswer === undefined || rawAnswer === '') return false;
+
+    const answer = normalizeAnswerForComparison(rawAnswer);
 
     switch (condition.operator) {
       case 'equals':
+        if (Array.isArray(answer)) {
+          return answer.includes(condition.value);
+        }
         return answer === condition.value;
       case 'not_equals':
+        if (Array.isArray(answer)) {
+          return !answer.includes(condition.value);
+        }
         return answer !== condition.value;
       case 'contains':
-        return answer.includes(condition.value);
+        if (Array.isArray(answer)) {
+          return answer.includes(condition.value);
+        }
+        if (typeof answer === 'string') {
+          return answer.includes(condition.value);
+        }
+        return false;
       default:
         return false;
     }
@@ -379,8 +412,10 @@ const analyzeAnswers = (answers, rules) => {
 const QuestionnaireScreen = ({ questions, currentIndex, answers, onAnswer, onNext, onBack }) => {
   const currentQuestion = questions[currentIndex];
   const progress = ((currentIndex + 1) / questions.length) * 100;
-  const isDateQuestion = currentQuestion.type === 'date';
-  const currentAnswer = answers[currentQuestion.id] || '';
+  const questionType = currentQuestion.type || 'choice';
+  const currentAnswer = answers[currentQuestion.id];
+  const multiSelection = Array.isArray(currentAnswer) ? currentAnswer : [];
+  const hasAnswer = Array.isArray(currentAnswer) ? currentAnswer.length > 0 : !!currentAnswer;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-8">
@@ -413,7 +448,7 @@ const QuestionnaireScreen = ({ questions, currentIndex, answers, onAnswer, onNex
             {currentQuestion.question}
           </h2>
 
-          {isDateQuestion ? (
+          {questionType === 'date' && (
             <div className="mb-8">
               <label className="block text-sm font-medium text-gray-700 mb-3">
                 <span className="flex items-center">
@@ -423,7 +458,7 @@ const QuestionnaireScreen = ({ questions, currentIndex, answers, onAnswer, onNex
               </label>
               <input
                 type="date"
-                value={currentAnswer}
+                value={currentAnswer || ''}
                 onChange={(e) => onAnswer(currentQuestion.id, e.target.value)}
                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
@@ -431,32 +466,146 @@ const QuestionnaireScreen = ({ questions, currentIndex, answers, onAnswer, onNex
                 Utilisez le sélecteur ou le format AAAA-MM-JJ pour garantir une analyse correcte.
               </p>
             </div>
-          ) : (
+          )}
+
+          {questionType === 'choice' && (
             <div className="space-y-3 mb-8">
-              {currentQuestion.options.map((option, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => onAnswer(currentQuestion.id, option)}
-                  className={`w-full p-4 text-left rounded-xl border-2 transition-all duration-200 ${
-                    answers[currentQuestion.id] === option
-                      ? 'border-indigo-600 bg-indigo-50 text-indigo-900'
-                      : 'border-gray-200 hover:border-indigo-300 hover:bg-gray-50'
-                  }`}
-                >
-                  <div className="flex items-center">
-                    <div className={`w-5 h-5 rounded-full border-2 mr-3 flex items-center justify-center ${
-                      answers[currentQuestion.id] === option
-                        ? 'border-indigo-600 bg-indigo-600 text-white'
-                        : 'border-gray-300'
-                    }`}>
-                      {answers[currentQuestion.id] === option && (
-                        <CheckCircle className="w-4 h-4" />
-                      )}
+              {currentQuestion.options.map((option, idx) => {
+                const isSelected = answers[currentQuestion.id] === option;
+
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => onAnswer(currentQuestion.id, option)}
+                    className={`w-full p-4 text-left rounded-xl border-2 transition-all duration-200 ${
+                      isSelected
+                        ? 'border-indigo-600 bg-indigo-50 text-indigo-900'
+                        : 'border-gray-200 hover:border-indigo-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className={`w-5 h-5 rounded-full border-2 mr-3 flex items-center justify-center ${
+                        isSelected
+                          ? 'border-indigo-600 bg-indigo-600 text-white'
+                          : 'border-gray-300'
+                      }`}>
+                        {isSelected && <CheckCircle className="w-4 h-4" />}
+                      </div>
+                      <span className="font-medium">{option}</span>
                     </div>
-                    <span className="font-medium">{option}</span>
-                  </div>
-                </button>
-              ))}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {questionType === 'multi_choice' && (
+            <div className="space-y-3 mb-8">
+              {currentQuestion.options.map((option, idx) => {
+                const isSelected = multiSelection.includes(option);
+
+                const toggleOption = () => {
+                  if (isSelected) {
+                    onAnswer(
+                      currentQuestion.id,
+                      multiSelection.filter(item => item !== option)
+                    );
+                  } else {
+                    onAnswer(currentQuestion.id, [...multiSelection, option]);
+                  }
+                };
+
+                return (
+                  <label
+                    key={idx}
+                    className={`w-full p-4 flex items-center justify-between rounded-xl border-2 transition-all duration-200 cursor-pointer ${
+                      isSelected
+                        ? 'border-indigo-600 bg-indigo-50 text-indigo-900'
+                        : 'border-gray-200 hover:border-indigo-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={toggleOption}
+                        className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                      />
+                      <span className="ml-3 font-medium">{option}</span>
+                    </div>
+                    {isSelected && <CheckCircle className="w-5 h-5 text-indigo-600" />}
+                  </label>
+                );
+              })}
+            </div>
+          )}
+
+          {questionType === 'number' && (
+            <div className="mb-8">
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                Renseignez une valeur numérique
+              </label>
+              <input
+                type="number"
+                value={currentAnswer ?? ''}
+                onChange={(e) => onAnswer(currentQuestion.id, e.target.value)}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+              <p className="text-xs text-gray-500 mt-2">
+                Vous pouvez saisir un nombre entier ou décimal.
+              </p>
+            </div>
+          )}
+
+          {questionType === 'url' && (
+            <div className="mb-8">
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                Indiquez une adresse URL
+              </label>
+              <input
+                type="url"
+                value={currentAnswer || ''}
+                onChange={(e) => onAnswer(currentQuestion.id, e.target.value)}
+                placeholder="https://exemple.com"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+              <p className="text-xs text-gray-500 mt-2">
+                Incluez le protocole (https://) pour une URL valide.
+              </p>
+            </div>
+          )}
+
+          {questionType === 'file' && (
+            <div className="mb-8">
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                Téléversez un fichier de référence
+              </label>
+              <input
+                type="file"
+                onChange={(e) => {
+                  const file = e.target.files && e.target.files[0];
+                  if (file) {
+                    onAnswer(currentQuestion.id, {
+                      name: file.name,
+                      size: file.size,
+                      type: file.type
+                    });
+                  } else {
+                    onAnswer(currentQuestion.id, null);
+                  }
+                }}
+                className="w-full"
+              />
+              {currentAnswer && (
+                <p className="text-xs text-gray-500 mt-2">
+                  {(() => {
+                    const size = typeof currentAnswer.size === 'number'
+                      ? ` (${Math.round(currentAnswer.size / 1024)} Ko)`
+                      : '';
+                    return `Fichier sélectionné : ${currentAnswer.name}${size}`;
+                  })()}
+                </p>
+              )}
             </div>
           )}
 
@@ -470,9 +619,9 @@ const QuestionnaireScreen = ({ questions, currentIndex, answers, onAnswer, onNex
               Précédent
             </button>
 
-            <button
-              onClick={onNext}
-              disabled={!answers[currentQuestion.id]}
+              <button
+                onClick={onNext}
+                disabled={!hasAnswer}
               className="flex items-center px-6 py-3 rounded-lg font-medium bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               {currentIndex === questions.length - 1 ? 'Voir la synthèse' : 'Suivant'}
@@ -520,6 +669,15 @@ const SynthesisReport = ({ answers, analysis, teams, questions, onRestart }) => 
         month: '2-digit',
         year: 'numeric'
       }).format(parsed);
+    }
+
+    if (questionType === 'multi_choice' && Array.isArray(answer)) {
+      return answer.join(', ');
+    }
+
+    if (questionType === 'file' && typeof answer === 'object') {
+      const size = typeof answer.size === 'number' ? ` (${Math.round(answer.size / 1024)} Ko)` : '';
+      return `${answer.name || 'Fichier joint'}${size}`;
     }
 
     return answer;
@@ -647,21 +805,26 @@ const QuestionEditor = ({ question, onSave, onCancel, allQuestions }) => {
   const [draggedOptionIndex, setDraggedOptionIndex] = useState(null);
   const [dragOverIndex, setDragOverIndex] = useState(null);
   const questionType = editedQuestion.type || 'choice';
+  const typeUsesOptions = questionType === 'choice' || questionType === 'multi_choice';
 
   const handleTypeChange = (newType) => {
-    if (newType === 'date') {
+    if (newType === 'choice' || newType === 'multi_choice') {
       setEditedQuestion(prev => ({
         ...prev,
-        type: 'date',
-        options: []
+        type: newType,
+        options:
+          prev.options && prev.options.length > 0
+            ? prev.options
+            : ['Option 1', 'Option 2']
       }));
-    } else {
-      setEditedQuestion(prev => ({
-        ...prev,
-        type: 'choice',
-        options: prev.options && prev.options.length > 0 ? prev.options : ['Option 1', 'Option 2']
-      }));
+      return;
     }
+
+    setEditedQuestion(prev => ({
+      ...prev,
+      type: newType,
+      options: []
+    }));
   };
 
   const reorderOptions = (fromIndex, toIndex) => {
@@ -804,9 +967,13 @@ const QuestionEditor = ({ question, onSave, onCancel, allQuestions }) => {
                 >
                   <option value="choice">Liste de choix</option>
                   <option value="date">Date</option>
+                  <option value="multi_choice">Choix multiples</option>
+                  <option value="number">Valeur numérique</option>
+                  <option value="url">Lien URL</option>
+                  <option value="file">Fichier</option>
                 </select>
                 <p className="text-xs text-gray-500 mt-1">
-                  Sélectionnez "Date" pour recueillir une réponse sous forme de calendrier.
+                  Choisissez le format adapté : liste simple ou multiple, date, valeur numérique, URL ou ajout de fichier.
                 </p>
               </div>
 
@@ -826,10 +993,12 @@ const QuestionEditor = ({ question, onSave, onCancel, allQuestions }) => {
 
           {/* Options de réponse */}
           <div>
-            {questionType === 'choice' ? (
+            {typeUsesOptions ? (
               <>
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-xl font-bold text-gray-800">✅ Options de réponse</h3>
+                  <h3 className="text-xl font-bold text-gray-800">
+                    {questionType === 'multi_choice' ? '✅ Options de sélection multiple' : '✅ Options de réponse'}
+                  </h3>
                   <button
                     onClick={addOption}
                     className="flex items-center px-3 py-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-all text-sm font-medium"
@@ -841,6 +1010,7 @@ const QuestionEditor = ({ question, onSave, onCancel, allQuestions }) => {
 
                 <p className="text-xs text-gray-500 mb-3">
                   Glissez-déposez les options pour modifier leur ordre d'affichage.
+                  {questionType === 'multi_choice' && ' Les répondants pourront sélectionner plusieurs valeurs.'}
                 </p>
 
                 <div className="space-y-2">
@@ -897,7 +1067,7 @@ const QuestionEditor = ({ question, onSave, onCancel, allQuestions }) => {
               </>
             ) : (
               <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 text-sm text-indigo-700">
-                Cette question enregistrera une date. Les options de réponse ne sont pas nécessaires.
+                Ce type de question ne nécessite pas de liste d'options prédéfinies.
               </div>
             )}
           </div>
@@ -994,26 +1164,56 @@ const QuestionEditor = ({ question, onSave, onCancel, allQuestions }) => {
                           <label className="block text-xs font-medium text-gray-600 mb-1">
                             Valeur
                           </label>
-                          {condition.question ? (
-                            <select
-                              value={condition.value}
-                              onChange={(e) => updateCondition(idx, 'value', e.target.value)}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500"
-                            >
-                              <option value="">Sélectionner...</option>
-                              {questions.find(q => q.id === condition.question)?.options.map((opt, i) => (
-                                <option key={i} value={opt}>{opt}</option>
-                              ))}
-                            </select>
-                          ) : (
-                            <input
-                              type="text"
-                              value={condition.value}
-                              onChange={(e) => updateCondition(idx, 'value', e.target.value)}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500"
-                              placeholder="Valeur..."
-                            />
-                          )}
+                          {(() => {
+                            if (!condition.question) {
+                              return (
+                                <input
+                                  type="text"
+                                  value={condition.value}
+                                  onChange={(e) => updateCondition(idx, 'value', e.target.value)}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500"
+                                  placeholder="Valeur..."
+                                />
+                              );
+                            }
+
+                            const selectedQuestion = questions.find(q => q.id === condition.question);
+                            const selectedType = selectedQuestion?.type || 'choice';
+                            const usesOptions = ['choice', 'multi_choice'].includes(selectedType);
+
+                            if (usesOptions) {
+                              return (
+                                <select
+                                  value={condition.value}
+                                  onChange={(e) => updateCondition(idx, 'value', e.target.value)}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500"
+                                >
+                                  <option value="">Sélectionner...</option>
+                                  {(selectedQuestion?.options || []).map((opt, i) => (
+                                    <option key={i} value={opt}>{opt}</option>
+                                  ))}
+                                </select>
+                              );
+                            }
+
+                            const inputType = selectedType === 'number' ? 'number' : 'text';
+                            const placeholder =
+                              selectedType === 'date'
+                                ? 'AAAA-MM-JJ'
+                                : selectedType === 'url'
+                                  ? 'https://...'
+                                  : 'Valeur...';
+
+                            return (
+                              <input
+                                type={inputType}
+                                value={condition.value}
+                                onChange={(e) => updateCondition(idx, 'value', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500"
+                                placeholder={placeholder}
+                              />
+                            );
+                          })()}
                         </div>
                       </div>
                     </div>
@@ -1368,26 +1568,54 @@ const RuleEditor = ({ rule, onSave, onCancel, questions, teams }) => {
 
                           <div>
                             <label className="block text-xs font-medium text-gray-600 mb-1">Valeur</label>
-                            {condition.question && selectedQuestionType === 'choice' ? (
-                              <select
-                                value={condition.value}
-                                onChange={(e) => updateCondition(idx, 'value', e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
-                              >
-                                <option value="">Sélectionner...</option>
-                                {selectedQuestion?.options.map((opt, i) => (
-                                  <option key={i} value={opt}>{opt}</option>
-                                ))}
-                              </select>
-                            ) : (
-                              <input
-                                type="text"
-                                value={condition.value}
-                                onChange={(e) => updateCondition(idx, 'value', e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
-                                placeholder="Valeur (texte, date, etc.)"
-                              />
-                            )}
+                            {(() => {
+                              if (!condition.question) {
+                                return (
+                                  <input
+                                    type="text"
+                                    value={condition.value}
+                                    onChange={(e) => updateCondition(idx, 'value', e.target.value)}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                                    placeholder="Valeur (texte, date, etc.)"
+                                  />
+                                );
+                              }
+
+                              const usesOptions = ['choice', 'multi_choice'].includes(selectedQuestionType);
+
+                              if (usesOptions) {
+                                return (
+                                  <select
+                                    value={condition.value}
+                                    onChange={(e) => updateCondition(idx, 'value', e.target.value)}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                                  >
+                                    <option value="">Sélectionner...</option>
+                                    {(selectedQuestion?.options || []).map((opt, i) => (
+                                      <option key={i} value={opt}>{opt}</option>
+                                    ))}
+                                  </select>
+                                );
+                              }
+
+                              const inputType = selectedQuestionType === 'number' ? 'number' : 'text';
+                              const placeholder =
+                                selectedQuestionType === 'date'
+                                  ? 'AAAA-MM-JJ'
+                                  : selectedQuestionType === 'url'
+                                    ? 'https://...'
+                                    : 'Valeur (texte, date, etc.)';
+
+                              return (
+                                <input
+                                  type={inputType}
+                                  value={condition.value}
+                                  onChange={(e) => updateCondition(idx, 'value', e.target.value)}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                                  placeholder={placeholder}
+                                />
+                              );
+                            })()}
                           </div>
                         </div>
                       )}
@@ -1698,13 +1926,32 @@ const BackOffice = ({ questions, setQuestions, rules, setRules, teams, setTeams 
                             {q.id}
                           </span>
                           <span className="text-lg font-bold text-gray-800">{q.question}</span>
-                          <span className={`ml-3 text-xs px-2 py-1 rounded-full border ${
-                            (q.type || 'choice') === 'date'
-                              ? 'bg-blue-50 border-blue-200 text-blue-700'
-                              : 'bg-gray-50 border-gray-200 text-gray-600'
-                          }`}>
-                            {(q.type || 'choice') === 'date' ? 'Type : Date' : 'Type : Choix'}
-                          </span>
+                          {(() => {
+                            const type = q.type || 'choice';
+                            const typeLabels = {
+                              choice: 'Liste de choix',
+                              date: 'Date',
+                              multi_choice: 'Choix multiples',
+                              number: 'Valeur numérique',
+                              url: 'Lien URL',
+                              file: 'Fichier'
+                            };
+                            const badgeStyles = {
+                              choice: 'bg-gray-50 border-gray-200 text-gray-600',
+                              date: 'bg-blue-50 border-blue-200 text-blue-700',
+                              multi_choice: 'bg-purple-50 border-purple-200 text-purple-700',
+                              number: 'bg-green-50 border-green-200 text-green-700',
+                              url: 'bg-amber-50 border-amber-200 text-amber-700',
+                              file: 'bg-pink-50 border-pink-200 text-pink-700'
+                            };
+                            const badgeClass = badgeStyles[type] || badgeStyles.choice;
+
+                            return (
+                              <span className={`ml-3 text-xs px-2 py-1 rounded-full border ${badgeClass}`}>
+                                Type : {typeLabels[type] || typeLabels.choice}
+                              </span>
+                            );
+                          })()}
                           {q.required && (
                             <span className="ml-2 text-xs bg-red-100 text-red-800 px-2 py-1 rounded">
                               Obligatoire
@@ -1713,19 +1960,57 @@ const BackOffice = ({ questions, setQuestions, rules, setRules, teams, setTeams 
                         </div>
 
                         <div className="space-y-1 mb-3">
-                          {(q.type || 'choice') === 'choice' ? (
-                            <>
-                              <p className="text-sm text-gray-600 font-medium">Options de réponse :</p>
-                              {q.options.map((option, optIdx) => (
-                                <div key={optIdx} className="flex items-center text-sm text-gray-700">
-                                  <span className="text-indigo-500 mr-2">•</span>
-                                  <span>{option}</span>
-                                </div>
-                              ))}
-                            </>
-                          ) : (
-                            <p className="text-sm text-gray-600 font-medium">Réponse attendue : sélection d'une date</p>
-                          )}
+                          {(() => {
+                            const type = q.type || 'choice';
+
+                            if (type === 'choice' || type === 'multi_choice') {
+                              return (
+                                <>
+                                  <p className="text-sm text-gray-600 font-medium">
+                                    Options de réponse {type === 'multi_choice' ? '(sélection multiple possible)' : ''} :
+                                  </p>
+                                  {q.options.map((option, optIdx) => (
+                                    <div key={optIdx} className="flex items-center text-sm text-gray-700">
+                                      <span className="text-indigo-500 mr-2">•</span>
+                                      <span>{option}</span>
+                                    </div>
+                                  ))}
+                                </>
+                              );
+                            }
+
+                            if (type === 'date') {
+                              return (
+                                <p className="text-sm text-gray-600 font-medium">Réponse attendue : sélection d'une date</p>
+                              );
+                            }
+
+                            if (type === 'number') {
+                              return (
+                                <p className="text-sm text-gray-600 font-medium">
+                                  Réponse attendue : saisie d'une valeur numérique
+                                </p>
+                              );
+                            }
+
+                            if (type === 'url') {
+                              return (
+                                <p className="text-sm text-gray-600 font-medium">
+                                  Réponse attendue : saisie d'un lien URL complet
+                                </p>
+                              );
+                            }
+
+                            if (type === 'file') {
+                              return (
+                                <p className="text-sm text-gray-600 font-medium">
+                                  Réponse attendue : téléversement d'un fichier
+                                </p>
+                              );
+                            }
+
+                            return null;
+                          })()}
                         </div>
 
                         {q.conditions && q.conditions.length > 0 ? (
