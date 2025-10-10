@@ -109,6 +109,19 @@ const getTeamPriority = (analysis, teamId) => {
   return matchingRisk?.priority || 'Recommandé';
 };
 
+const escapeHtml = (value) => {
+  if (value === undefined || value === null) {
+    return '';
+  }
+
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+};
+
 const buildEmailBody = ({
   projectName,
   questions,
@@ -225,6 +238,33 @@ const buildEmailBody = ({
   return lines.join('\n');
 };
 
+const buildEmailHtmlBody = ({
+  projectName,
+  questions,
+  answers,
+  analysis,
+  relevantTeams,
+  timelineByTeam,
+  timelineDetails
+}) => {
+  const plainText = buildEmailBody({
+    projectName,
+    questions,
+    answers,
+    analysis,
+    relevantTeams,
+    timelineByTeam,
+    timelineDetails
+  });
+
+  const escaped = escapeHtml(plainText)
+    .split('\n\n')
+    .map(section => section.replace(/\n/g, '<br/>'))
+    .join('<br/><br/>');
+
+  return `<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8" /></head><body style="font-family: Arial, sans-serif; white-space: normal;">${escaped}</body></html>`;
+};
+
 const buildMailtoLink = ({ projectName, relevantTeams, emailBody }) => {
   const recipients = relevantTeams
     .map(team => (team.contact || '').trim())
@@ -273,7 +313,7 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
   const projectName = extractProjectName(answers, questions);
 
   const handleSubmitByEmail = () => {
-    const emailBody = buildEmailBody({
+    const emailBody = buildEmailHtmlBody({
       projectName,
       questions,
       answers,
