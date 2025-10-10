@@ -42,9 +42,9 @@ Prototype React monopage d'aide à la décision compliance lancé directement de
 ## Démarrage
 Aucune étape de build n'est nécessaire :
 1. Ouvrir `index.html` dans un navigateur moderne.
-2. Le fichier `app.js` est compilé à la volée par Babel (préréglages `env` et `react`).
+2. Le point d'entrée `src/main.jsx` est compilé à la volée par Babel (préréglages `env` et `react`) et charge automatiquement les modules de l'application.
 3. React/ReactDOM et Tailwind CSS sont chargés via CDN UMD.
 
 ## Personnalisation
 - L'ensemble des référentiels (questions, règles, équipes) est éditable directement depuis le back-office intégré.
-- Pour des modifications structurelles plus poussées, adaptez `initialQuestions`, `initialRules` et `initialTeams` dans `app.js`.
+- Pour des modifications structurelles plus poussées, adaptez `initialQuestions`, `initialRules` et `initialTeams` dans `src/data/` et les utilitaires dans `src/utils/`.
