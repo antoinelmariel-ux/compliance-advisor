@@ -1,4 +1,35 @@
-const { useState } = React;
+const { useState, useEffect } = React;
+
+const STORAGE_KEY = 'complianceAdvisorState';
+
+const loadPersistedState = () => {
+  if (typeof window === 'undefined' || !window.localStorage) {
+    return null;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      return null;
+    }
+    return JSON.parse(raw);
+  } catch (error) {
+    console.warn('Impossible de charger l\'état sauvegardé :', error);
+    return null;
+  }
+};
+
+const persistState = (state) => {
+  if (typeof window === 'undefined' || !window.localStorage) {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (error) {
+    console.warn('Impossible de sauvegarder l\'état :', error);
+  }
+};
 
 const createIcon = (symbol) => {
   return ({ className = '', ...props }) => (
@@ -2299,8 +2330,53 @@ const ComplianceDecisionTool = () => {
   const [questions, setQuestions] = useState(initialQuestions);
   const [rules, setRules] = useState(initialRules);
   const [teams, setTeams] = useState(initialTeams);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  useEffect(() => {
+    const savedState = loadPersistedState();
+    if (!savedState) {
+      setIsHydrated(true);
+      return;
+    }
+
+    if (savedState.mode) setMode(savedState.mode);
+    if (savedState.screen) setScreen(savedState.screen);
+    if (typeof savedState.currentQuestionIndex === 'number' && savedState.currentQuestionIndex >= 0) {
+      setCurrentQuestionIndex(savedState.currentQuestionIndex);
+    }
+    if (savedState.answers && typeof savedState.answers === 'object') setAnswers(savedState.answers);
+    if (typeof savedState.analysis !== 'undefined') setAnalysis(savedState.analysis);
+    if (Array.isArray(savedState.questions)) setQuestions(savedState.questions);
+    if (Array.isArray(savedState.rules)) setRules(savedState.rules);
+    if (Array.isArray(savedState.teams)) setTeams(savedState.teams);
+
+    setIsHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+
+    persistState({
+      mode,
+      screen,
+      currentQuestionIndex,
+      answers,
+      analysis,
+      questions,
+      rules,
+      teams
+    });
+  }, [mode, screen, currentQuestionIndex, answers, analysis, questions, rules, teams, isHydrated]);
 
   const activeQuestions = questions.filter(q => shouldShowQuestion(q, answers));
+
+  useEffect(() => {
+    if (!isHydrated) return;
+    if (activeQuestions.length === 0) return;
+    if (currentQuestionIndex >= activeQuestions.length) {
+      setCurrentQuestionIndex(activeQuestions.length - 1);
+    }
+  }, [activeQuestions.length, currentQuestionIndex, isHydrated]);
 
   const handleAnswer = (questionId, answer) => {
     const newAnswers = { ...answers, [questionId]: answer };
