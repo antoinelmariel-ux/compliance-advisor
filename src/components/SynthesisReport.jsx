@@ -1,7 +1,234 @@
 import React from '../react.js';
-import { FileText, Calendar, Users, AlertTriangle } from './icons.js';
+import { FileText, Calendar, Users, AlertTriangle, Send } from './icons.js';
 import { formatAnswer } from '../utils/questions.js';
 import { renderTextWithLinks } from '../utils/linkify.js';
+
+const formatNumber = (value, options = {}) => {
+  return Number(value).toLocaleString('fr-FR', options);
+};
+
+const formatWeeksValue = (weeks) => {
+  if (weeks === undefined || weeks === null) {
+    return '-';
+  }
+
+  const rounded = Math.round(weeks * 10) / 10;
+  const hasDecimal = Math.abs(rounded - Math.round(rounded)) > 0.0001;
+
+  return `${formatNumber(rounded, {
+    minimumFractionDigits: hasDecimal ? 1 : 0,
+    maximumFractionDigits: hasDecimal ? 1 : 0
+  })} sem.`;
+};
+
+const formatDaysValue = (days) => {
+  if (days === undefined || days === null) {
+    return '-';
+  }
+
+  return `${formatNumber(Math.round(days))} j.`;
+};
+
+const formatRequirementValue = (requirement) => {
+  if (requirement.requiredWeeks !== undefined) {
+    return `${formatNumber(requirement.requiredWeeks)} sem.`;
+  }
+
+  if (requirement.requiredDays !== undefined) {
+    return `${formatNumber(requirement.requiredDays)} j.`;
+  }
+
+  return '-';
+};
+
+const computeTeamTimeline = (timelineByTeam, teamId) => {
+  const entries = timelineByTeam[teamId] || [];
+  if (entries.length === 0) {
+    return null;
+  }
+
+  const actualWeeks = entries[0].actualWeeks;
+  const actualDays = entries[0].actualDays;
+  const meetsAll = entries.every(entry => entry.satisfied);
+  const strictestRequirement = entries.reduce((acc, entry) => {
+    const requirementWeeks =
+      entry.requiredWeeks !== undefined
+        ? entry.requiredWeeks
+        : entry.requiredDays !== undefined
+          ? entry.requiredDays / 7
+          : 0;
+
+    return requirementWeeks > acc ? requirementWeeks : acc;
+  }, 0);
+
+  return {
+    entries,
+    actualWeeks,
+    actualDays,
+    meetsAll,
+    strictestRequirement
+  };
+};
+
+const extractProjectName = (answers, questions) => {
+  if (!answers || !questions) {
+    return '';
+  }
+
+  const preferredKeys = ['projectName', 'project_name', 'nomProjet', 'nom_projet'];
+
+  for (const key of preferredKeys) {
+    const value = answers[key];
+    if (typeof value === 'string' && value.trim().length > 0) {
+      return value.trim();
+    }
+  }
+
+  const matchingQuestion = questions.find(question => {
+    if (!question || !question.question) {
+      return false;
+    }
+
+    const text = question.question.toLowerCase();
+    return text.includes('nom') && text.includes('projet') && typeof answers[question.id] === 'string' && answers[question.id].trim() !== '';
+  });
+
+  if (matchingQuestion) {
+    return answers[matchingQuestion.id].trim();
+  }
+
+  return '';
+};
+
+const getTeamPriority = (analysis, teamId) => {
+  if (!analysis) {
+    return 'Recommandé';
+  }
+
+  const matchingRisk = analysis.risks.find(risk => analysis.questions?.[teamId]);
+  return matchingRisk?.priority || 'Recommandé';
+};
+
+const buildEmailBody = ({
+  projectName,
+  questions,
+  answers,
+  analysis,
+  relevantTeams,
+  timelineByTeam,
+  timelineDetails
+}) => {
+  const lines = [];
+  const title = projectName || 'Projet sans nom';
+  const answeredQuestions = questions.filter(question => {
+    const value = answers[question.id];
+    if (value === null || value === undefined) {
+      return false;
+    }
+
+    if (Array.isArray(value)) {
+      return value.length > 0;
+    }
+
+    if (typeof value === 'string') {
+      return value.trim().length > 0;
+    }
+
+    return true;
+  });
+
+  lines.push(`Rapport de compliance - ${title}`);
+  lines.push('');
+  lines.push("=== Vue d'ensemble du projet ===");
+
+  answeredQuestions.forEach(question => {
+    lines.push(`- ${question.question} : ${formatAnswer(question, answers[question.id])}`);
+  });
+
+  lines.push('');
+  lines.push(`Complexité compliance estimée : ${analysis.complexity}`);
+
+  const firstTimelineDetail = timelineDetails.find(detail => detail.diff);
+  const hasTimelineData = Object.keys(timelineByTeam).length > 0 || Boolean(firstTimelineDetail);
+
+  if (hasTimelineData) {
+    lines.push('');
+    lines.push('=== Délais compliance recommandés ===');
+
+    if (firstTimelineDetail?.diff) {
+      lines.push(
+        `- Buffer projet calculé : ${formatWeeksValue(firstTimelineDetail.diff.diffInWeeks)} (${formatDaysValue(firstTimelineDetail.diff.diffInDays)})`
+      );
+    } else {
+      lines.push("- Dates projet incomplètes : les délais sont fournis à titre indicatif.");
+    }
+
+    relevantTeams.forEach(team => {
+      const timelineInfo = computeTeamTimeline(timelineByTeam, team.id);
+
+      lines.push('');
+      lines.push(`Equipe ${team.name}`);
+
+      if (!timelineInfo) {
+        lines.push('  • Aucune exigence de délai configurée');
+        return;
+      }
+
+      lines.push(`  • Buffer actuel : ${formatWeeksValue(timelineInfo.actualWeeks)} (${formatDaysValue(timelineInfo.actualDays)})`);
+      lines.push(`  • Exigence la plus stricte : ${formatWeeksValue(timelineInfo.strictestRequirement)}`);
+
+      timelineInfo.entries.forEach(entry => {
+        const status = entry.satisfied ? '✅ Délai respecté' : '⚠️ Délai insuffisant';
+        const requirementLabel = formatRequirementValue(entry);
+        lines.push(`    - ${entry.profileLabel} : ${requirementLabel} (${status})`);
+      });
+    });
+  }
+
+  lines.push('');
+  lines.push('=== Équipes à solliciter ===');
+  relevantTeams.forEach(team => {
+    const teamPriority = getTeamPriority(analysis, team.id);
+    lines.push(`- ${team.name} (${team.contact}) — Priorité : ${teamPriority}`);
+
+    const teamQuestions = analysis.questions?.[team.id] || [];
+    if (Array.isArray(teamQuestions) && teamQuestions.length > 0) {
+      lines.push('  Points à préparer :');
+      teamQuestions.forEach(question => {
+        lines.push(`    • ${question}`);
+      });
+    }
+  });
+
+  if (analysis.risks.length > 0) {
+    lines.push('');
+    lines.push('=== Risques identifiés ===');
+    analysis.risks.forEach(risk => {
+      lines.push(`- ${risk.level} — Priorité : ${risk.priority}`);
+      lines.push(`  Description : ${risk.description}`);
+      lines.push(`  Mitigation : ${risk.mitigation}`);
+    });
+  }
+
+  return lines.join('\n');
+};
+
+const buildMailtoLink = ({ projectName, relevantTeams, emailBody }) => {
+  const recipients = relevantTeams
+    .map(team => (team.contact || '').trim())
+    .filter(contact => contact.length > 0);
+
+  const toField = recipients.join(',');
+  const subject = projectName || 'Projet compliance';
+  const params = new URLSearchParams();
+
+  params.set('subject', subject);
+  params.set('body', emailBody);
+
+  const paramString = params.toString();
+  const prefix = toField ? `mailto:${toField}` : 'mailto:';
+  return `${prefix}?${paramString}`;
+};
 
 export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart }) => {
   const relevantTeams = teams.filter(team => analysis.teams.includes(team.id));
@@ -31,71 +258,23 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
   const hasTimelineData =
     Object.keys(timelineByTeam).length > 0 || Boolean(firstTimelineDetail);
 
-  const formatNumber = (value, options = {}) => {
-    return Number(value).toLocaleString('fr-FR', options);
-  };
+  const projectName = extractProjectName(answers, questions);
 
-  const formatWeeksValue = (weeks) => {
-    if (weeks === undefined || weeks === null) {
-      return '-';
+  const handleSubmitByEmail = () => {
+    const emailBody = buildEmailBody({
+      projectName,
+      questions,
+      answers,
+      analysis,
+      relevantTeams,
+      timelineByTeam,
+      timelineDetails
+    });
+
+    const mailtoLink = buildMailtoLink({ projectName, relevantTeams, emailBody });
+    if (typeof window !== 'undefined') {
+      window.location.href = mailtoLink;
     }
-
-    const rounded = Math.round(weeks * 10) / 10;
-    const hasDecimal = Math.abs(rounded - Math.round(rounded)) > 0.0001;
-
-    return `${formatNumber(rounded, {
-      minimumFractionDigits: hasDecimal ? 1 : 0,
-      maximumFractionDigits: hasDecimal ? 1 : 0
-    })} sem.`;
-  };
-
-  const formatDaysValue = (days) => {
-    if (days === undefined || days === null) {
-      return '-';
-    }
-
-    return `${formatNumber(Math.round(days))} j.`;
-  };
-
-  const formatRequirementValue = (requirement) => {
-    if (requirement.requiredWeeks !== undefined) {
-      return `${formatNumber(requirement.requiredWeeks)} sem.`;
-    }
-
-    if (requirement.requiredDays !== undefined) {
-      return `${formatNumber(requirement.requiredDays)} j.`;
-    }
-
-    return '-';
-  };
-
-  const computeTeamTimeline = (teamId) => {
-    const entries = timelineByTeam[teamId] || [];
-    if (entries.length === 0) {
-      return null;
-    }
-
-    const actualWeeks = entries[0].actualWeeks;
-    const actualDays = entries[0].actualDays;
-    const meetsAll = entries.every(entry => entry.satisfied);
-    const strictestRequirement = entries.reduce((acc, entry) => {
-      const requirementWeeks =
-        entry.requiredWeeks !== undefined
-          ? entry.requiredWeeks
-          : entry.requiredDays !== undefined
-            ? entry.requiredDays / 7
-            : 0;
-
-      return requirementWeeks > acc ? requirementWeeks : acc;
-    }, 0);
-
-    return {
-      entries,
-      actualWeeks,
-      actualDays,
-      meetsAll,
-      strictestRequirement
-    };
   };
 
   return (
@@ -104,12 +283,21 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
         <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-4xl font-bold text-gray-800">Rapport de Compliance</h1>
-            <button
-              onClick={onRestart}
-              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium text-gray-700 transition-all"
-            >
-              Nouveau projet
-            </button>
+            <div className="flex space-x-3">
+              <button
+                onClick={handleSubmitByEmail}
+                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-all flex items-center"
+              >
+                <Send className="w-4 h-4 mr-2" />
+                Soumettre par e-mail
+              </button>
+              <button
+                onClick={onRestart}
+                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium text-gray-700 transition-all"
+              >
+                Nouveau projet
+              </button>
+            </div>
           </div>
 
           {/* Vue d'ensemble */}
@@ -158,7 +346,7 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {relevantTeams.map(team => {
-                  const timelineInfo = computeTeamTimeline(team.id);
+                  const timelineInfo = computeTeamTimeline(timelineByTeam, team.id);
 
                   if (!timelineInfo) {
                     return (
@@ -240,7 +428,8 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {relevantTeams.map(team => {
-                const teamPriority = analysis.risks.find(r => analysis.questions[team.id])?.priority || 'Recommandé';
+                const teamPriority = getTeamPriority(analysis, team.id);
+                const teamQuestions = analysis.questions?.[team.id];
 
                 return (
                   <div key={team.id} className="bg-white rounded-xl p-6 border-2 border-gray-200 hover:border-indigo-300 transition-all">
@@ -259,11 +448,11 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
                       📧 {renderTextWithLinks(team.contact)}
                     </div>
 
-                    {analysis.questions[team.id] && (
+                    {teamQuestions && (
                       <div className="mt-4">
                         <h4 className="text-sm font-semibold text-gray-800 mb-2">Points à préparer :</h4>
                         <ul className="space-y-1">
-                          {analysis.questions[team.id].map((question, idx) => (
+                          {teamQuestions.map((question, idx) => (
                             <li key={idx} className="text-sm text-gray-700 flex">
                               <span className="text-indigo-500 mr-2">•</span>
                               <span>{renderTextWithLinks(question)}</span>

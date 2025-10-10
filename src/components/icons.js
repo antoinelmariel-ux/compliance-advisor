@@ -26,5 +26,6 @@ export const Plus = createIcon('➕');
 export const Trash2 = createIcon('🗑️');
 export const Eye = createIcon('👁️');
 export const GripVertical = createIcon('⋮⋮');
+export const Send = createIcon('✉️');
 
 export { createIcon };
