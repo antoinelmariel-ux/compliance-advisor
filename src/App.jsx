@@ -17,6 +17,7 @@ export const App = () => {
   const [answers, setAnswers] = useState({});
   const [analysis, setAnalysis] = useState(null);
   const [isHighVisibility, setIsHighVisibility] = useState(false);
+  const [validationError, setValidationError] = useState(null);
 
   const [questions, setQuestions] = useState(initialQuestions);
   const [rules, setRules] = useState(initialRules);
@@ -94,9 +95,30 @@ export const App = () => {
     });
 
     setAnswers(newAnswers);
+
+    setValidationError(prev => {
+      if (!prev) return null;
+      return prev.questionId === questionId ? null : prev;
+    });
   };
 
   const handleNext = () => {
+    const currentQuestion = activeQuestions[currentQuestionIndex];
+    if (currentQuestion?.required) {
+      const answer = answers[currentQuestion.id];
+      const isAnswerProvided = Array.isArray(answer) ? answer.length > 0 : !!answer;
+
+      if (!isAnswerProvided) {
+        setValidationError({
+          questionId: currentQuestion.id,
+          message: 'Veuillez répondre à cette question obligatoire avant de poursuivre.'
+        });
+        return;
+      }
+    }
+
+    setValidationError(null);
+
     if (currentQuestionIndex < activeQuestions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
@@ -110,6 +132,7 @@ export const App = () => {
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(currentQuestionIndex - 1);
     }
+    setValidationError(null);
   };
 
   const handleRestart = () => {
@@ -117,6 +140,7 @@ export const App = () => {
     setCurrentQuestionIndex(0);
     setScreen('questionnaire');
     setAnalysis(null);
+    setValidationError(null);
   };
 
   const handleToggleHighVisibility = () => {
@@ -143,11 +167,11 @@ export const App = () => {
               <button
                 type="button"
                 onClick={() => setMode('user')}
-                className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                className={`px-4 py-2 rounded-lg font-medium transition-all hv-button ${
                   mode === 'user'
-                    ? 'bg-indigo-600 text-white'
+                    ? 'bg-indigo-600 text-white hv-button-primary'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                } hv-button ${mode === 'user' ? 'hv-button-primary' : ''}`
+                }`}
                 aria-pressed={mode === 'user'}
                 aria-label="Basculer vers le mode chef de projet"
               >
@@ -156,11 +180,11 @@ export const App = () => {
               <button
                 type="button"
                 onClick={() => setMode('admin')}
-                className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                className={`px-4 py-2 rounded-lg font-medium transition-all hv-button ${
                   mode === 'admin'
-                    ? 'bg-indigo-600 text-white'
+                    ? 'bg-indigo-600 text-white hv-button-primary'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                } hv-button ${mode === 'admin' ? 'hv-button-primary' : ''}`
+                }`}
                 aria-pressed={mode === 'admin'}
                 aria-label="Basculer vers le mode back-office"
               >
@@ -185,15 +209,16 @@ export const App = () => {
       <main id="main-content" tabIndex="-1" className="focus:outline-none hv-background">
         {mode === 'user' ? (
           screen === 'questionnaire' ? (
-            <QuestionnaireScreen
-              questions={activeQuestions}
-              currentIndex={currentQuestionIndex}
-              answers={answers}
-              onAnswer={handleAnswer}
-              onNext={handleNext}
-              onBack={handleBack}
-              allQuestions={questions}
-            />
+      <QuestionnaireScreen
+        questions={activeQuestions}
+        currentIndex={currentQuestionIndex}
+        answers={answers}
+        onAnswer={handleAnswer}
+        onNext={handleNext}
+        onBack={handleBack}
+        allQuestions={questions}
+        validationError={validationError}
+      />
           ) : (
             <SynthesisReport
               answers={answers}

@@ -1,9 +1,18 @@
 import React, { useEffect, useState } from '../react.js';
-import { Info, Calendar, CheckCircle, ChevronLeft, ChevronRight } from './icons.js';
+import { Info, Calendar, CheckCircle, ChevronLeft, ChevronRight, AlertTriangle } from './icons.js';
 import { formatAnswer } from '../utils/questions.js';
 import { renderTextWithLinks } from '../utils/linkify.js';
 
-export const QuestionnaireScreen = ({ questions, currentIndex, answers, onAnswer, onNext, onBack, allQuestions }) => {
+export const QuestionnaireScreen = ({
+  questions,
+  currentIndex,
+  answers,
+  onAnswer,
+  onNext,
+  onBack,
+  allQuestions,
+  validationError
+}) => {
   const currentQuestion = questions[currentIndex];
   const questionBank = allQuestions || questions;
 
@@ -15,13 +24,12 @@ export const QuestionnaireScreen = ({ questions, currentIndex, answers, onAnswer
   const questionType = currentQuestion.type || 'choice';
   const currentAnswer = answers[currentQuestion.id];
   const multiSelection = Array.isArray(currentAnswer) ? currentAnswer : [];
-  const isAnswerProvided = Array.isArray(currentAnswer) ? currentAnswer.length > 0 : !!currentAnswer;
-  const canProceed = currentQuestion?.required ? isAnswerProvided : true;
   const [showGuidance, setShowGuidance] = useState(false);
   const questionTextId = `question-${currentQuestion.id}`;
   const instructionsId = `instructions-${currentQuestion.id}`;
   const guidancePanelId = `guidance-${currentQuestion.id}`;
   const progressLabelId = `progress-label-${currentQuestion.id}`;
+  const hasValidationError = validationError?.questionId === currentQuestion.id;
 
   useEffect(() => {
     setShowGuidance(false);
@@ -184,6 +192,18 @@ export const QuestionnaireScreen = ({ questions, currentIndex, answers, onAnswer
               </div>
             )}
           </div>
+
+          {hasValidationError && (
+            <div className="mb-6" role="alert" aria-live="assertive">
+              <div className="flex items-start space-x-3 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700 hv-surface">
+                <AlertTriangle className="w-5 h-5 mt-0.5" />
+                <div>
+                  <p className="text-sm font-semibold">Réponse obligatoire manquante</p>
+                  <p className="text-sm">{validationError?.message}</p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {questionType === 'date' && (
             <div className="mb-8">
@@ -420,7 +440,6 @@ export const QuestionnaireScreen = ({ questions, currentIndex, answers, onAnswer
             <button
               type="button"
               onClick={onNext}
-              disabled={!canProceed}
               className="flex items-center px-6 py-3 rounded-lg font-medium bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all hv-button hv-button-primary"
             >
               {currentIndex === questions.length - 1 ? 'Voir la synthèse' : 'Suivant'}
