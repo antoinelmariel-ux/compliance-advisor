@@ -34,6 +34,7 @@ const GripVertical = createIcon('⋮⋮');
 const initialQuestions = [
   {
     id: 'q1',
+    type: 'choice',
     question: 'Quel est le périmètre de votre projet ?',
     options: [
       'Interne uniquement',
@@ -46,6 +47,7 @@ const initialQuestions = [
   },
   {
     id: 'q2',
+    type: 'choice',
     question: 'Le projet implique-t-il du digital ?',
     options: [
       'Oui - Application mobile',
@@ -58,6 +60,7 @@ const initialQuestions = [
   },
   {
     id: 'q3',
+    type: 'choice',
     question: 'Des données personnelles seront-elles collectées ?',
     options: [
       'Oui - Données de santé',
@@ -71,12 +74,29 @@ const initialQuestions = [
   },
   {
     id: 'q4',
+    type: 'choice',
     question: 'Le projet implique-t-il des prestataires externes ?',
     options: [
       'Oui',
       'Non',
       'Pas encore décidé'
     ],
+    required: true,
+    conditions: []
+  },
+  {
+    id: 'q5',
+    type: 'date',
+    question: 'Quelle est la date de soumission du projet ?',
+    options: [],
+    required: true,
+    conditions: []
+  },
+  {
+    id: 'q6',
+    type: 'date',
+    question: 'Quelle est la date de lancement souhaitée ?',
+    options: [],
     required: true,
     conditions: []
   }
@@ -230,6 +250,33 @@ const initialRules = [
       }
     ],
     priority: 'Important'
+  },
+  {
+    id: 'rule5',
+    name: 'Respect du délai de préparation projet',
+    conditions: [
+      {
+        type: 'timing',
+        startQuestion: 'q5',
+        endQuestion: 'q6',
+        minimumWeeks: 8
+      }
+    ],
+    teams: ['quality'],
+    questions: {
+      quality: [
+        'Le rétroplanning intègre-t-il toutes les validations compliance ?',
+        'Le lancement tient-il compte des actions préalables obligatoires ?'
+      ]
+    },
+    risks: [
+      {
+        description: 'Lancement prévu sans délai suffisant pour les revues compliance',
+        level: 'Moyen',
+        mitigation: 'Reprogrammer le lancement ou accélérer les jalons de validation'
+      }
+    ],
+    priority: 'Important'
   }
 ];
 
@@ -239,6 +286,46 @@ const initialRules = [
 
 const evaluateRule = (rule, answers) => {
   return rule.conditions.every(condition => {
+    const conditionType = condition.type || 'question';
+
+    if (conditionType === 'timing') {
+      const startAnswer = answers[condition.startQuestion];
+      const endAnswer = answers[condition.endQuestion];
+      if (!startAnswer || !endAnswer) return false;
+
+      const startDate = new Date(startAnswer);
+      const endDate = new Date(endAnswer);
+      if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+        return false;
+      }
+
+      const diffInMs = endDate.getTime() - startDate.getTime();
+      if (diffInMs < 0) {
+        return false;
+      }
+
+      const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
+      const diffInWeeks = diffInDays / 7;
+
+      if (typeof condition.minimumWeeks === 'number' && diffInWeeks < condition.minimumWeeks) {
+        return false;
+      }
+
+      if (typeof condition.maximumWeeks === 'number' && diffInWeeks > condition.maximumWeeks) {
+        return false;
+      }
+
+      if (typeof condition.minimumDays === 'number' && diffInDays < condition.minimumDays) {
+        return false;
+      }
+
+      if (typeof condition.maximumDays === 'number' && diffInDays > condition.maximumDays) {
+        return false;
+      }
+
+      return true;
+    }
+
     const answer = answers[condition.question];
     if (!answer) return false;
 
@@ -292,6 +379,8 @@ const analyzeAnswers = (answers, rules) => {
 const QuestionnaireScreen = ({ questions, currentIndex, answers, onAnswer, onNext, onBack }) => {
   const currentQuestion = questions[currentIndex];
   const progress = ((currentIndex + 1) / questions.length) * 100;
+  const isDateQuestion = currentQuestion.type === 'date';
+  const currentAnswer = answers[currentQuestion.id] || '';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-8">
@@ -324,32 +413,52 @@ const QuestionnaireScreen = ({ questions, currentIndex, answers, onAnswer, onNex
             {currentQuestion.question}
           </h2>
 
-          <div className="space-y-3 mb-8">
-            {currentQuestion.options.map((option, idx) => (
-              <button
-                key={idx}
-                onClick={() => onAnswer(currentQuestion.id, option)}
-                className={`w-full p-4 text-left rounded-xl border-2 transition-all duration-200 ${
-                  answers[currentQuestion.id] === option
-                    ? 'border-indigo-600 bg-indigo-50 text-indigo-900'
-                    : 'border-gray-200 hover:border-indigo-300 hover:bg-gray-50'
-                }`}
-              >
-                <div className="flex items-center">
-                  <div className={`w-5 h-5 rounded-full border-2 mr-3 flex items-center justify-center ${
+          {isDateQuestion ? (
+            <div className="mb-8">
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                <span className="flex items-center">
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Sélectionnez une date
+                </span>
+              </label>
+              <input
+                type="date"
+                value={currentAnswer}
+                onChange={(e) => onAnswer(currentQuestion.id, e.target.value)}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+              <p className="text-xs text-gray-500 mt-2">
+                Utilisez le sélecteur ou le format AAAA-MM-JJ pour garantir une analyse correcte.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3 mb-8">
+              {currentQuestion.options.map((option, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => onAnswer(currentQuestion.id, option)}
+                  className={`w-full p-4 text-left rounded-xl border-2 transition-all duration-200 ${
                     answers[currentQuestion.id] === option
-                      ? 'border-indigo-600 bg-indigo-600 text-white'
-                      : 'border-gray-300'
-                  }`}>
-                    {answers[currentQuestion.id] === option && (
-                      <CheckCircle className="w-4 h-4" />
-                    )}
+                      ? 'border-indigo-600 bg-indigo-50 text-indigo-900'
+                      : 'border-gray-200 hover:border-indigo-300 hover:bg-gray-50'
+                  }`}
+                >
+                  <div className="flex items-center">
+                    <div className={`w-5 h-5 rounded-full border-2 mr-3 flex items-center justify-center ${
+                      answers[currentQuestion.id] === option
+                        ? 'border-indigo-600 bg-indigo-600 text-white'
+                        : 'border-gray-300'
+                    }`}>
+                      {answers[currentQuestion.id] === option && (
+                        <CheckCircle className="w-4 h-4" />
+                      )}
+                    </div>
+                    <span className="font-medium">{option}</span>
                   </div>
-                  <span className="font-medium">{option}</span>
-                </div>
-              </button>
-            ))}
-          </div>
+                </button>
+              ))}
+            </div>
+          )}
 
           <div className="flex justify-between">
             <button
@@ -396,6 +505,26 @@ const SynthesisReport = ({ answers, analysis, teams, questions, onRestart }) => 
     Faible: 'text-green-600'
   };
 
+  const formatAnswer = (question, answer) => {
+    if (!answer) return '';
+    const questionType = question.type || 'choice';
+
+    if (questionType === 'date') {
+      const parsed = new Date(answer);
+      if (Number.isNaN(parsed.getTime())) {
+        return answer;
+      }
+
+      return new Intl.DateTimeFormat('fr-FR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      }).format(parsed);
+    }
+
+    return answer;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-8">
       <div className="max-w-6xl mx-auto">
@@ -421,7 +550,7 @@ const SynthesisReport = ({ answers, analysis, teams, questions, onRestart }) => 
                 answers[q.id] ? (
                   <div key={q.id} className="bg-white rounded-lg p-4 border border-gray-200">
                     <p className="text-sm text-gray-600 mb-1">{q.question}</p>
-                    <p className="font-semibold text-gray-900">{answers[q.id]}</p>
+                    <p className="font-semibold text-gray-900">{formatAnswer(q, answers[q.id])}</p>
                   </div>
                 ) : null
               )}
@@ -511,10 +640,29 @@ const SynthesisReport = ({ answers, analysis, teams, questions, onRestart }) => 
 const QuestionEditor = ({ question, onSave, onCancel, allQuestions }) => {
   const [editedQuestion, setEditedQuestion] = useState({
     ...question,
+    type: question.type || 'choice',
+    options: question.options || [],
     conditions: question.conditions || []
   });
   const [draggedOptionIndex, setDraggedOptionIndex] = useState(null);
   const [dragOverIndex, setDragOverIndex] = useState(null);
+  const questionType = editedQuestion.type || 'choice';
+
+  const handleTypeChange = (newType) => {
+    if (newType === 'date') {
+      setEditedQuestion(prev => ({
+        ...prev,
+        type: 'date',
+        options: []
+      }));
+    } else {
+      setEditedQuestion(prev => ({
+        ...prev,
+        type: 'choice',
+        options: prev.options && prev.options.length > 0 ? prev.options : ['Option 1', 'Option 2']
+      }));
+    }
+  };
 
   const reorderOptions = (fromIndex, toIndex) => {
     if (fromIndex === toIndex) return;
@@ -647,6 +795,21 @@ const QuestionEditor = ({ question, onSave, onCancel, allQuestions }) => {
                 />
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Type de question</label>
+                <select
+                  value={questionType}
+                  onChange={(e) => handleTypeChange(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                >
+                  <option value="choice">Liste de choix</option>
+                  <option value="date">Date</option>
+                </select>
+                <p className="text-xs text-gray-500 mt-1">
+                  Sélectionnez "Date" pour recueillir une réponse sous forme de calendrier.
+                </p>
+              </div>
+
               <div className="flex items-center">
                 <input
                   type="checkbox"
@@ -663,72 +826,80 @@ const QuestionEditor = ({ question, onSave, onCancel, allQuestions }) => {
 
           {/* Options de réponse */}
           <div>
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold text-gray-800">✅ Options de réponse</h3>
-              <button
-                onClick={addOption}
-                className="flex items-center px-3 py-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-all text-sm font-medium"
-              >
-                <Plus className="w-4 h-4 mr-1" />
-                Ajouter une option
-              </button>
-            </div>
-
-            <p className="text-xs text-gray-500 mb-3">
-              Glissez-déposez les options pour modifier leur ordre d'affichage.
-            </p>
-
-            <div className="space-y-2">
-              {editedQuestion.options.map((option, idx) => (
-                <div
-                  key={idx}
-                  className={`flex items-center space-x-2 rounded-lg border border-transparent bg-white p-2 transition-colors ${
-                    dragOverIndex === idx ? 'border-indigo-200 bg-indigo-50 shadow' : 'shadow-sm'
-                  }`}
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                    setDragOverIndex(idx);
-                  }}
-                  onDragEnter={() => handleDragEnter(idx)}
-                  onDragLeave={(e) => {
-                    e.preventDefault();
-                    if (draggedOptionIndex !== idx) {
-                      setDragOverIndex(null);
-                    }
-                  }}
-                  onDrop={(e) => {
-                    e.preventDefault();
-                    handleDragEnd();
-                  }}
-                  onDragEnd={handleDragEnd}
-                >
+            {questionType === 'choice' ? (
+              <>
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-xl font-bold text-gray-800">✅ Options de réponse</h3>
                   <button
-                    type="button"
-                    draggable
-                    onDragStart={(event) => handleDragStart(event, idx)}
-                    className="cursor-grab px-2 py-3 text-gray-400 hover:text-indigo-600 focus:outline-none"
-                    aria-label={`Réordonner l'option ${idx + 1}`}
+                    onClick={addOption}
+                    className="flex items-center px-3 py-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-all text-sm font-medium"
                   >
-                    <GripVertical className="w-4 h-4" />
-                  </button>
-                  <span className="text-gray-500 font-medium w-6 text-center">{idx + 1}.</span>
-                  <input
-                    type="text"
-                    value={option}
-                    onChange={(e) => updateOption(idx, e.target.value)}
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                    placeholder="Texte de l'option..."
-                  />
-                  <button
-                    onClick={() => deleteOption(idx)}
-                    disabled={editedQuestion.options.length === 1}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-                  >
-                    <Trash2 className="w-4 h-4" />
+                    <Plus className="w-4 h-4 mr-1" />
+                    Ajouter une option
                   </button>
                 </div>
-              ))}
-            </div>
+
+                <p className="text-xs text-gray-500 mb-3">
+                  Glissez-déposez les options pour modifier leur ordre d'affichage.
+                </p>
+
+                <div className="space-y-2">
+                  {editedQuestion.options.map((option, idx) => (
+                    <div
+                      key={idx}
+                      className={`flex items-center space-x-2 rounded-lg border border-transparent bg-white p-2 transition-colors ${
+                        dragOverIndex === idx ? 'border-indigo-200 bg-indigo-50 shadow' : 'shadow-sm'
+                      }`}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        setDragOverIndex(idx);
+                      }}
+                      onDragEnter={() => handleDragEnter(idx)}
+                      onDragLeave={(e) => {
+                        e.preventDefault();
+                        if (draggedOptionIndex !== idx) {
+                          setDragOverIndex(null);
+                        }
+                      }}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        handleDragEnd();
+                      }}
+                      onDragEnd={handleDragEnd}
+                    >
+                      <button
+                        type="button"
+                        draggable
+                        onDragStart={(event) => handleDragStart(event, idx)}
+                        className="cursor-grab px-2 py-3 text-gray-400 hover:text-indigo-600 focus:outline-none"
+                        aria-label={`Réordonner l'option ${idx + 1}`}
+                      >
+                        <GripVertical className="w-4 h-4" />
+                      </button>
+                      <span className="text-gray-500 font-medium w-6 text-center">{idx + 1}.</span>
+                      <input
+                        type="text"
+                        value={option}
+                        onChange={(e) => updateOption(idx, e.target.value)}
+                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                        placeholder="Texte de l'option..."
+                      />
+                      <button
+                        onClick={() => deleteOption(idx)}
+                        disabled={editedQuestion.options.length === 1}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 text-sm text-indigo-700">
+                Cette question enregistrera une date. Les options de réponse ne sont pas nécessaires.
+              </div>
+            )}
           </div>
 
           {/* Conditions d'affichage */}
@@ -857,9 +1028,42 @@ const QuestionEditor = ({ question, onSave, onCancel, allQuestions }) => {
   );
 };
 const RuleEditor = ({ rule, onSave, onCancel, questions, teams }) => {
+  const normalizeCondition = (condition) => {
+    if (!condition) {
+      return { type: 'question', question: '', operator: 'equals', value: '' };
+    }
+
+    if ((condition.type || 'question') === 'timing') {
+      const toNumber = (value) => {
+        if (value === undefined || value === null || value === '') return undefined;
+        const parsed = Number(value);
+        return Number.isNaN(parsed) ? undefined : parsed;
+      };
+
+      return {
+        ...condition,
+        type: 'timing',
+        startQuestion: condition.startQuestion || '',
+        endQuestion: condition.endQuestion || '',
+        minimumWeeks: toNumber(condition.minimumWeeks),
+        maximumWeeks: toNumber(condition.maximumWeeks),
+        minimumDays: toNumber(condition.minimumDays),
+        maximumDays: toNumber(condition.maximumDays)
+      };
+    }
+
+    return {
+      ...condition,
+      type: 'question',
+      question: condition.question || '',
+      operator: condition.operator || 'equals',
+      value: condition.value || ''
+    };
+  };
+
   const [editedRule, setEditedRule] = useState({
     ...rule,
-    conditions: rule.conditions || [],
+    conditions: (rule.conditions || []).map(normalizeCondition),
     questions: rule.questions || {},
     risks: rule.risks || []
   });
@@ -867,7 +1071,7 @@ const RuleEditor = ({ rule, onSave, onCancel, questions, teams }) => {
   const addCondition = () => {
     setEditedRule({
       ...editedRule,
-      conditions: [...editedRule.conditions, { question: '', operator: 'equals', value: '' }]
+      conditions: [...editedRule.conditions, { type: 'question', question: '', operator: 'equals', value: '' }]
     });
   };
 
@@ -882,6 +1086,29 @@ const RuleEditor = ({ rule, onSave, onCancel, questions, teams }) => {
       ...editedRule,
       conditions: editedRule.conditions.filter((_, i) => i !== index)
     });
+  };
+
+  const handleConditionTypeChange = (index, type) => {
+    const newConditions = [...editedRule.conditions];
+    if (type === 'timing') {
+      newConditions[index] = {
+        type: 'timing',
+        startQuestion: '',
+        endQuestion: '',
+        minimumWeeks: undefined,
+        maximumWeeks: undefined,
+        minimumDays: undefined,
+        maximumDays: undefined
+      };
+    } else {
+      newConditions[index] = {
+        type: 'question',
+        question: '',
+        operator: 'equals',
+        value: ''
+      };
+    }
+    setEditedRule({ ...editedRule, conditions: newConditions });
   };
 
   const toggleTeam = (teamId) => {
@@ -932,6 +1159,8 @@ const RuleEditor = ({ rule, onSave, onCancel, questions, teams }) => {
       risks: editedRule.risks.filter((_, i) => i !== index)
     });
   };
+
+  const dateQuestions = questions.filter(q => (q.type || 'choice') === 'date');
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
@@ -1006,79 +1235,165 @@ const RuleEditor = ({ rule, onSave, onCancel, questions, teams }) => {
               </div>
             ) : (
               <div className="space-y-3">
-                {editedRule.conditions.map((condition, idx) => (
-                  <div key={idx} className="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-lg p-4 border border-indigo-200">
-                    <div className="flex items-center space-x-3 mb-2">
-                      {idx > 0 && (
-                        <span className="bg-indigo-600 text-white px-3 py-1 rounded-full text-xs font-bold">
-                          ET
-                        </span>
-                      )}
-                      <span className="text-sm font-semibold text-gray-700">
-                        Condition {idx + 1}
-                      </span>
-                      <button
-                        onClick={() => deleteCondition(idx)}
-                        className="ml-auto p-1 text-red-600 hover:bg-red-50 rounded transition-all"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+                {editedRule.conditions.map((condition, idx) => {
+                  const conditionType = condition.type || 'question';
+                  const selectedQuestion = questions.find(q => q.id === condition.question);
+                  const selectedQuestionType = selectedQuestion?.type || 'choice';
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                      <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">Question</label>
-                        <select
-                          value={condition.question}
-                          onChange={(e) => updateCondition(idx, 'question', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
-                        >
-                          <option value="">Sélectionner...</option>
-                          {questions.map(q => (
-                            <option key={q.id} value={q.id}>{q.id} - {q.question.substring(0, 30)}...</option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">Opérateur</label>
-                        <select
-                          value={condition.operator}
-                          onChange={(e) => updateCondition(idx, 'operator', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
-                        >
-                          <option value="equals">Est égal à (=)</option>
-                          <option value="not_equals">Est différent de (≠)</option>
-                          <option value="contains">Contient</option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">Valeur</label>
-                        {condition.question ? (
-                          <select
-                            value={condition.value}
-                            onChange={(e) => updateCondition(idx, 'value', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
-                          >
-                            <option value="">Sélectionner...</option>
-                            {questions.find(q => q.id === condition.question)?.options.map((opt, i) => (
-                              <option key={i} value={opt}>{opt}</option>
-                            ))}
-                          </select>
-                        ) : (
-                          <input
-                            type="text"
-                            value={condition.value}
-                            onChange={(e) => updateCondition(idx, 'value', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
-                            placeholder="Valeur..."
-                          />
+                  return (
+                    <div key={idx} className="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-lg p-4 border border-indigo-200">
+                      <div className="flex flex-wrap items-center gap-3 mb-4">
+                        {idx > 0 && (
+                          <span className="bg-indigo-600 text-white px-3 py-1 rounded-full text-xs font-bold">
+                            ET
+                          </span>
                         )}
+                        <span className="text-sm font-semibold text-gray-700">
+                          Condition {idx + 1}
+                        </span>
+                        <select
+                          value={conditionType}
+                          onChange={(e) => handleConditionTypeChange(idx, e.target.value)}
+                          className="px-3 py-2 border border-indigo-200 rounded-lg bg-white text-sm focus:ring-2 focus:ring-indigo-500"
+                        >
+                          <option value="question">Basée sur une réponse</option>
+                          <option value="timing">Comparaison de dates</option>
+                        </select>
+                        <button
+                          onClick={() => deleteCondition(idx)}
+                          className="ml-auto p-1 text-red-600 hover:bg-red-50 rounded transition-all"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
+
+                      {conditionType === 'timing' ? (
+                        <div className="space-y-4">
+                          {dateQuestions.length >= 2 ? (
+                            <>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div>
+                                  <label className="block text-xs font-medium text-gray-600 mb-1">Date de départ</label>
+                                  <select
+                                    value={condition.startQuestion}
+                                    onChange={(e) => updateCondition(idx, 'startQuestion', e.target.value)}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                                  >
+                                    <option value="">Sélectionner...</option>
+                                    {dateQuestions.map(q => (
+                                      <option key={q.id} value={q.id}>{q.id} - {q.question.substring(0, 40)}...</option>
+                                    ))}
+                                  </select>
+                                </div>
+
+                                <div>
+                                  <label className="block text-xs font-medium text-gray-600 mb-1">Date d'arrivée</label>
+                                  <select
+                                    value={condition.endQuestion}
+                                    onChange={(e) => updateCondition(idx, 'endQuestion', e.target.value)}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                                  >
+                                    <option value="">Sélectionner...</option>
+                                    {dateQuestions.map(q => (
+                                      <option key={q.id} value={q.id}>{q.id} - {q.question.substring(0, 40)}...</option>
+                                    ))}
+                                  </select>
+                                </div>
+                              </div>
+
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div>
+                                  <label className="block text-xs font-medium text-gray-600 mb-1">Durée minimale (semaines)</label>
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    value={condition.minimumWeeks ?? ''}
+                                    onChange={(e) => updateCondition(idx, 'minimumWeeks', e.target.value === '' ? undefined : Number(e.target.value))}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                                    placeholder="Ex: 8"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="block text-xs font-medium text-gray-600 mb-1">Durée maximale (semaines - optionnel)</label>
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    value={condition.maximumWeeks ?? ''}
+                                    onChange={(e) => updateCondition(idx, 'maximumWeeks', e.target.value === '' ? undefined : Number(e.target.value))}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                                    placeholder="Laisser vide si non concerné"
+                                  />
+                                </div>
+                              </div>
+
+                              <p className="text-xs text-gray-500">
+                                La règle sera valide si la durée entre les deux dates respecte les contraintes définies.
+                              </p>
+                            </>
+                          ) : (
+                            <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-sm text-red-700">
+                              Ajoutez au moins deux questions de type "Date" dans le questionnaire pour configurer cette condition temporelle.
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">Question</label>
+                            <select
+                              value={condition.question}
+                              onChange={(e) => updateCondition(idx, 'question', e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                            >
+                              <option value="">Sélectionner...</option>
+                              {questions.map(q => (
+                                <option key={q.id} value={q.id}>{q.id} - {q.question.substring(0, 30)}...</option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">Opérateur</label>
+                            <select
+                              value={condition.operator}
+                              onChange={(e) => updateCondition(idx, 'operator', e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                            >
+                              <option value="equals">Est égal à (=)</option>
+                              <option value="not_equals">Est différent de (≠)</option>
+                              <option value="contains">Contient</option>
+                            </select>
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">Valeur</label>
+                            {condition.question && selectedQuestionType === 'choice' ? (
+                              <select
+                                value={condition.value}
+                                onChange={(e) => updateCondition(idx, 'value', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                              >
+                                <option value="">Sélectionner...</option>
+                                {selectedQuestion?.options.map((opt, i) => (
+                                  <option key={i} value={opt}>{opt}</option>
+                                ))}
+                              </select>
+                            ) : (
+                              <input
+                                type="text"
+                                value={condition.value}
+                                onChange={(e) => updateCondition(idx, 'value', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                                placeholder="Valeur (texte, date, etc.)"
+                              />
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -1254,6 +1569,7 @@ const BackOffice = ({ questions, setQuestions, rules, setRules, teams, setTeams 
   const addQuestion = () => {
     const newQuestion = {
       id: `q${questions.length + 1}`,
+      type: 'choice',
       question: 'Nouvelle question',
       options: ['Option 1', 'Option 2'],
       required: true,
@@ -1382,6 +1698,13 @@ const BackOffice = ({ questions, setQuestions, rules, setRules, teams, setTeams 
                             {q.id}
                           </span>
                           <span className="text-lg font-bold text-gray-800">{q.question}</span>
+                          <span className={`ml-3 text-xs px-2 py-1 rounded-full border ${
+                            (q.type || 'choice') === 'date'
+                              ? 'bg-blue-50 border-blue-200 text-blue-700'
+                              : 'bg-gray-50 border-gray-200 text-gray-600'
+                          }`}>
+                            {(q.type || 'choice') === 'date' ? 'Type : Date' : 'Type : Choix'}
+                          </span>
                           {q.required && (
                             <span className="ml-2 text-xs bg-red-100 text-red-800 px-2 py-1 rounded">
                               Obligatoire
@@ -1390,13 +1713,19 @@ const BackOffice = ({ questions, setQuestions, rules, setRules, teams, setTeams 
                         </div>
 
                         <div className="space-y-1 mb-3">
-                          <p className="text-sm text-gray-600 font-medium">Options de réponse :</p>
-                          {q.options.map((option, optIdx) => (
-                            <div key={optIdx} className="flex items-center text-sm text-gray-700">
-                              <span className="text-indigo-500 mr-2">•</span>
-                              <span>{option}</span>
-                            </div>
-                          ))}
+                          {(q.type || 'choice') === 'choice' ? (
+                            <>
+                              <p className="text-sm text-gray-600 font-medium">Options de réponse :</p>
+                              {q.options.map((option, optIdx) => (
+                                <div key={optIdx} className="flex items-center text-sm text-gray-700">
+                                  <span className="text-indigo-500 mr-2">•</span>
+                                  <span>{option}</span>
+                                </div>
+                              ))}
+                            </>
+                          ) : (
+                            <p className="text-sm text-gray-600 font-medium">Réponse attendue : sélection d'une date</p>
+                          )}
                         </div>
 
                         {q.conditions && q.conditions.length > 0 ? (
@@ -1502,14 +1831,53 @@ const BackOffice = ({ questions, setQuestions, rules, setRules, teams, setTeams 
                       <div>
                         <h4 className="font-semibold text-gray-800 mb-2">Conditions</h4>
                         <ul className="space-y-1">
-                          {ruleItem.conditions.map((condition, idx) => (
-                            <li key={idx} className="flex items-start">
-                              <span className="text-indigo-500 mr-2">•</span>
-                              <span>
-                                {condition.question} {condition.operator === 'equals' ? '=' : condition.operator === 'not_equals' ? '≠' : 'contient'} "{condition.value}"
-                              </span>
-                            </li>
-                          ))}
+                          {ruleItem.conditions.map((condition, idx) => {
+                            const conditionType = condition.type || 'question';
+
+                            if (conditionType === 'timing') {
+                              const startQuestion = questions.find(q => q.id === condition.startQuestion);
+                              const endQuestion = questions.find(q => q.id === condition.endQuestion);
+                              const constraints = [];
+
+                              if (typeof condition.minimumWeeks === 'number') {
+                                constraints.push(`≥ ${condition.minimumWeeks} sem.`);
+                              }
+
+                              if (typeof condition.maximumWeeks === 'number') {
+                                constraints.push(`≤ ${condition.maximumWeeks} sem.`);
+                              }
+
+                              if (typeof condition.minimumDays === 'number') {
+                                constraints.push(`≥ ${condition.minimumDays} j.`);
+                              }
+
+                              if (typeof condition.maximumDays === 'number') {
+                                constraints.push(`≤ ${condition.maximumDays} j.`);
+                              }
+
+                              const startLabel = startQuestion ? startQuestion.question : condition.startQuestion || 'Date départ ?';
+                              const endLabel = endQuestion ? endQuestion.question : condition.endQuestion || 'Date arrivée ?';
+                              const constraintText = constraints.length > 0 ? constraints.join(' / ') : 'Contraintes définies';
+
+                              return (
+                                <li key={idx} className="flex items-start">
+                                  <span className="text-indigo-500 mr-2">•</span>
+                                  <span>
+                                    Durée entre « {startLabel} » et « {endLabel} » : {constraintText}
+                                  </span>
+                                </li>
+                              );
+                            }
+
+                            return (
+                              <li key={idx} className="flex items-start">
+                                <span className="text-indigo-500 mr-2">•</span>
+                                <span>
+                                  {condition.question} {condition.operator === 'equals' ? '=' : condition.operator === 'not_equals' ? '≠' : 'contient'} "{condition.value}"
+                                </span>
+                              </li>
+                            );
+                          })}
                         </ul>
                       </div>
 
