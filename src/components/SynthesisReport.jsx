@@ -120,6 +120,16 @@ const buildEmailBody = ({
 }) => {
   const lines = [];
   const title = projectName || 'Projet sans nom';
+
+  const addSection = (label) => {
+    if (lines.length > 0 && lines[lines.length - 1] !== '') {
+      lines.push('');
+    }
+    const normalizedLabel = label.trim();
+    lines.push(normalizedLabel);
+    lines.push('-'.repeat(normalizedLabel.length));
+  };
+
   const answeredQuestions = questions.filter(question => {
     const value = answers[question.id];
     if (value === null || value === undefined) {
@@ -137,44 +147,45 @@ const buildEmailBody = ({
     return true;
   });
 
-  lines.push(`Rapport de compliance - ${title}`);
-  lines.push('');
-  lines.push("=== Vue d'ensemble du projet ===");
+  lines.push(`Rapport de compliance – ${title}`);
+  lines.push(`Complexité estimée : ${analysis.complexity}`);
 
-  answeredQuestions.forEach(question => {
-    lines.push(`- ${question.question} : ${formatAnswer(question, answers[question.id])}`);
-  });
-
-  lines.push('');
-  lines.push(`Complexité compliance estimée : ${analysis.complexity}`);
+  if (answeredQuestions.length > 0) {
+    addSection("Vue d'ensemble du projet");
+    answeredQuestions.forEach(question => {
+      lines.push(`• ${question.question}`);
+      lines.push(`  → ${formatAnswer(question, answers[question.id])}`);
+    });
+  }
 
   const firstTimelineDetail = timelineDetails.find(detail => detail.diff);
   const hasTimelineData = Object.keys(timelineByTeam).length > 0 || Boolean(firstTimelineDetail);
 
   if (hasTimelineData) {
-    lines.push('');
-    lines.push('=== Délais compliance recommandés ===');
+    addSection('Délais compliance recommandés');
 
     if (firstTimelineDetail?.diff) {
       lines.push(
-        `- Buffer projet calculé : ${formatWeeksValue(firstTimelineDetail.diff.diffInWeeks)} (${formatDaysValue(firstTimelineDetail.diff.diffInDays)})`
+        `• Buffer projet : ${formatWeeksValue(firstTimelineDetail.diff.diffInWeeks)} (${formatDaysValue(firstTimelineDetail.diff.diffInDays)})`
       );
     } else {
-      lines.push("- Dates projet incomplètes : les délais sont fournis à titre indicatif.");
+      lines.push('• Dates projet incomplètes : les délais sont fournis à titre indicatif.');
     }
 
     relevantTeams.forEach(team => {
       const timelineInfo = computeTeamTimeline(timelineByTeam, team.id);
 
       lines.push('');
-      lines.push(`Equipe ${team.name}`);
+      lines.push(`Equipe : ${team.name}`);
 
       if (!timelineInfo) {
-        lines.push('  • Aucune exigence de délai configurée');
+        lines.push("  • Aucune exigence de délai configurée");
         return;
       }
 
-      lines.push(`  • Buffer actuel : ${formatWeeksValue(timelineInfo.actualWeeks)} (${formatDaysValue(timelineInfo.actualDays)})`);
+      lines.push(
+        `  • Buffer actuel : ${formatWeeksValue(timelineInfo.actualWeeks)} (${formatDaysValue(timelineInfo.actualDays)})`
+      );
       lines.push(`  • Exigence la plus stricte : ${formatWeeksValue(timelineInfo.strictestRequirement)}`);
 
       timelineInfo.entries.forEach(entry => {
@@ -185,26 +196,27 @@ const buildEmailBody = ({
     });
   }
 
-  lines.push('');
-  lines.push('=== Équipes à solliciter ===');
-  relevantTeams.forEach(team => {
-    const teamPriority = getTeamPriority(analysis, team.id);
-    lines.push(`- ${team.name} (${team.contact}) — Priorité : ${teamPriority}`);
+  if (relevantTeams.length > 0) {
+    addSection('Équipes à mobiliser');
+    relevantTeams.forEach(team => {
+      const teamPriority = getTeamPriority(analysis, team.id);
+      const contact = team.contact ? ` | Contact : ${team.contact}` : '';
+      lines.push(`• ${team.name} — Priorité : ${teamPriority}${contact}`);
 
-    const teamQuestions = analysis.questions?.[team.id] || [];
-    if (Array.isArray(teamQuestions) && teamQuestions.length > 0) {
-      lines.push('  Points à préparer :');
-      teamQuestions.forEach(question => {
-        lines.push(`    • ${question}`);
-      });
-    }
-  });
+      const teamQuestions = analysis.questions?.[team.id] || [];
+      if (Array.isArray(teamQuestions) && teamQuestions.length > 0) {
+        lines.push('  Points à préparer :');
+        teamQuestions.forEach(question => {
+          lines.push(`    • ${question}`);
+        });
+      }
+    });
+  }
 
   if (analysis.risks.length > 0) {
-    lines.push('');
-    lines.push('=== Risques identifiés ===');
+    addSection('Risques identifiés et actions');
     analysis.risks.forEach(risk => {
-      lines.push(`- ${risk.level} — Priorité : ${risk.priority}`);
+      lines.push(`• ${risk.level} — Priorité : ${risk.priority}`);
       lines.push(`  Description : ${risk.description}`);
       lines.push(`  Mitigation : ${risk.mitigation}`);
     });
