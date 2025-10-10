@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from '../react.js';
 import { Info, Calendar, CheckCircle, ChevronLeft, ChevronRight } from './icons.js';
 import { formatAnswer } from '../utils/questions.js';
+import { renderTextWithLinks } from '../utils/linkify.js';
 
 export const QuestionnaireScreen = ({ questions, currentIndex, answers, onAnswer, onNext, onBack, allQuestions }) => {
   const currentQuestion = questions[currentIndex];
@@ -107,12 +108,12 @@ export const QuestionnaireScreen = ({ questions, currentIndex, answers, onAnswer
                     <div>
                       <h3 className="text-base font-semibold text-indigo-700">Guidage contextuel</h3>
                       {guidance.objective && (
-                        <p className="mt-1 text-gray-700">{guidance.objective}</p>
+                        <p className="mt-1 text-gray-700">{renderTextWithLinks(guidance.objective)}</p>
                       )}
                     </div>
 
                     {guidance.details && (
-                      <p className="text-gray-700 leading-relaxed">{guidance.details}</p>
+                      <p className="text-gray-700 leading-relaxed">{renderTextWithLinks(guidance.details)}</p>
                     )}
 
                     {conditionSummaries.length > 0 && (
@@ -130,7 +131,9 @@ export const QuestionnaireScreen = ({ questions, currentIndex, answers, onAnswer
                               {item.answer && (
                                 <p className="text-xs text-gray-500 mt-1">
                                   Votre réponse :{' '}
-                                  <span className="font-medium text-gray-700">{item.answer}</span>
+                                  <span className="font-medium text-gray-700">
+                                    {renderTextWithLinks(item.answer)}
+                                  </span>
                                 </p>
                               )}
                             </li>
@@ -144,7 +147,7 @@ export const QuestionnaireScreen = ({ questions, currentIndex, answers, onAnswer
                         <h4 className="text-xs font-semibold uppercase tracking-wide text-indigo-700">Conseils pratiques</h4>
                         <ul className="mt-2 space-y-2 list-disc list-inside text-sm text-gray-700">
                           {guidanceTips.map((tip, idx) => (
-                            <li key={idx}>{tip}</li>
+                            <li key={idx}>{renderTextWithLinks(tip)}</li>
                           ))}
                         </ul>
                       </div>

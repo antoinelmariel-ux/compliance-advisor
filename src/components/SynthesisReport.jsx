@@ -1,6 +1,7 @@
 import React from '../react.js';
 import { FileText, Calendar, Users, AlertTriangle } from './icons.js';
 import { formatAnswer } from '../utils/questions.js';
+import { renderTextWithLinks } from '../utils/linkify.js';
 
 export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart }) => {
   const relevantTeams = teams.filter(team => analysis.teams.includes(team.id));
@@ -122,7 +123,9 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
                 answers[q.id] ? (
                   <div key={q.id} className="bg-white rounded-lg p-4 border border-gray-200">
                     <p className="text-sm text-gray-600 mb-1">{q.question}</p>
-                    <p className="font-semibold text-gray-900">{formatAnswer(q, answers[q.id])}</p>
+                    <p className="font-semibold text-gray-900">
+                      {renderTextWithLinks(formatAnswer(q, answers[q.id]))}
+                    </p>
                   </div>
                 ) : null
               )}
@@ -213,7 +216,7 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
                                 <span className="font-mono text-xs">{requirementLabel}</span>
                               </div>
                               {entry.description && (
-                                <p className="text-xs opacity-80">{entry.description}</p>
+                                <p className="text-xs opacity-80">{renderTextWithLinks(entry.description)}</p>
                               )}
                               <div className="mt-2 text-xs font-semibold">
                                 {entry.satisfied ? '✅ Délai respecté' : '⚠️ Prévoir un délai supplémentaire'}
@@ -247,13 +250,13 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
                         {teamPriority}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-600 mb-3">{team.expertise}</p>
+                    <p className="text-sm text-gray-600 mb-3">{renderTextWithLinks(team.expertise)}</p>
                     <div className="flex items-center text-sm text-gray-500">
                       <Calendar className="w-4 h-4 mr-2" />
                       <span>À solliciter en phase de conception</span>
                     </div>
                     <div className="mt-2 text-sm text-indigo-600 font-medium">
-                      📧 {team.contact}
+                      📧 {renderTextWithLinks(team.contact)}
                     </div>
 
                     {analysis.questions[team.id] && (
@@ -263,7 +266,7 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
                           {analysis.questions[team.id].map((question, idx) => (
                             <li key={idx} className="text-sm text-gray-700 flex">
                               <span className="text-indigo-500 mr-2">•</span>
-                              <span>{question}</span>
+                              <span>{renderTextWithLinks(question)}</span>
                             </li>
                           ))}
                         </ul>
@@ -290,9 +293,10 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
                       {risk.priority}
                     </span>
                   </div>
-                  <p className="text-gray-800 font-medium">{risk.description}</p>
+                  <p className="text-gray-800 font-medium">{renderTextWithLinks(risk.description)}</p>
                   <p className="text-sm text-gray-600 mt-2">
-                    <span className="font-semibold text-gray-700">Mitigation :</span> {risk.mitigation}
+                    <span className="font-semibold text-gray-700">Mitigation :</span>{' '}
+                    {renderTextWithLinks(risk.mitigation)}
                   </p>
                 </div>
               ))}

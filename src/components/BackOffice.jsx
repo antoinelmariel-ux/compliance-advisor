@@ -2,6 +2,7 @@ import React, { useState } from '../react.js';
 import { Settings, Plus, Edit, Trash2, Eye, Info } from './icons.js';
 import { QuestionEditor } from './QuestionEditor.jsx';
 import { RuleEditor } from './RuleEditor.jsx';
+import { renderTextWithLinks } from '../utils/linkify.js';
 
 export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, setTeams }) => {
   const [activeTab, setActiveTab] = useState('questions');
@@ -285,10 +286,11 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
                                 <div className="space-y-2 text-xs text-gray-700">
                                   {guidance.objective && (
                                     <p>
-                                      <span className="font-semibold text-indigo-700">Objectif :</span> {guidance.objective}
+                                      <span className="font-semibold text-indigo-700">Objectif :</span>{' '}
+                                      {renderTextWithLinks(guidance.objective)}
                                     </p>
                                   )}
-                                  {guidance.details && <p>{guidance.details}</p>}
+                                  {guidance.details && <p>{renderTextWithLinks(guidance.details)}</p>}
                                   {tips.length > 0 && (
                                     <div>
                                       <p className="font-semibold text-indigo-700 text-[11px] uppercase tracking-wide">
@@ -296,7 +298,7 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
                                       </p>
                                       <ul className="mt-1 space-y-1 list-disc list-inside text-gray-700">
                                         {tips.map((tip, idx) => (
-                                          <li key={idx}>{tip}</li>
+                                          <li key={idx}>{renderTextWithLinks(tip)}</li>
                                         ))}
                                       </ul>
                                     </div>
