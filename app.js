@@ -190,6 +190,145 @@ const shouldShowQuestion = (question, answers) => {
   });
 };
 
+const matchesCondition = (condition, answers) => {
+  if (!condition || !condition.question) {
+    return true;
+  }
+
+  const rawAnswer = answers[condition.question];
+  if (rawAnswer === null || rawAnswer === undefined || rawAnswer === '') {
+    return false;
+  }
+
+  const answer = normalizeAnswerForComparison(rawAnswer);
+  const operator = condition.operator || 'equals';
+  const expected = condition.value;
+
+  switch (operator) {
+    case 'equals':
+      if (Array.isArray(answer)) {
+        return answer.includes(expected);
+      }
+      return answer === expected;
+    case 'not_equals':
+      if (Array.isArray(answer)) {
+        return !answer.includes(expected);
+      }
+      return answer !== expected;
+    case 'contains':
+      if (Array.isArray(answer)) {
+        return answer.includes(expected);
+      }
+      if (typeof answer === 'string') {
+        return answer.toLowerCase().includes(String(expected).toLowerCase());
+      }
+      return false;
+    default:
+      return false;
+  }
+};
+
+const matchesConditionGroup = (conditions, answers) => {
+  if (!conditions || conditions.length === 0) {
+    return true;
+  }
+
+  return conditions.every(condition => matchesCondition(condition, answers));
+};
+
+const computeTimingDiff = (condition, answers) => {
+  if (!condition.startQuestion || !condition.endQuestion) {
+    return null;
+  }
+
+  const startAnswer = answers[condition.startQuestion];
+  const endAnswer = answers[condition.endQuestion];
+
+  if (!startAnswer || !endAnswer) {
+    return null;
+  }
+
+  const startDate = new Date(startAnswer);
+  const endDate = new Date(endAnswer);
+
+  if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+    return null;
+  }
+
+  const diffInMs = endDate.getTime() - startDate.getTime();
+  if (diffInMs < 0) {
+    return null;
+  }
+
+  const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
+
+  return {
+    startDate,
+    endDate,
+    diffInDays,
+    diffInWeeks: diffInDays / 7
+  };
+};
+
+const normalizeTimingRequirement = (value) => {
+  if (value === undefined || value === null || value === '') {
+    return {};
+  }
+
+  if (typeof value === 'number') {
+    return { minimumWeeks: value };
+  }
+
+  if (typeof value === 'string') {
+    const parsed = Number(value);
+    return Number.isNaN(parsed) ? {} : { minimumWeeks: parsed };
+  }
+
+  if (typeof value === 'object') {
+    const result = {};
+
+    if (typeof value.minimumWeeks === 'number') {
+      result.minimumWeeks = value.minimumWeeks;
+    } else if (typeof value.minimumWeeks === 'string' && value.minimumWeeks.trim() !== '') {
+      const parsed = Number(value.minimumWeeks);
+      if (!Number.isNaN(parsed)) {
+        result.minimumWeeks = parsed;
+      }
+    }
+
+    if (typeof value.minimumDays === 'number') {
+      result.minimumDays = value.minimumDays;
+    } else if (typeof value.minimumDays === 'string' && value.minimumDays.trim() !== '') {
+      const parsed = Number(value.minimumDays);
+      if (!Number.isNaN(parsed)) {
+        result.minimumDays = parsed;
+      }
+    }
+
+    return result;
+  }
+
+  return {};
+};
+
+const getActiveTimelineProfiles = (condition, answers) => {
+  const profiles = Array.isArray(condition.complianceProfiles)
+    ? condition.complianceProfiles
+    : [];
+
+  if (profiles.length === 0) {
+    return [];
+  }
+
+  const matching = profiles.filter(profile => matchesConditionGroup(profile.conditions, answers));
+
+  if (matching.length > 0) {
+    return matching;
+  }
+
+  return profiles.filter(profile => !profile.conditions || profile.conditions.length === 0);
+};
+
 const initialTeams = [
   {
     id: 'bpp',
@@ -323,7 +462,50 @@ const initialRules = [
         type: 'timing',
         startQuestion: 'q5',
         endQuestion: 'q6',
-        minimumWeeks: 8
+        complianceProfiles: [
+          {
+            id: 'standard_preparation',
+            label: 'Préparation standard',
+            description: 'Délai minimal recommandé pour préparer les contributions compliance.',
+            requirements: {
+              bpp: 6,
+              it: 6,
+              legal: 6,
+              privacy: 7,
+              quality: 8
+            }
+          },
+          {
+            id: 'digital_public_launch',
+            label: 'Projet digital grand public',
+            description: 'Projets digitaux externes nécessitent davantage de coordination.',
+            conditions: [
+              { question: 'q1', operator: 'equals', value: 'Externe (patients/public)' },
+              { question: 'q2', operator: 'not_equals', value: 'Non' }
+            ],
+            requirements: {
+              bpp: 8,
+              it: 9,
+              legal: 8,
+              privacy: 8,
+              quality: 10
+            }
+          },
+          {
+            id: 'health_data_launch',
+            label: 'Projet avec données de santé',
+            description: 'Les projets manipulant des données de santé demandent un délai renforcé.',
+            conditions: [
+              { question: 'q3', operator: 'equals', value: 'Oui - Données de santé' }
+            ],
+            requirements: {
+              it: 9,
+              legal: 9,
+              privacy: 12,
+              quality: 10
+            }
+          }
+        ]
       }
     ],
     teams: ['quality'],
@@ -349,90 +531,183 @@ const initialRules = [
 // ============================================
 
 const evaluateRule = (rule, answers) => {
-  return rule.conditions.every(condition => {
+  const timingContexts = [];
+
+  const triggered = rule.conditions.every(condition => {
     const conditionType = condition.type || 'question';
 
     if (conditionType === 'timing') {
-      const startAnswer = answers[condition.startQuestion];
-      const endAnswer = answers[condition.endQuestion];
-      if (!startAnswer || !endAnswer) return false;
+      const diff = computeTimingDiff(condition, answers);
 
-      const startDate = new Date(startAnswer);
-      const endDate = new Date(endAnswer);
-      if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+      if (!diff) {
+        timingContexts.push({
+          type: 'timing',
+          diff: null,
+          profiles: [],
+          satisfied: false,
+          startQuestion: condition.startQuestion,
+          endQuestion: condition.endQuestion
+        });
         return false;
       }
 
-      const diffInMs = endDate.getTime() - startDate.getTime();
-      if (diffInMs < 0) {
-        return false;
+      const activeProfiles = getActiveTimelineProfiles(condition, answers);
+      const normalizedProfiles = activeProfiles.map(profile => ({
+        id: profile.id || `profile_${Date.now()}`,
+        label: profile.label || 'Exigence de timing',
+        description: profile.description || '',
+        requirements: Object.fromEntries(
+          Object.entries(profile.requirements || {}).map(([teamId, value]) => [
+            teamId,
+            normalizeTimingRequirement(value)
+          ])
+        )
+      }));
+
+      let satisfied = true;
+
+      normalizedProfiles.forEach(profile => {
+        Object.values(profile.requirements).forEach(requirement => {
+          if (requirement.minimumDays !== undefined && diff.diffInDays < requirement.minimumDays) {
+            satisfied = false;
+          }
+
+          if (requirement.minimumWeeks !== undefined && diff.diffInWeeks < requirement.minimumWeeks) {
+            satisfied = false;
+          }
+        });
+      });
+
+      if (typeof condition.minimumWeeks === 'number' && diff.diffInWeeks < condition.minimumWeeks) {
+        satisfied = false;
       }
 
-      const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
-      const diffInWeeks = diffInDays / 7;
-
-      if (typeof condition.minimumWeeks === 'number' && diffInWeeks < condition.minimumWeeks) {
-        return false;
+      if (typeof condition.maximumWeeks === 'number' && diff.diffInWeeks > condition.maximumWeeks) {
+        satisfied = false;
       }
 
-      if (typeof condition.maximumWeeks === 'number' && diffInWeeks > condition.maximumWeeks) {
-        return false;
+      if (typeof condition.minimumDays === 'number' && diff.diffInDays < condition.minimumDays) {
+        satisfied = false;
       }
 
-      if (typeof condition.minimumDays === 'number' && diffInDays < condition.minimumDays) {
-        return false;
+      if (typeof condition.maximumDays === 'number' && diff.diffInDays > condition.maximumDays) {
+        satisfied = false;
       }
 
-      if (typeof condition.maximumDays === 'number' && diffInDays > condition.maximumDays) {
-        return false;
-      }
+      timingContexts.push({
+        type: 'timing',
+        diff,
+        profiles: normalizedProfiles,
+        satisfied,
+        startQuestion: condition.startQuestion,
+        endQuestion: condition.endQuestion
+      });
 
-      return true;
+      return satisfied;
     }
 
-    const answer = answers[condition.question];
-    if (!answer) return false;
-
-    switch (condition.operator) {
-      case 'equals':
-        return answer === condition.value;
-      case 'not_equals':
-        return answer !== condition.value;
-      case 'contains':
-        return answer.includes(condition.value);
-      default:
-        return false;
-    }
+    return matchesCondition(condition, answers);
   });
+
+  return { triggered, timingContexts };
 };
 
 const analyzeAnswers = (answers, rules) => {
-  const triggeredRules = rules.filter(rule => evaluateRule(rule, answers));
+  const evaluations = rules.map(rule => ({ rule, evaluation: evaluateRule(rule, answers) }));
 
   const teamsSet = new Set();
   const allQuestions = {};
   const allRisks = [];
+  const timelineByTeam = {};
+  const timingDetails = [];
 
-  triggeredRules.forEach(rule => {
-    rule.teams.forEach(teamId => teamsSet.add(teamId));
+  evaluations.forEach(({ rule, evaluation }) => {
+    if (evaluation.triggered) {
+      rule.teams.forEach(teamId => teamsSet.add(teamId));
 
-    Object.entries(rule.questions).forEach(([teamId, questions]) => {
-      if (!allQuestions[teamId]) {
-        allQuestions[teamId] = [];
+      Object.entries(rule.questions).forEach(([teamId, questions]) => {
+        if (!allQuestions[teamId]) {
+          allQuestions[teamId] = [];
+        }
+        allQuestions[teamId].push(...questions);
+      });
+
+      allRisks.push(...rule.risks.map(risk => ({ ...risk, priority: rule.priority })));
+    }
+
+    evaluation.timingContexts.forEach(context => {
+      if (!context || !context.diff) {
+        timingDetails.push({
+          ruleId: rule.id,
+          ruleName: rule.name,
+          satisfied: context?.satisfied ?? false,
+          diff: null,
+          profiles: []
+        });
+        return;
       }
-      allQuestions[teamId].push(...questions);
-    });
 
-    allRisks.push(...rule.risks.map(risk => ({ ...risk, priority: rule.priority })));
+      const { diff } = context;
+      const contextEntry = {
+        ruleId: rule.id,
+        ruleName: rule.name,
+        satisfied: context.satisfied,
+        diff,
+        profiles: context.profiles
+      };
+
+      timingDetails.push(contextEntry);
+
+      context.profiles.forEach(profile => {
+        Object.entries(profile.requirements || {}).forEach(([teamId, requirement]) => {
+          if (!teamId) return;
+
+          const normalized = normalizeTimingRequirement(requirement);
+          const hasRequirement =
+            normalized.minimumWeeks !== undefined || normalized.minimumDays !== undefined;
+
+          if (!hasRequirement) {
+            return;
+          }
+
+          if (!timelineByTeam[teamId]) {
+            timelineByTeam[teamId] = [];
+          }
+
+          const meetsWeeks =
+            normalized.minimumWeeks === undefined || diff.diffInWeeks >= normalized.minimumWeeks;
+          const meetsDays =
+            normalized.minimumDays === undefined || diff.diffInDays >= normalized.minimumDays;
+
+          timelineByTeam[teamId].push({
+            ruleId: rule.id,
+            ruleName: rule.name,
+            profileId: profile.id,
+            profileLabel: profile.label,
+            description: profile.description,
+            requiredWeeks: normalized.minimumWeeks,
+            requiredDays: normalized.minimumDays,
+            actualWeeks: diff.diffInWeeks,
+            actualDays: diff.diffInDays,
+            satisfied: context.satisfied && meetsWeeks && meetsDays
+          });
+        });
+      });
+    });
   });
 
   const highRiskCount = allRisks.filter(r => r.level === 'Élevé').length;
 
   return {
+    triggeredRules: evaluations.filter(item => item.evaluation.triggered).map(item => item.rule),
     teams: Array.from(teamsSet),
     questions: allQuestions,
     risks: allRisks,
-    complexity: highRiskCount > 2 ? 'Élevé' : highRiskCount > 0 ? 'Moyen' : 'Faible'
+    complexity: highRiskCount > 2 ? 'Élevé' : highRiskCount > 0 ? 'Moyen' : 'Faible',
+    timeline: {
+      byTeam: timelineByTeam,
+      details: timingDetails
+    }
   };
 };
 
@@ -714,6 +989,80 @@ const SynthesisReport = ({ answers, analysis, teams, questions, onRestart }) => 
     return answer;
   };
 
+  const timelineByTeam = analysis?.timeline?.byTeam || {};
+  const timelineDetails = analysis?.timeline?.details || [];
+  const firstTimelineDetail = timelineDetails.find(detail => detail.diff);
+
+  const hasTimelineData =
+    Object.keys(timelineByTeam).length > 0 || Boolean(firstTimelineDetail);
+
+  const formatNumber = (value, options = {}) => {
+    return Number(value).toLocaleString('fr-FR', options);
+  };
+
+  const formatWeeksValue = (weeks) => {
+    if (weeks === undefined || weeks === null) {
+      return '-';
+    }
+
+    const rounded = Math.round(weeks * 10) / 10;
+    const hasDecimal = Math.abs(rounded - Math.round(rounded)) > 0.0001;
+
+    return `${formatNumber(rounded, {
+      minimumFractionDigits: hasDecimal ? 1 : 0,
+      maximumFractionDigits: hasDecimal ? 1 : 0
+    })} sem.`;
+  };
+
+  const formatDaysValue = (days) => {
+    if (days === undefined || days === null) {
+      return '-';
+    }
+
+    return `${formatNumber(Math.round(days))} j.`;
+  };
+
+  const formatRequirementValue = (requirement) => {
+    if (requirement.requiredWeeks !== undefined) {
+      return `${formatNumber(requirement.requiredWeeks)} sem.`;
+    }
+
+    if (requirement.requiredDays !== undefined) {
+      return `${formatNumber(requirement.requiredDays)} j.`;
+    }
+
+    return '-';
+  };
+
+  const computeTeamTimeline = (teamId) => {
+    const entries = timelineByTeam[teamId] || [];
+    if (entries.length === 0) {
+      return null;
+    }
+
+    const actualWeeks = entries[0].actualWeeks;
+    const actualDays = entries[0].actualDays;
+    const meetsAll = entries.every(entry => entry.satisfied);
+    const strictestRequirement = entries.reduce((acc, entry) => {
+      const requirementWeeks =
+        entry.requiredWeeks !== undefined
+          ? entry.requiredWeeks
+          : entry.requiredDays !== undefined
+            ? entry.requiredDays / 7
+            : 0;
+
+      return requirementWeeks > acc ? requirementWeeks : acc;
+    }, 0);
+
+    return {
+      entries,
+      actualWeeks,
+      actualDays,
+      meetsAll,
+      strictestRequirement
+    };
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-8">
       <div className="max-w-6xl mx-auto">
@@ -751,6 +1100,100 @@ const SynthesisReport = ({ answers, analysis, teams, questions, onRestart }) => 
               </span>
             </div>
           </div>
+
+          {hasTimelineData && (
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                <Calendar className="w-6 h-6 mr-2 text-indigo-600" />
+                Délais compliance recommandés
+              </h2>
+              {firstTimelineDetail?.diff ? (
+                <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-4 text-sm text-gray-700">
+                  <span className="font-semibold text-gray-800">Buffer projet calculé :</span>{' '}
+                  {formatWeeksValue(firstTimelineDetail.diff.diffInWeeks)}
+                  {' '}({formatDaysValue(firstTimelineDetail.diff.diffInDays)}) entre la soumission et le lancement.
+                </div>
+              ) : (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-4 text-sm text-yellow-800">
+                  Les dates projet ne sont pas complètes. Les exigences de délais sont indiquées à titre informatif.
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {relevantTeams.map(team => {
+                  const timelineInfo = computeTeamTimeline(team.id);
+
+                  if (!timelineInfo) {
+                    return (
+                      <div key={team.id} className="bg-white rounded-xl border border-gray-200 p-5">
+                        <div className="flex justify-between items-start mb-2">
+                          <h3 className="text-lg font-bold text-gray-800">{team.name}</h3>
+                          <span className="px-3 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-600 border border-gray-200">
+                            Pas d'exigence
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-600">
+                          Aucun délai spécifique n'a été configuré pour cette équipe dans le back-office.
+                        </p>
+                      </div>
+                    );
+                  }
+
+                  const statusClasses = timelineInfo.meetsAll
+                    ? 'bg-green-50 text-green-700 border-green-200'
+                    : 'bg-red-50 text-red-700 border-red-200';
+
+                  return (
+                    <div key={team.id} className="bg-white rounded-xl border border-gray-200 p-5">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <h3 className="text-lg font-bold text-gray-800">{team.name}</h3>
+                          <p className="text-xs text-gray-500">{team.expertise}</p>
+                        </div>
+                        <span className={`px-3 py-1 text-xs font-semibold rounded-full border ${statusClasses}`}>
+                          {timelineInfo.meetsAll ? 'Délai suffisant' : 'Délai insuffisant'}
+                        </span>
+                      </div>
+
+                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm text-gray-700 mb-3">
+                        <div className="flex justify-between">
+                          <span className="font-medium text-gray-800">Buffer actuel</span>
+                          <span>{formatWeeksValue(timelineInfo.actualWeeks)} ({formatDaysValue(timelineInfo.actualDays)})</span>
+                        </div>
+                        <div className="flex justify-between mt-1">
+                          <span className="text-gray-600">Exigence la plus stricte</span>
+                          <span>{formatWeeksValue(timelineInfo.strictestRequirement)}</span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        {timelineInfo.entries.map(entry => {
+                          const requirementLabel = formatRequirementValue(entry);
+                          return (
+                            <div
+                              key={`${entry.profileId}-${entry.requiredWeeks ?? entry.requiredDays ?? 'req'}`}
+                              className={`border rounded-lg p-3 text-sm ${entry.satisfied ? 'border-green-200 bg-green-50 text-green-800' : 'border-orange-200 bg-orange-50 text-orange-800'}`}
+                            >
+                              <div className="flex justify-between items-center mb-1">
+                                <span className="font-semibold">{entry.profileLabel}</span>
+                                <span className="font-mono text-xs">{requirementLabel}</span>
+                              </div>
+                              {entry.description && (
+                                <p className="text-xs opacity-80">{entry.description}</p>
+                              )}
+                              <div className="mt-2 text-xs font-semibold">
+                                {entry.satisfied ? '✅ Délai respecté' : '⚠️ Prévoir un délai supplémentaire'}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Équipes à solliciter */}
           <div className="mb-8">
@@ -1279,7 +1722,18 @@ const RuleEditor = ({ rule, onSave, onCancel, questions, teams }) => {
         minimumWeeks: toNumber(condition.minimumWeeks),
         maximumWeeks: toNumber(condition.maximumWeeks),
         minimumDays: toNumber(condition.minimumDays),
-        maximumDays: toNumber(condition.maximumDays)
+        maximumDays: toNumber(condition.maximumDays),
+        complianceProfiles: (condition.complianceProfiles || []).map(profile => ({
+          id: profile.id || `profile_${Math.random().toString(36).slice(2, 8)}`,
+          label: profile.label || '',
+          description: profile.description || '',
+          requirements: profile.requirements || {},
+          conditions: (profile.conditions || []).map(cond => ({
+            question: cond.question || '',
+            operator: cond.operator || 'equals',
+            value: cond.value || ''
+          }))
+        }))
       };
     }
 
@@ -1329,7 +1783,8 @@ const RuleEditor = ({ rule, onSave, onCancel, questions, teams }) => {
         minimumWeeks: undefined,
         maximumWeeks: undefined,
         minimumDays: undefined,
-        maximumDays: undefined
+        maximumDays: undefined,
+        complianceProfiles: []
       };
     } else {
       newConditions[index] = {
@@ -1339,6 +1794,121 @@ const RuleEditor = ({ rule, onSave, onCancel, questions, teams }) => {
         value: ''
       };
     }
+    setEditedRule({ ...editedRule, conditions: newConditions });
+  };
+
+  const cloneTimingProfiles = (condition) => {
+    return (condition.complianceProfiles || []).map(profile => ({
+      ...profile,
+      conditions: [...(profile.conditions || [])],
+      requirements: { ...(profile.requirements || {}) }
+    }));
+  };
+
+  const addTimingProfile = (conditionIndex) => {
+    const newConditions = [...editedRule.conditions];
+    const condition = { ...newConditions[conditionIndex] };
+    const profiles = cloneTimingProfiles(condition);
+    profiles.push({
+      id: `profile_${Date.now()}_${profiles.length}`,
+      label: 'Nouveau scénario',
+      description: '',
+      requirements: {},
+      conditions: []
+    });
+    condition.complianceProfiles = profiles;
+    newConditions[conditionIndex] = condition;
+    setEditedRule({ ...editedRule, conditions: newConditions });
+  };
+
+  const updateTimingProfileField = (conditionIndex, profileIndex, field, value) => {
+    const newConditions = [...editedRule.conditions];
+    const condition = { ...newConditions[conditionIndex] };
+    const profiles = cloneTimingProfiles(condition);
+    profiles[profileIndex] = {
+      ...profiles[profileIndex],
+      [field]: value
+    };
+    condition.complianceProfiles = profiles;
+    newConditions[conditionIndex] = condition;
+    setEditedRule({ ...editedRule, conditions: newConditions });
+  };
+
+  const deleteTimingProfile = (conditionIndex, profileIndex) => {
+    const newConditions = [...editedRule.conditions];
+    const condition = { ...newConditions[conditionIndex] };
+    const profiles = cloneTimingProfiles(condition).filter((_, idx) => idx !== profileIndex);
+    condition.complianceProfiles = profiles;
+    newConditions[conditionIndex] = condition;
+    setEditedRule({ ...editedRule, conditions: newConditions });
+  };
+
+  const addTimingProfileCondition = (conditionIndex, profileIndex) => {
+    const newConditions = [...editedRule.conditions];
+    const condition = { ...newConditions[conditionIndex] };
+    const profiles = cloneTimingProfiles(condition);
+    const profile = { ...profiles[profileIndex] };
+    profile.conditions = [...(profile.conditions || []), { question: '', operator: 'equals', value: '' }];
+    profiles[profileIndex] = profile;
+    condition.complianceProfiles = profiles;
+    newConditions[conditionIndex] = condition;
+    setEditedRule({ ...editedRule, conditions: newConditions });
+  };
+
+  const updateTimingProfileCondition = (conditionIndex, profileIndex, conditionIdx, field, value) => {
+    const newConditions = [...editedRule.conditions];
+    const condition = { ...newConditions[conditionIndex] };
+    const profiles = cloneTimingProfiles(condition);
+    const profile = { ...profiles[profileIndex] };
+    const profileConditions = [...(profile.conditions || [])];
+    profileConditions[conditionIdx] = {
+      ...profileConditions[conditionIdx],
+      [field]: value
+    };
+    profile.conditions = profileConditions;
+    profiles[profileIndex] = profile;
+    condition.complianceProfiles = profiles;
+    newConditions[conditionIndex] = condition;
+    setEditedRule({ ...editedRule, conditions: newConditions });
+  };
+
+  const deleteTimingProfileCondition = (conditionIndex, profileIndex, conditionIdx) => {
+    const newConditions = [...editedRule.conditions];
+    const condition = { ...newConditions[conditionIndex] };
+    const profiles = cloneTimingProfiles(condition);
+    const profile = { ...profiles[profileIndex] };
+    profile.conditions = (profile.conditions || []).filter((_, idx) => idx !== conditionIdx);
+    profiles[profileIndex] = profile;
+    condition.complianceProfiles = profiles;
+    newConditions[conditionIndex] = condition;
+    setEditedRule({ ...editedRule, conditions: newConditions });
+  };
+
+  const updateTimingRequirement = (conditionIndex, profileIndex, teamId, value) => {
+    const newConditions = [...editedRule.conditions];
+    const condition = { ...newConditions[conditionIndex] };
+    const profiles = cloneTimingProfiles(condition);
+    const profile = { ...profiles[profileIndex] };
+    const requirements = { ...(profile.requirements || {}) };
+    const currentRequirement = requirements[teamId];
+
+    if (value === '') {
+      delete requirements[teamId];
+    } else {
+      const parsed = Number(value);
+      if (!Number.isNaN(parsed)) {
+        if (currentRequirement && typeof currentRequirement === 'object' && !Array.isArray(currentRequirement)) {
+          requirements[teamId] = { ...currentRequirement, minimumWeeks: parsed };
+        } else {
+          requirements[teamId] = parsed;
+        }
+      }
+    }
+
+    profile.requirements = requirements;
+    profiles[profileIndex] = profile;
+    condition.complianceProfiles = profiles;
+    newConditions[conditionIndex] = condition;
     setEditedRule({ ...editedRule, conditions: newConditions });
   };
 
@@ -1561,6 +2131,222 @@ const RuleEditor = ({ rule, onSave, onCancel, questions, teams }) => {
                               <p className="text-xs text-gray-500">
                                 La règle sera valide si la durée entre les deux dates respecte les contraintes définies.
                               </p>
+
+                              <div className="mt-4 border border-indigo-200 rounded-lg bg-white/60 p-4">
+                                <div className="flex justify-between items-center mb-3">
+                                  <h4 className="text-sm font-semibold text-gray-700">
+                                    Scénarios de délais par compliance
+                                  </h4>
+                                  <button
+                                    onClick={() => addTimingProfile(idx)}
+                                    className="flex items-center px-3 py-1.5 text-xs bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition-all"
+                                  >
+                                    <Plus className="w-4 h-4 mr-1" />
+                                    Ajouter un scénario
+                                  </button>
+                                </div>
+
+                                {condition.complianceProfiles && condition.complianceProfiles.length > 0 ? (
+                                  <div className="space-y-4">
+                                    {condition.complianceProfiles.map((profile, profileIdx) => {
+                                      const requirementEntries = Object.entries(profile.requirements || {});
+                                      const requirementValueForTeam = (teamId) => {
+                                        const requirement = profile.requirements?.[teamId];
+                                        if (requirement && typeof requirement === 'object' && !Array.isArray(requirement)) {
+                                          return requirement.minimumWeeks ?? '';
+                                        }
+                                        return requirement ?? '';
+                                      };
+
+                                      return (
+                                        <div
+                                          key={profile.id || `${idx}-${profileIdx}`}
+                                          className="bg-white border border-indigo-100 rounded-xl shadow-sm p-4"
+                                        >
+                                          <div className="flex flex-wrap items-start gap-3 mb-3">
+                                            <div className="flex-1 min-w-[200px]">
+                                              <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">
+                                                Nom du scénario
+                                              </label>
+                                              <input
+                                                type="text"
+                                                value={profile.label || ''}
+                                                onChange={(e) => updateTimingProfileField(idx, profileIdx, 'label', e.target.value)}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-indigo-500"
+                                                placeholder="Ex: Standard, Digital, Données de santé..."
+                                              />
+                                            </div>
+
+                                            <button
+                                              onClick={() => deleteTimingProfile(idx, profileIdx)}
+                                              className="ml-auto text-red-500 hover:bg-red-50 px-3 py-1.5 rounded text-xs font-semibold"
+                                            >
+                                              Supprimer
+                                            </button>
+                                          </div>
+
+                                          <div className="mb-4">
+                                            <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">
+                                              Description (optionnel)
+                                            </label>
+                                            <textarea
+                                              value={profile.description || ''}
+                                              onChange={(e) => updateTimingProfileField(idx, profileIdx, 'description', e.target.value)}
+                                              className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-indigo-500"
+                                              rows={2}
+                                              placeholder="Décrivez dans quel contexte appliquer ce scénario..."
+                                            />
+                                          </div>
+
+                                          <div className="mb-4">
+                                            <div className="flex justify-between items-center mb-2">
+                                              <h5 className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                                                Conditions d'application
+                                              </h5>
+                                              <button
+                                                onClick={() => addTimingProfileCondition(idx, profileIdx)}
+                                                className="flex items-center px-2.5 py-1 text-xs bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+                                              >
+                                                <Plus className="w-3 h-3 mr-1" />
+                                                Ajouter une condition
+                                              </button>
+                                            </div>
+
+                                            {profile.conditions && profile.conditions.length > 0 ? (
+                                              <div className="space-y-2">
+                                                {profile.conditions.map((profileCondition, conditionIdx) => {
+                                                  const conditionQuestion = questions.find(q => q.id === profileCondition.question);
+                                                  const conditionType = conditionQuestion?.type || 'choice';
+                                                  const usesOptions = ['choice', 'multi_choice'].includes(conditionType);
+                                                  const inputType = conditionType === 'number'
+                                                    ? 'number'
+                                                    : conditionType === 'date'
+                                                      ? 'date'
+                                                      : 'text';
+
+                                                  return (
+                                                    <div
+                                                      key={conditionIdx}
+                                                      className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end bg-gray-50 border border-gray-200 rounded-lg p-3"
+                                                    >
+                                                      <div className="md:col-span-5">
+                                                        <label className="block text-xs font-medium text-gray-600 mb-1">Question</label>
+                                                        <select
+                                                          value={profileCondition.question}
+                                                          onChange={(e) => updateTimingProfileCondition(idx, profileIdx, conditionIdx, 'question', e.target.value)}
+                                                          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-indigo-500"
+                                                        >
+                                                          <option value="">Sélectionner...</option>
+                                                          {questions.map(question => (
+                                                            <option key={question.id} value={question.id}>
+                                                              {question.id} - {question.question.substring(0, 45)}...
+                                                            </option>
+                                                          ))}
+                                                        </select>
+                                                      </div>
+
+                                                      <div className="md:col-span-3">
+                                                        <label className="block text-xs font-medium text-gray-600 mb-1">Opérateur</label>
+                                                        <select
+                                                          value={profileCondition.operator}
+                                                          onChange={(e) => updateTimingProfileCondition(idx, profileIdx, conditionIdx, 'operator', e.target.value)}
+                                                          className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-indigo-500"
+                                                        >
+                                                          <option value="equals">Est égal à (=)</option>
+                                                          <option value="not_equals">Est différent de (≠)</option>
+                                                          <option value="contains">Contient</option>
+                                                        </select>
+                                                      </div>
+
+                                                      <div className="md:col-span-3">
+                                                        <label className="block text-xs font-medium text-gray-600 mb-1">Valeur</label>
+                                                        {usesOptions ? (
+                                                          <select
+                                                            value={profileCondition.value}
+                                                            onChange={(e) => updateTimingProfileCondition(idx, profileIdx, conditionIdx, 'value', e.target.value)}
+                                                            className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-indigo-500"
+                                                          >
+                                                            <option value="">Sélectionner...</option>
+                                                            {(conditionQuestion?.options || []).map((option, optionIdx) => (
+                                                              <option key={optionIdx} value={option}>{option}</option>
+                                                            ))}
+                                                          </select>
+                                                        ) : (
+                                                          <input
+                                                            type={inputType}
+                                                            value={profileCondition.value}
+                                                            onChange={(e) => updateTimingProfileCondition(idx, profileIdx, conditionIdx, 'value', e.target.value)}
+                                                            className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-indigo-500"
+                                                            placeholder={inputType === 'number' ? 'Valeur numérique' : 'Valeur...'}
+                                                          />
+                                                        )}
+                                                      </div>
+
+                                                      <div className="md:col-span-1 flex justify-end">
+                                                        <button
+                                                          onClick={() => deleteTimingProfileCondition(idx, profileIdx, conditionIdx)}
+                                                          className="text-red-500 hover:bg-red-50 px-2 py-1 rounded"
+                                                        >
+                                                          <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                      </div>
+                                                    </div>
+                                                  );
+                                                })}
+                                              </div>
+                                            ) : (
+                                              <div className="text-xs text-gray-500 italic">
+                                                Aucun critère : ce scénario s'applique par défaut.
+                                              </div>
+                                            )}
+                                          </div>
+
+                                          <div>
+                                            <h5 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
+                                              Délais (en semaines) par équipe
+                                            </h5>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                              {teams.map(team => {
+                                                const requirementValue = requirementValueForTeam(team.id);
+                                                return (
+                                                  <div
+                                                    key={team.id}
+                                                    className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg px-3 py-2"
+                                                  >
+                                                    <span className="text-sm font-medium text-gray-700 pr-3 flex-1">
+                                                      {team.name}
+                                                    </span>
+                                                    <input
+                                                      type="number"
+                                                      min="0"
+                                                      value={requirementValue === undefined ? '' : requirementValue}
+                                                      onChange={(e) => updateTimingRequirement(idx, profileIdx, team.id, e.target.value)}
+                                                      className="w-24 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-indigo-500"
+                                                      placeholder="Sem."
+                                                    />
+                                                  </div>
+                                                );
+                                              })}
+                                            </div>
+                                            <p className="text-[11px] text-gray-500 mt-2">
+                                              Laissez le champ vide pour indiquer qu'aucun délai spécifique n'est requis pour cette équipe dans ce scénario.
+                                            </p>
+                                            {requirementEntries.length === 0 && (
+                                              <p className="text-[11px] text-orange-600 mt-1">
+                                                Aucun délai n'est défini pour ce scénario. Les équipes ne recevront pas d'exigence particulière.
+                                              </p>
+                                            )}
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                ) : (
+                                  <div className="text-xs text-gray-600 italic">
+                                    Aucun scénario configuré. Ajoutez un profil pour personnaliser les délais selon les équipes compliance.
+                                  </div>
+                                )}
+                              </div>
                             </>
                           ) : (
                             <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-sm text-red-700">
@@ -2153,6 +2939,8 @@ const BackOffice = ({ questions, setQuestions, rules, setRules, teams, setTeams 
                             if (conditionType === 'timing') {
                               const startQuestion = questions.find(q => q.id === condition.startQuestion);
                               const endQuestion = questions.find(q => q.id === condition.endQuestion);
+                              const startLabel = startQuestion ? startQuestion.question : condition.startQuestion || 'Date départ ?';
+                              const endLabel = endQuestion ? endQuestion.question : condition.endQuestion || 'Date arrivée ?';
                               const constraints = [];
 
                               if (typeof condition.minimumWeeks === 'number') {
@@ -2171,16 +2959,119 @@ const BackOffice = ({ questions, setQuestions, rules, setRules, teams, setTeams 
                                 constraints.push(`≤ ${condition.maximumDays} j.`);
                               }
 
-                              const startLabel = startQuestion ? startQuestion.question : condition.startQuestion || 'Date départ ?';
-                              const endLabel = endQuestion ? endQuestion.question : condition.endQuestion || 'Date arrivée ?';
-                              const constraintText = constraints.length > 0 ? constraints.join(' / ') : 'Contraintes définies';
+                              const profiles = Array.isArray(condition.complianceProfiles)
+                                ? condition.complianceProfiles
+                                : [];
 
                               return (
                                 <li key={idx} className="flex items-start">
                                   <span className="text-indigo-500 mr-2">•</span>
-                                  <span>
-                                    Durée entre « {startLabel} » et « {endLabel} » : {constraintText}
-                                  </span>
+                                  <div>
+                                    <div className="font-medium text-gray-800">
+                                      Fenêtre entre « {startLabel} » et « {endLabel} »
+                                    </div>
+
+                                    {constraints.length > 0 && (
+                                      <div className="text-xs text-gray-600 mt-1">
+                                        Contraintes générales : {constraints.join(' / ')}
+                                      </div>
+                                    )}
+
+                                    {profiles.length > 0 ? (
+                                      <div className="mt-3 space-y-2">
+                                        {profiles.map((profile, profileIdx) => {
+                                          const requirementEntries = Object.entries(profile.requirements || {});
+                                          const profileKey = profile.id || `${idx}-${profileIdx}`;
+
+                                          return (
+                                            <div
+                                              key={profileKey}
+                                              className="bg-white border border-indigo-100 rounded-lg p-3 text-xs text-gray-700"
+                                            >
+                                              <div className="flex justify-between items-center mb-1">
+                                                <span className="font-semibold text-gray-800">
+                                                  {profile.label || 'Scénario personnalisé'}
+                                                </span>
+                                                <span className="text-indigo-600 font-mono">
+                                                  {profile.conditions && profile.conditions.length > 0
+                                                    ? `${profile.conditions.length} condition(s)`
+                                                    : 'Par défaut'}
+                                                </span>
+                                              </div>
+
+                                              {profile.description && (
+                                                <p className="text-[11px] text-gray-500 mb-2">
+                                                  {profile.description}
+                                                </p>
+                                              )}
+
+                                              <div className="flex flex-wrap gap-2 mb-2">
+                                                {requirementEntries.length > 0 ? (
+                                                  requirementEntries.map(([teamId, value]) => {
+                                                    const normalized = normalizeTimingRequirement(value);
+                                                    const team = teams.find(t => t.id === teamId);
+                                                    const labelParts = [];
+
+                                                    if (normalized.minimumWeeks !== undefined) {
+                                                      labelParts.push(`≥ ${normalized.minimumWeeks} sem.`);
+                                                    }
+
+                                                    if (normalized.minimumDays !== undefined) {
+                                                      labelParts.push(`≥ ${normalized.minimumDays} j.`);
+                                                    }
+
+                                                    const requirementText = labelParts.length > 0
+                                                      ? labelParts.join(' / ')
+                                                      : 'Configuration personnalisée';
+
+                                                    return (
+                                                      <span
+                                                        key={teamId}
+                                                        className="bg-indigo-50 text-indigo-700 px-2 py-1 rounded border border-indigo-100 font-semibold"
+                                                      >
+                                                        {(team?.name || teamId)} : {requirementText}
+                                                      </span>
+                                                    );
+                                                  })
+                                                ) : (
+                                                  <span className="text-gray-500 italic">
+                                                    Aucun délai spécifique défini pour ce scénario.
+                                                  </span>
+                                                )}
+                                              </div>
+
+                                              {profile.conditions && profile.conditions.length > 0 && (
+                                                <div className="text-[11px] text-gray-500 space-y-1">
+                                                  {profile.conditions.map((cond, condIdx) => {
+                                                    const refQuestion = questions.find(q => q.id === cond.question);
+                                                    const operatorLabel = cond.operator === 'equals'
+                                                      ? '='
+                                                      : cond.operator === 'not_equals'
+                                                        ? '≠'
+                                                        : 'contient';
+
+                                                    return (
+                                                      <div key={condIdx}>
+                                                        {condIdx === 0 ? 'Si ' : 'et '}
+                                                        <span className="font-mono bg-gray-100 px-1 py-0.5 rounded">
+                                                          {refQuestion?.id || cond.question}
+                                                        </span>{' '}
+                                                        {operatorLabel} « {cond.value} »
+                                                      </div>
+                                                    );
+                                                  })}
+                                                </div>
+                                              )}
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    ) : (
+                                      <div className="text-xs text-gray-500 italic mt-2">
+                                        Aucun scénario de délai spécifique n'a été configuré.
+                                      </div>
+                                    )}
+                                  </div>
                                 </li>
                               );
                             }
