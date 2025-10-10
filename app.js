@@ -25,6 +25,7 @@ const Edit = createIcon('✏️');
 const Plus = createIcon('➕');
 const Trash2 = createIcon('🗑️');
 const Eye = createIcon('👁️');
+const GripVertical = createIcon('⋮⋮');
 
 // ============================================
 // DONNÉES DE CONFIGURATION INITIALES
@@ -512,6 +513,44 @@ const QuestionEditor = ({ question, onSave, onCancel, allQuestions }) => {
     ...question,
     conditions: question.conditions || []
   });
+  const [draggedOptionIndex, setDraggedOptionIndex] = useState(null);
+  const [dragOverIndex, setDragOverIndex] = useState(null);
+
+  const reorderOptions = (fromIndex, toIndex) => {
+    if (fromIndex === toIndex) return;
+
+    setEditedQuestion(prev => {
+      const newOptions = [...prev.options];
+      const [moved] = newOptions.splice(fromIndex, 1);
+      newOptions.splice(toIndex, 0, moved);
+
+      return {
+        ...prev,
+        options: newOptions
+      };
+    });
+  };
+
+  const handleDragStart = (event, index) => {
+    if (event?.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', String(index));
+    }
+    setDraggedOptionIndex(index);
+    setDragOverIndex(index);
+  };
+
+  const handleDragEnter = (index) => {
+    if (draggedOptionIndex === null || draggedOptionIndex === index) return;
+    reorderOptions(draggedOptionIndex, index);
+    setDraggedOptionIndex(index);
+    setDragOverIndex(index);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedOptionIndex(null);
+    setDragOverIndex(null);
+  };
 
   const addCondition = () => {
     setEditedQuestion({
@@ -635,10 +674,44 @@ const QuestionEditor = ({ question, onSave, onCancel, allQuestions }) => {
               </button>
             </div>
 
+            <p className="text-xs text-gray-500 mb-3">
+              Glissez-déposez les options pour modifier leur ordre d'affichage.
+            </p>
+
             <div className="space-y-2">
               {editedQuestion.options.map((option, idx) => (
-                <div key={idx} className="flex items-center space-x-2">
-                  <span className="text-gray-500 font-medium">{idx + 1}.</span>
+                <div
+                  key={idx}
+                  className={`flex items-center space-x-2 rounded-lg border border-transparent bg-white p-2 transition-colors ${
+                    dragOverIndex === idx ? 'border-indigo-200 bg-indigo-50 shadow' : 'shadow-sm'
+                  }`}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setDragOverIndex(idx);
+                  }}
+                  onDragEnter={() => handleDragEnter(idx)}
+                  onDragLeave={(e) => {
+                    e.preventDefault();
+                    if (draggedOptionIndex !== idx) {
+                      setDragOverIndex(null);
+                    }
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    handleDragEnd();
+                  }}
+                  onDragEnd={handleDragEnd}
+                >
+                  <button
+                    type="button"
+                    draggable
+                    onDragStart={(event) => handleDragStart(event, idx)}
+                    className="cursor-grab px-2 py-3 text-gray-400 hover:text-indigo-600 focus:outline-none"
+                    aria-label={`Réordonner l'option ${idx + 1}`}
+                  >
+                    <GripVertical className="w-4 h-4" />
+                  </button>
+                  <span className="text-gray-500 font-medium w-6 text-center">{idx + 1}.</span>
                   <input
                     type="text"
                     value={option}
