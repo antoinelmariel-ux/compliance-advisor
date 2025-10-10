@@ -242,9 +242,11 @@ export const QuestionEditor = ({ question, onSave, onCancel, allQuestions }) => 
                   <option value="number">Valeur numérique</option>
                   <option value="url">Lien URL</option>
                   <option value="file">Fichier</option>
+                  <option value="text">Texte libre (1 ligne)</option>
+                  <option value="long_text">Texte libre (plusieurs lignes)</option>
                 </select>
                 <p className="text-xs text-gray-500 mt-1">
-                  Choisissez le format adapté : liste simple ou multiple, date, valeur numérique, URL ou ajout de fichier.
+                  Choisissez le format adapté : liste simple ou multiple, date, valeurs numériques, URL, fichier ou zone de texte libre.
                 </p>
               </div>
 

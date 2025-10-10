@@ -123,7 +123,7 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
                 answers[q.id] ? (
                   <div key={q.id} className="bg-white rounded-lg p-4 border border-gray-200">
                     <p className="text-sm text-gray-600 mb-1">{q.question}</p>
-                    <p className="font-semibold text-gray-900">
+                    <p className="font-semibold text-gray-900 whitespace-pre-line">
                       {renderTextWithLinks(formatAnswer(q, answers[q.id]))}
                     </p>
                   </div>

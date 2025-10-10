@@ -114,5 +114,37 @@ export const initialQuestions =  [
         'Si le planning n\'est pas figé, fournissez l\'estimation la plus réaliste pour sécuriser les ressources.'
       ]
     }
+  },
+  {
+    id: 'q7',
+    type: 'text',
+    question: 'Qui est le chef de projet référent ?',
+    options: [],
+    required: true,
+    conditions: [],
+    guidance: {
+      objective: 'Identifier l\'interlocuteur principal pour les échanges compliance.',
+      details: 'Cette information permet aux équipes expertes de contacter la bonne personne pour clarifier les éléments du dossier.',
+      tips: [
+        'Renseignez le prénom et le nom du chef de projet.',
+        'Ajoutez si besoin un alias ou une précision entre parenthèses.'
+      ]
+    }
+  },
+  {
+    id: 'q8',
+    type: 'long_text',
+    question: 'Décrivez brièvement le besoin ou le concept proposé.',
+    options: [],
+    required: false,
+    conditions: [],
+    guidance: {
+      objective: 'Offrir une vision synthétique du projet pour faciliter la lecture des réponses.',
+      details: 'Utilisez ce bloc pour résumer le contexte, les objectifs principaux et les points d\'attention connus à date.',
+      tips: [
+        'Structurez votre réponse en 2 à 3 phrases clés.',
+        'Mentionnez les éléments distinctifs ou contraintes majeures.'
+      ]
+    }
   }
 ];
