@@ -74,7 +74,15 @@ const initialQuestions = [
       'Mixte'
     ],
     required: true,
-    conditions: []
+    conditions: [],
+    guidance: {
+      objective: 'Identifier l\'exposition du projet pour adapter le parcours compliance.',
+      details: 'Selon le public ciblé, différentes règles de communication, de consentement et de sécurité s\'appliquent. Cette information permet d\'activer les bons contrôles dès le départ.',
+      tips: [
+        'Sélectionnez la réponse correspondant au public final le plus exposé.',
+        'Si plusieurs cibles sont prévues, choisissez "Mixte" et précisez les nuances dans vos notes de projet.'
+      ]
+    }
   },
   {
     id: 'q2',
@@ -87,7 +95,15 @@ const initialQuestions = [
       'Non'
     ],
     required: true,
-    conditions: []
+    conditions: [],
+    guidance: {
+      objective: 'Confirmer la présence d\'un canal digital nécessitant des validations techniques et réglementaires.',
+      details: 'Les supports digitaux déclenchent l\'intervention des équipes IT, Juridique et BPP pour vérifier sécurité, mentions légales et conformité marketing.',
+      tips: [
+        'Choisissez le support principal si plusieurs dispositifs digitaux sont envisagés.',
+        'En cas de doute, optez pour l\'option la plus proche et précisez vos intentions dans le dossier.'
+      ]
+    }
   },
   {
     id: 'q3',
@@ -101,7 +117,15 @@ const initialQuestions = [
     required: true,
     conditions: [
       { question: 'q2', operator: 'not_equals', value: 'Non' }
-    ]
+    ],
+    guidance: {
+      objective: 'Qualifier la nature des données personnelles manipulées.',
+      details: 'Les données de santé impliquent une analyse d\'impact renforcée (DPIA), un hébergement certifié HDS et des clauses contractuelles spécifiques.',
+      tips: [
+        'Identifiez la catégorie la plus sensible de données que vous collecterez.',
+        'Si la collecte est incertaine, retenez l\'hypothèse la plus protectrice pour planifier les validations.'
+      ]
+    }
   },
   {
     id: 'q4',
@@ -113,7 +137,15 @@ const initialQuestions = [
       'Pas encore décidé'
     ],
     required: true,
-    conditions: []
+    conditions: [],
+    guidance: {
+      objective: 'Anticiper l\'implication de prestataires externes et les contrôles associés.',
+      details: 'Les partenariats imposent une revue juridique des contrats, la vérification des assurances et parfois un audit qualité des fournisseurs.',
+      tips: [
+        'Sélectionnez "Pas encore décidé" si un appel d\'offres est en cours.',
+        'Notez les prestataires pressentis pour faciliter la revue par les équipes concernées.'
+      ]
+    }
   },
   {
     id: 'q5',
@@ -121,7 +153,15 @@ const initialQuestions = [
     question: 'Quelle est la date de soumission du projet ?',
     options: [],
     required: true,
-    conditions: []
+    conditions: [],
+    guidance: {
+      objective: 'Caler le point de départ du calendrier compliance.',
+      details: 'Cette date sert de référence pour estimer le temps disponible afin de mobiliser les experts et réaliser les validations obligatoires.',
+      tips: [
+        'Renseignez la date à laquelle le dossier complet sera transmis pour revue.',
+        'Mettez à jour cette information si la soumission est décalée.'
+      ]
+    }
   },
   {
     id: 'q6',
@@ -129,7 +169,15 @@ const initialQuestions = [
     question: 'Quelle est la date de lancement souhaitée ?',
     options: [],
     required: true,
-    conditions: []
+    conditions: [],
+    guidance: {
+      objective: 'Projeter la fenêtre de lancement afin de vérifier la faisabilité du planning.',
+      details: 'Le moteur calcule l\'écart entre soumission et lancement et le compare aux délais minimaux recommandés pour chaque équipe compliance.',
+      tips: [
+        'Indiquez la première date de mise en service ou de diffusion prévue.',
+        'Si le planning n\'est pas figé, fournissez l\'estimation la plus réaliste pour sécuriser les ressources.'
+      ]
+    }
   }
 ];
 
@@ -188,6 +236,38 @@ const shouldShowQuestion = (question, answers) => {
         return false;
     }
   });
+};
+
+const formatAnswer = (question, answer) => {
+  if (answer === null || answer === undefined) {
+    return '';
+  }
+
+  const questionType = (question && question.type) || 'choice';
+
+  if (questionType === 'date') {
+    const parsed = new Date(answer);
+    if (Number.isNaN(parsed.getTime())) {
+      return String(answer);
+    }
+
+    return new Intl.DateTimeFormat('fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    }).format(parsed);
+  }
+
+  if (questionType === 'multi_choice' && Array.isArray(answer)) {
+    return answer.join(', ');
+  }
+
+  if (questionType === 'file' && answer && typeof answer === 'object') {
+    const size = typeof answer.size === 'number' ? ` (${Math.round(answer.size / 1024)} Ko)` : '';
+    return `${answer.name || 'Fichier joint'}${size}`;
+  }
+
+  return Array.isArray(answer) ? answer.join(', ') : String(answer);
 };
 
 const matchesCondition = (condition, answers) => {
@@ -715,13 +795,55 @@ const analyzeAnswers = (answers, rules) => {
 // COMPOSANTS UI
 // ============================================
 
-const QuestionnaireScreen = ({ questions, currentIndex, answers, onAnswer, onNext, onBack }) => {
+const QuestionnaireScreen = ({ questions, currentIndex, answers, onAnswer, onNext, onBack, allQuestions }) => {
   const currentQuestion = questions[currentIndex];
+  const questionBank = allQuestions || questions;
+
+  if (!currentQuestion) {
+    return null;
+  }
+
   const progress = ((currentIndex + 1) / questions.length) * 100;
   const questionType = currentQuestion.type || 'choice';
   const currentAnswer = answers[currentQuestion.id];
   const multiSelection = Array.isArray(currentAnswer) ? currentAnswer : [];
   const hasAnswer = Array.isArray(currentAnswer) ? currentAnswer.length > 0 : !!currentAnswer;
+  const [showGuidance, setShowGuidance] = useState(false);
+
+  useEffect(() => {
+    setShowGuidance(false);
+  }, [currentQuestion.id]);
+
+  const guidance = currentQuestion.guidance || {};
+  const guidanceTips = Array.isArray(guidance.tips)
+    ? guidance.tips.filter(tip => typeof tip === 'string' && tip.trim() !== '')
+    : [];
+
+  const operatorLabels = {
+    equals: 'est égal à',
+    not_equals: 'est différent de',
+    contains: 'contient'
+  };
+
+  const conditionSummaries = (currentQuestion.conditions || []).map(condition => {
+    const referenceQuestion = questionBank.find(q => q.id === condition.question);
+    const label = referenceQuestion?.question || `Question ${condition.question}`;
+    const formattedAnswer = formatAnswer(referenceQuestion, answers[condition.question]);
+
+    return {
+      label,
+      operator: operatorLabels[condition.operator] || condition.operator,
+      value: condition.value,
+      answer: formattedAnswer
+    };
+  });
+
+  const hasGuidanceContent = Boolean(
+    (typeof guidance.objective === 'string' && guidance.objective.trim() !== '') ||
+      (typeof guidance.details === 'string' && guidance.details.trim() !== '') ||
+      guidanceTips.length > 0 ||
+      conditionSummaries.length > 0
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-8">
@@ -750,9 +872,81 @@ const QuestionnaireScreen = ({ questions, currentIndex, answers, onAnswer, onNex
             )}
           </div>
 
-          <h2 className="text-3xl font-bold text-gray-800 mb-8">
-            {currentQuestion.question}
-          </h2>
+          <div className="mb-8">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <h2 className="text-3xl font-bold text-gray-800">{currentQuestion.question}</h2>
+              {hasGuidanceContent && (
+                <button
+                  onClick={() => setShowGuidance(prev => !prev)}
+                  className={`inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg border transition-all ${
+                    showGuidance
+                      ? 'bg-indigo-600 text-white border-indigo-600 hover:bg-indigo-700'
+                      : 'bg-indigo-50 text-indigo-600 border-indigo-200 hover:bg-indigo-100'
+                  }`}
+                >
+                  <Info className="w-4 h-4 mr-2" />
+                  {showGuidance ? "Masquer l'aide" : 'Comprendre cette question'}
+                </button>
+              )}
+            </div>
+
+            {hasGuidanceContent && showGuidance && (
+              <div className="mt-4 bg-indigo-50 border border-indigo-200 rounded-2xl p-5 text-sm text-gray-700">
+                <div className="flex items-start">
+                  <div className="mr-3 mt-0.5 text-indigo-600">
+                    <Info className="w-5 h-5" />
+                  </div>
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="text-base font-semibold text-indigo-700">Guidage contextuel</h3>
+                      {guidance.objective && (
+                        <p className="mt-1 text-gray-700">{guidance.objective}</p>
+                      )}
+                    </div>
+
+                    {guidance.details && (
+                      <p className="text-gray-700 leading-relaxed">{guidance.details}</p>
+                    )}
+
+                    {conditionSummaries.length > 0 && (
+                      <div>
+                        <h4 className="text-xs font-semibold uppercase tracking-wide text-indigo-700">Pourquoi cette question apparaît</h4>
+                        <ul className="mt-2 space-y-2">
+                          {conditionSummaries.map((item, idx) => (
+                            <li
+                              key={`${item.label}-${idx}`}
+                              className="bg-white border border-indigo-100 rounded-xl p-3"
+                            >
+                              <p className="text-sm font-medium text-gray-800">
+                                • {item.label} {item.operator} "{item.value}"
+                              </p>
+                              {item.answer && (
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Votre réponse :{' '}
+                                  <span className="font-medium text-gray-700">{item.answer}</span>
+                                </p>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {guidanceTips.length > 0 && (
+                      <div>
+                        <h4 className="text-xs font-semibold uppercase tracking-wide text-indigo-700">Conseils pratiques</h4>
+                        <ul className="mt-2 space-y-2 list-disc list-inside text-sm text-gray-700">
+                          {guidanceTips.map((tip, idx) => (
+                            <li key={idx}>{tip}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
 
           {questionType === 'date' && (
             <div className="mb-8">
@@ -958,35 +1152,6 @@ const SynthesisReport = ({ answers, analysis, teams, questions, onRestart }) => 
     Élevé: 'text-red-600',
     Moyen: 'text-orange-600',
     Faible: 'text-green-600'
-  };
-
-  const formatAnswer = (question, answer) => {
-    if (!answer) return '';
-    const questionType = question.type || 'choice';
-
-    if (questionType === 'date') {
-      const parsed = new Date(answer);
-      if (Number.isNaN(parsed.getTime())) {
-        return answer;
-      }
-
-      return new Intl.DateTimeFormat('fr-FR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
-      }).format(parsed);
-    }
-
-    if (questionType === 'multi_choice' && Array.isArray(answer)) {
-      return answer.join(', ');
-    }
-
-    if (questionType === 'file' && typeof answer === 'object') {
-      const size = typeof answer.size === 'number' ? ` (${Math.round(answer.size / 1024)} Ko)` : '';
-      return `${answer.name || 'Fichier joint'}${size}`;
-    }
-
-    return answer;
   };
 
   const timelineByTeam = analysis?.timeline?.byTeam || {};
@@ -1270,16 +1435,81 @@ const SynthesisReport = ({ answers, analysis, teams, questions, onRestart }) => 
   );
 };
 const QuestionEditor = ({ question, onSave, onCancel, allQuestions }) => {
+  const ensureGuidance = (guidance) => {
+    if (!guidance || typeof guidance !== 'object') {
+      return { objective: '', details: '', tips: [] };
+    }
+
+    return {
+      objective: guidance.objective || '',
+      details: guidance.details || '',
+      tips: Array.isArray(guidance.tips) ? guidance.tips : []
+    };
+  };
+
   const [editedQuestion, setEditedQuestion] = useState({
     ...question,
     type: question.type || 'choice',
     options: question.options || [],
-    conditions: question.conditions || []
+    conditions: question.conditions || [],
+    guidance: ensureGuidance(question.guidance)
   });
   const [draggedOptionIndex, setDraggedOptionIndex] = useState(null);
   const [dragOverIndex, setDragOverIndex] = useState(null);
   const questionType = editedQuestion.type || 'choice';
   const typeUsesOptions = questionType === 'choice' || questionType === 'multi_choice';
+  const normalizedGuidance = ensureGuidance(editedQuestion.guidance);
+
+  const updateGuidanceField = (field, value) => {
+    setEditedQuestion(prev => ({
+      ...prev,
+      guidance: {
+        ...ensureGuidance(prev.guidance),
+        [field]: value
+      }
+    }));
+  };
+
+  const addGuidanceTip = () => {
+    setEditedQuestion(prev => {
+      const current = ensureGuidance(prev.guidance);
+      return {
+        ...prev,
+        guidance: {
+          ...current,
+          tips: [...current.tips, '']
+        }
+      };
+    });
+  };
+
+  const updateGuidanceTip = (index, value) => {
+    setEditedQuestion(prev => {
+      const current = ensureGuidance(prev.guidance);
+      const newTips = [...current.tips];
+      newTips[index] = value;
+      return {
+        ...prev,
+        guidance: {
+          ...current,
+          tips: newTips
+        }
+      };
+    });
+  };
+
+  const deleteGuidanceTip = (index) => {
+    setEditedQuestion(prev => {
+      const current = ensureGuidance(prev.guidance);
+      return {
+        ...prev,
+        guidance: {
+          ...current,
+          tips: current.tips.filter((_, i) => i !== index)
+        }
+      };
+    });
+  };
 
   const handleTypeChange = (newType) => {
     if (newType === 'choice' || newType === 'multi_choice') {
@@ -1544,6 +1774,80 @@ const QuestionEditor = ({ question, onSave, onCancel, allQuestions }) => {
                 Ce type de question ne nécessite pas de liste d'options prédéfinies.
               </div>
             )}
+          </div>
+
+          {/* Guidage contextuel */}
+          <div>
+            <h3 className="text-xl font-bold text-gray-800 mb-3">🧭 Guidage contextuel</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Renseignez les informations d'aide affichées au chef de projet pour expliquer la question.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Objectif pédagogique</label>
+                <input
+                  type="text"
+                  value={normalizedGuidance.objective}
+                  onChange={(e) => updateGuidanceField('objective', e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  placeholder="Pourquoi cette question est posée..."
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Message principal</label>
+                <textarea
+                  value={normalizedGuidance.details}
+                  onChange={(e) => updateGuidanceField('details', e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  rows="3"
+                  placeholder="Précisez le contexte, les impacts compliance ou les attentes..."
+                />
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-medium text-gray-700">Conseils pratiques</span>
+                <button
+                  type="button"
+                  onClick={addGuidanceTip}
+                  className="flex items-center px-3 py-1 text-xs bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-all"
+                >
+                  <Plus className="w-3 h-3 mr-1" />
+                  Ajouter un conseil
+                </button>
+              </div>
+
+              {normalizedGuidance.tips.length === 0 ? (
+                <p className="text-xs text-gray-500 bg-gray-50 border border-dashed border-gray-300 rounded-lg p-4">
+                  Ajoutez un ou plusieurs conseils opérationnels pour aider le chef de projet à répondre correctement.
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {normalizedGuidance.tips.map((tip, idx) => (
+                    <div key={idx} className="flex items-center space-x-2">
+                      <span className="text-gray-400 text-sm w-6">#{idx + 1}</span>
+                      <input
+                        type="text"
+                        value={tip}
+                        onChange={(e) => updateGuidanceTip(idx, e.target.value)}
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                        placeholder="Conseil pratique..."
+                      />
+                      <button
+                        type="button"
+                        onClick={() => deleteGuidanceTip(idx)}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Conditions d'affichage */}
@@ -2618,7 +2922,12 @@ const BackOffice = ({ questions, setQuestions, rules, setRules, teams, setTeams 
       question: 'Nouvelle question',
       options: ['Option 1', 'Option 2'],
       required: true,
-      conditions: []
+      conditions: [],
+      guidance: {
+        objective: '',
+        details: '',
+        tips: []
+      }
     };
     setQuestions([...questions, newQuestion]);
     setEditingQuestion(newQuestion);
@@ -2856,6 +3165,54 @@ const BackOffice = ({ questions, setQuestions, rules, setRules, teams, setTeams 
                             Cette question s'affiche toujours
                           </div>
                         )}
+
+                        {(() => {
+                          const guidance = q.guidance || {};
+                          const tips = Array.isArray(guidance.tips)
+                            ? guidance.tips.filter(tip => typeof tip === 'string' && tip.trim() !== '')
+                            : [];
+                          const hasGuidance = Boolean(
+                            (guidance.objective && guidance.objective.trim() !== '') ||
+                              (guidance.details && guidance.details.trim() !== '') ||
+                              tips.length > 0
+                          );
+
+                          if (!hasGuidance) {
+                            return (
+                              <div className="mt-3 text-xs text-gray-400 italic">
+                                Aucun contenu de guidage contextuel n'est encore configuré.
+                              </div>
+                            );
+                          }
+
+                          return (
+                            <div className="mt-4 bg-indigo-50 border border-indigo-200 rounded-lg p-3">
+                              <div className="flex items-start">
+                                <Info className="w-4 h-4 text-indigo-500 mr-2 mt-0.5" />
+                                <div className="space-y-2 text-xs text-gray-700">
+                                  {guidance.objective && (
+                                    <p>
+                                      <span className="font-semibold text-indigo-700">Objectif :</span> {guidance.objective}
+                                    </p>
+                                  )}
+                                  {guidance.details && <p>{guidance.details}</p>}
+                                  {tips.length > 0 && (
+                                    <div>
+                                      <p className="font-semibold text-indigo-700 text-[11px] uppercase tracking-wide">
+                                        Conseils partagés
+                                      </p>
+                                      <ul className="mt-1 space-y-1 list-disc list-inside text-gray-700">
+                                        {tips.map((tip, idx) => (
+                                          <li key={idx}>{tip}</li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </div>
 
                       <div className="flex space-x-2 ml-4">
@@ -3356,6 +3713,7 @@ const ComplianceDecisionTool = () => {
             onAnswer={handleAnswer}
             onNext={handleNext}
             onBack={handleBack}
+            allQuestions={questions}
           />
         ) : (
           <SynthesisReport
