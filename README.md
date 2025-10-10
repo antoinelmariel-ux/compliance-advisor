@@ -45,6 +45,19 @@ Aucune étape de build n'est nécessaire :
 2. Le point d'entrée `src/main.jsx` est compilé à la volée par Babel (préréglages `env` et `react`) et charge automatiquement les modules de l'application.
 3. React/ReactDOM et Tailwind CSS sont chargés via CDN UMD.
 
+## Architecture de l'application
+- **`src/components`** : regroupe les composants d'interface réutilisables (navigation, formulaires, synthèses).
+- **`src/data`** : contient les référentiels initialisés au chargement (questions, règles, équipes) et peut servir de base à une intégration API.
+- **`src/hooks`** : centralise la logique réutilisable (gestion d'état du questionnaire, calcul des risques, navigation).
+- **`src/utils`** : expose les fonctions d'aide (évaluation des conditions, formatage des rapports, filtres de recherche).
+- **`src/styles`** : héberge la configuration Tailwind et les styles globaux complémentaires.
+- **`index.html`** : point d'entrée statique configurant Babel Standalone, Tailwind et montant l'application.
+
+## Tests et qualité
+- **Validation manuelle** : ouvrir `index.html` et parcourir le questionnaire Chef de Projet pour vérifier l'enchaînement des questions, la génération de synthèse et les recommandations affichées.
+- **Linting recommandé** : utiliser `npm install && npx eslint src --max-warnings=0` si l'on souhaite ajouter une chaîne de build Node pour garantir la cohérence du code.
+- **Accessibilité** : contrôler les contrastes et la navigation clavier via des outils comme Axe DevTools ou Lighthouse pour conserver un parcours conforme RGAA/WCAG.
+
 ## Personnalisation
 - L'ensemble des référentiels (questions, règles, équipes) est éditable directement depuis le back-office intégré.
 - Pour des modifications structurelles plus poussées, adaptez `initialQuestions`, `initialRules` et `initialTeams` dans `src/data/` et les utilitaires dans `src/utils/`.
