@@ -18,6 +18,10 @@ export const QuestionnaireScreen = ({ questions, currentIndex, answers, onAnswer
   const isAnswerProvided = Array.isArray(currentAnswer) ? currentAnswer.length > 0 : !!currentAnswer;
   const canProceed = currentQuestion?.required ? isAnswerProvided : true;
   const [showGuidance, setShowGuidance] = useState(false);
+  const questionTextId = `question-${currentQuestion.id}`;
+  const instructionsId = `instructions-${currentQuestion.id}`;
+  const guidancePanelId = `guidance-${currentQuestion.id}`;
+  const progressLabelId = `progress-label-${currentQuestion.id}`;
 
   useEffect(() => {
     setShowGuidance(false);
@@ -55,26 +59,33 @@ export const QuestionnaireScreen = ({ questions, currentIndex, answers, onAnswer
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-8 hv-background">
       <div className="max-w-3xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+        <div className="bg-white rounded-2xl shadow-xl p-8 hv-surface">
           <div className="mb-8">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium text-gray-600">
+              <span id={progressLabelId} className="text-sm font-medium text-gray-600 hv-text-muted" aria-live="polite">
                 Question {currentIndex + 1} sur {questions.length}
               </span>
-              <span className="text-sm font-medium text-indigo-600">
+              <span className="text-sm font-medium text-indigo-600" aria-live="polite">
                 {Math.round(progress)}% complété
               </span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div
-                className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
+            <div
+              className="w-full bg-gray-200 rounded-full h-2 hv-progress"
+              role="progressbar"
+              aria-valuenow={Math.round(progress)}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-labelledby={progressLabelId}
+            >
+              <span
+                className="block bg-indigo-600 h-2 rounded-full transition-all duration-300 hv-progress-indicator"
                 style={{ width: `${progress}%` }}
               />
             </div>
             {currentIndex === 0 && (
-              <p className="text-xs text-gray-500 mt-2 flex items-center">
+              <p id={instructionsId} className="text-xs text-gray-500 mt-2 flex items-center hv-text-muted">
                 <Info className="w-3 h-3 mr-1" />
                 Certaines questions peuvent apparaître en fonction de vos réponses
               </p>
@@ -83,20 +94,25 @@ export const QuestionnaireScreen = ({ questions, currentIndex, answers, onAnswer
 
           <div className="mb-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <h2 className="text-3xl font-bold text-gray-800">{currentQuestion.question}</h2>
+              <h2 id={questionTextId} className="text-3xl font-bold text-gray-800">
+                {currentQuestion.question}
+              </h2>
               {!currentQuestion.required && (
-                <span className="inline-flex items-center px-3 py-1 text-xs font-semibold uppercase tracking-wide bg-gray-100 text-gray-600 rounded-full border border-gray-200">
+                <span className="inline-flex items-center px-3 py-1 text-xs font-semibold uppercase tracking-wide bg-gray-100 text-gray-600 rounded-full border border-gray-200 hv-badge">
                   Réponse facultative
                 </span>
               )}
               {hasGuidanceContent && (
                 <button
+                  type="button"
                   onClick={() => setShowGuidance(prev => !prev)}
-                  className={`inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg border transition-all ${
+                  className={`inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg border transition-all hv-button hv-focus-ring ${
                     showGuidance
                       ? 'bg-indigo-600 text-white border-indigo-600 hover:bg-indigo-700'
                       : 'bg-indigo-50 text-indigo-600 border-indigo-200 hover:bg-indigo-100'
                   }`}
+                  aria-expanded={showGuidance}
+                  aria-controls={guidancePanelId}
                 >
                   <Info className="w-4 h-4 mr-2" />
                   {showGuidance ? "Masquer l'aide" : 'Comprendre cette question'}
@@ -105,7 +121,12 @@ export const QuestionnaireScreen = ({ questions, currentIndex, answers, onAnswer
             </div>
 
             {hasGuidanceContent && showGuidance && (
-              <div className="mt-4 bg-indigo-50 border border-indigo-200 rounded-2xl p-5 text-sm text-gray-700">
+              <div
+                id={guidancePanelId}
+                className="mt-4 bg-indigo-50 border border-indigo-200 rounded-2xl p-5 text-sm text-gray-700 hv-surface"
+                role="region"
+                aria-label="Aide contextuelle"
+              >
                 <div className="flex items-start">
                   <div className="mr-3 mt-0.5 text-indigo-600">
                     <Info className="w-5 h-5" />
@@ -129,7 +150,7 @@ export const QuestionnaireScreen = ({ questions, currentIndex, answers, onAnswer
                           {conditionSummaries.map((item, idx) => (
                             <li
                               key={`${item.label}-${idx}`}
-                              className="bg-white border border-indigo-100 rounded-xl p-3"
+                              className="bg-white border border-indigo-100 rounded-xl p-3 hv-surface"
                             >
                               <p className="text-sm font-medium text-gray-800">
                                 • {item.label} {item.operator} "{item.value}"
@@ -166,7 +187,7 @@ export const QuestionnaireScreen = ({ questions, currentIndex, answers, onAnswer
 
           {questionType === 'date' && (
             <div className="mb-8">
-              <label className="block text-sm font-medium text-gray-700 mb-3">
+              <label className="block text-sm font-medium text-gray-700 mb-3" htmlFor={`${currentQuestion.id}-date`}>
                 <span className="flex items-center">
                   <Calendar className="w-4 h-4 mr-2" />
                   Sélectionnez une date
@@ -176,7 +197,9 @@ export const QuestionnaireScreen = ({ questions, currentIndex, answers, onAnswer
                 type="date"
                 value={currentAnswer || ''}
                 onChange={(e) => onAnswer(currentQuestion.id, e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                id={`${currentQuestion.id}-date`}
+                aria-describedby={currentIndex === 0 ? instructionsId : undefined}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent hv-focus-ring"
               />
               <p className="text-xs text-gray-500 mt-2">
                 Utilisez le sélecteur ou le format AAAA-MM-JJ pour garantir une analyse correcte.
@@ -185,40 +208,55 @@ export const QuestionnaireScreen = ({ questions, currentIndex, answers, onAnswer
           )}
 
           {questionType === 'choice' && (
-            <div className="space-y-3 mb-8">
+            <fieldset className="space-y-3 mb-8" aria-describedby={currentIndex === 0 ? instructionsId : undefined}>
+              <legend className="sr-only">{currentQuestion.question}</legend>
               {currentQuestion.options.map((option, idx) => {
                 const isSelected = answers[currentQuestion.id] === option;
+                const optionId = `${currentQuestion.id}-option-${idx}`;
 
                 return (
-                  <button
+                  <label
                     key={idx}
-                    onClick={() => onAnswer(currentQuestion.id, option)}
-                    className={`w-full p-4 text-left rounded-xl border-2 transition-all duration-200 ${
+                    htmlFor={optionId}
+                    className={`w-full p-4 text-left rounded-xl border-2 transition-all duration-200 cursor-pointer hv-focus-ring ${
                       isSelected
                         ? 'border-indigo-600 bg-indigo-50 text-indigo-900'
                         : 'border-gray-200 hover:border-indigo-300 hover:bg-gray-50'
                     }`}
                   >
-                    <div className="flex items-center">
-                      <div className={`w-5 h-5 rounded-full border-2 mr-3 flex items-center justify-center ${
-                        isSelected
-                          ? 'border-indigo-600 bg-indigo-600 text-white'
-                          : 'border-gray-300'
-                      }`}>
+                    <span className="flex items-center">
+                      <span
+                        className={`w-5 h-5 rounded-full border-2 mr-3 flex items-center justify-center ${
+                          isSelected
+                            ? 'border-indigo-600 bg-indigo-600 text-white'
+                            : 'border-gray-300'
+                        }`}
+                        aria-hidden="true"
+                      >
                         {isSelected && <CheckCircle className="w-4 h-4" />}
-                      </div>
+                      </span>
                       <span className="font-medium">{option}</span>
-                    </div>
-                  </button>
+                    </span>
+                    <input
+                      type="radio"
+                      id={optionId}
+                      name={currentQuestion.id}
+                      value={option}
+                      checked={isSelected}
+                      onChange={() => onAnswer(currentQuestion.id, option)}
+                      className="sr-only"
+                    />
+                  </label>
                 );
               })}
-            </div>
+            </fieldset>
           )}
 
           {questionType === 'multi_choice' && (
             <div className="space-y-3 mb-8">
               {currentQuestion.options.map((option, idx) => {
                 const isSelected = multiSelection.includes(option);
+                const optionId = `${currentQuestion.id}-multi-option-${idx}`;
 
                 const toggleOption = () => {
                   if (isSelected) {
@@ -234,7 +272,8 @@ export const QuestionnaireScreen = ({ questions, currentIndex, answers, onAnswer
                 return (
                   <label
                     key={idx}
-                    className={`w-full p-4 flex items-center justify-between rounded-xl border-2 transition-all duration-200 cursor-pointer ${
+                    htmlFor={optionId}
+                    className={`w-full p-4 flex items-center justify-between rounded-xl border-2 transition-all duration-200 cursor-pointer hv-focus-ring ${
                       isSelected
                         ? 'border-indigo-600 bg-indigo-50 text-indigo-900'
                         : 'border-gray-200 hover:border-indigo-300 hover:bg-gray-50'
@@ -245,7 +284,8 @@ export const QuestionnaireScreen = ({ questions, currentIndex, answers, onAnswer
                         type="checkbox"
                         checked={isSelected}
                         onChange={toggleOption}
-                        className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                        id={optionId}
+                        className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 hv-focus-ring"
                       />
                       <span className="ml-3 font-medium">{option}</span>
                     </div>
@@ -258,7 +298,7 @@ export const QuestionnaireScreen = ({ questions, currentIndex, answers, onAnswer
 
           {questionType === 'text' && (
             <div className="mb-8">
-              <label className="block text-sm font-medium text-gray-700 mb-3">
+              <label className="block text-sm font-medium text-gray-700 mb-3" htmlFor={`${currentQuestion.id}-text`}>
                 Renseignez votre réponse
               </label>
               <input
@@ -266,7 +306,8 @@ export const QuestionnaireScreen = ({ questions, currentIndex, answers, onAnswer
                 value={currentAnswer ?? ''}
                 onChange={(e) => onAnswer(currentQuestion.id, e.target.value)}
                 placeholder="Saisissez une réponse en une ligne"
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                id={`${currentQuestion.id}-text`}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent hv-focus-ring"
               />
               <p className="text-xs text-gray-500 mt-2">
                 Utilisez ce champ pour des réponses courtes sous forme de texte libre.
@@ -276,7 +317,7 @@ export const QuestionnaireScreen = ({ questions, currentIndex, answers, onAnswer
 
           {questionType === 'long_text' && (
             <div className="mb-8">
-              <label className="block text-sm font-medium text-gray-700 mb-3">
+              <label className="block text-sm font-medium text-gray-700 mb-3" htmlFor={`${currentQuestion.id}-long-text`}>
                 Décrivez les éléments pertinents
               </label>
               <textarea
@@ -284,7 +325,8 @@ export const QuestionnaireScreen = ({ questions, currentIndex, answers, onAnswer
                 onChange={(e) => onAnswer(currentQuestion.id, e.target.value)}
                 placeholder="Renseignez ici les informations détaillées..."
                 rows={5}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-y"
+                id={`${currentQuestion.id}-long-text`}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-y hv-focus-ring"
               />
               <p className="text-xs text-gray-500 mt-2">
                 Ce champ accepte plusieurs lignes : structurez votre réponse librement.
@@ -294,14 +336,15 @@ export const QuestionnaireScreen = ({ questions, currentIndex, answers, onAnswer
 
           {questionType === 'number' && (
             <div className="mb-8">
-              <label className="block text-sm font-medium text-gray-700 mb-3">
+              <label className="block text-sm font-medium text-gray-700 mb-3" htmlFor={`${currentQuestion.id}-number`}>
                 Renseignez une valeur numérique
               </label>
               <input
                 type="number"
                 value={currentAnswer ?? ''}
                 onChange={(e) => onAnswer(currentQuestion.id, e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                id={`${currentQuestion.id}-number`}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent hv-focus-ring"
               />
               <p className="text-xs text-gray-500 mt-2">
                 Vous pouvez saisir un nombre entier ou décimal.
@@ -311,7 +354,7 @@ export const QuestionnaireScreen = ({ questions, currentIndex, answers, onAnswer
 
           {questionType === 'url' && (
             <div className="mb-8">
-              <label className="block text-sm font-medium text-gray-700 mb-3">
+              <label className="block text-sm font-medium text-gray-700 mb-3" htmlFor={`${currentQuestion.id}-url`}>
                 Indiquez une adresse URL
               </label>
               <input
@@ -319,7 +362,8 @@ export const QuestionnaireScreen = ({ questions, currentIndex, answers, onAnswer
                 value={currentAnswer || ''}
                 onChange={(e) => onAnswer(currentQuestion.id, e.target.value)}
                 placeholder="https://exemple.com"
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                id={`${currentQuestion.id}-url`}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent hv-focus-ring"
               />
               <p className="text-xs text-gray-500 mt-2">
                 Incluez le protocole (https://) pour une URL valide.
@@ -329,7 +373,7 @@ export const QuestionnaireScreen = ({ questions, currentIndex, answers, onAnswer
 
           {questionType === 'file' && (
             <div className="mb-8">
-              <label className="block text-sm font-medium text-gray-700 mb-3">
+              <label className="block text-sm font-medium text-gray-700 mb-3" htmlFor={`${currentQuestion.id}-file`}>
                 Téléversez un fichier de référence
               </label>
               <input
@@ -346,7 +390,8 @@ export const QuestionnaireScreen = ({ questions, currentIndex, answers, onAnswer
                     onAnswer(currentQuestion.id, null);
                   }
                 }}
-                className="w-full"
+                id={`${currentQuestion.id}-file`}
+                className="w-full focus:outline-none hv-focus-ring"
               />
               {currentAnswer && (
                 <p className="text-xs text-gray-500 mt-2">
@@ -363,18 +408,20 @@ export const QuestionnaireScreen = ({ questions, currentIndex, answers, onAnswer
 
           <div className="flex justify-between">
             <button
+              type="button"
               onClick={onBack}
               disabled={currentIndex === 0}
-              className="flex items-center px-6 py-3 rounded-lg font-medium text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              className="flex items-center px-6 py-3 rounded-lg font-medium text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all hv-button"
             >
               <ChevronLeft className="w-5 h-5 mr-2" />
               Précédent
             </button>
 
-              <button
-                onClick={onNext}
-                disabled={!canProceed}
-              className="flex items-center px-6 py-3 rounded-lg font-medium bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            <button
+              type="button"
+              onClick={onNext}
+              disabled={!canProceed}
+              className="flex items-center px-6 py-3 rounded-lg font-medium bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all hv-button hv-button-primary"
             >
               {currentIndex === questions.length - 1 ? 'Voir la synthèse' : 'Suivant'}
               <ChevronRight className="w-5 h-5 ml-2" />

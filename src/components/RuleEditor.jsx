@@ -262,23 +262,31 @@ export const RuleEditor = ({ rule, onSave, onCancel, questions, teams }) => {
   };
 
   const dateQuestions = questions.filter(q => (q.type || 'choice') === 'date');
+  const dialogTitleId = 'rule-editor-title';
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full my-8 max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-8 py-6 rounded-t-2xl">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto" role="presentation">
+      <div
+        className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full my-8 max-h-[90vh] overflow-y-auto hv-surface"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={dialogTitleId}
+      >
+        <div className="sticky top-0 bg-white border-b border-gray-200 px-8 py-6 rounded-t-2xl hv-surface">
           <div className="flex justify-between items-center">
-            <h2 className="text-3xl font-bold text-gray-800">Édition de règle</h2>
+            <h2 id={dialogTitleId} className="text-3xl font-bold text-gray-800">Édition de règle</h2>
             <div className="flex space-x-3">
               <button
+                type="button"
                 onClick={onCancel}
-                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium text-gray-700 transition-all"
+                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium text-gray-700 transition-all hv-button"
               >
                 Annuler
               </button>
               <button
+                type="button"
                 onClick={() => onSave(editedRule)}
-                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-all"
+                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-all hv-button hv-button-primary"
               >
                 Enregistrer
               </button>
