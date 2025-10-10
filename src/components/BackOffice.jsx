@@ -154,7 +154,9 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
                               multi_choice: 'Choix multiples',
                               number: 'Valeur numérique',
                               url: 'Lien URL',
-                              file: 'Fichier'
+                              file: 'Fichier',
+                              text: 'Texte libre (1 ligne)',
+                              long_text: 'Texte libre (plusieurs lignes)'
                             };
                             const badgeStyles = {
                               choice: 'bg-gray-50 border-gray-200 text-gray-600',
@@ -162,7 +164,9 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
                               multi_choice: 'bg-purple-50 border-purple-200 text-purple-700',
                               number: 'bg-green-50 border-green-200 text-green-700',
                               url: 'bg-amber-50 border-amber-200 text-amber-700',
-                              file: 'bg-pink-50 border-pink-200 text-pink-700'
+                              file: 'bg-pink-50 border-pink-200 text-pink-700',
+                              text: 'bg-sky-50 border-sky-200 text-sky-700',
+                              long_text: 'bg-slate-50 border-slate-200 text-slate-700'
                             };
                             const badgeClass = badgeStyles[type] || badgeStyles.choice;
 
@@ -202,6 +206,22 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
                             if (type === 'date') {
                               return (
                                 <p className="text-sm text-gray-600 font-medium">Réponse attendue : sélection d'une date</p>
+                              );
+                            }
+
+                            if (type === 'text') {
+                              return (
+                                <p className="text-sm text-gray-600 font-medium">
+                                  Réponse attendue : saisie d'un texte court sur une ligne
+                                </p>
+                              );
+                            }
+
+                            if (type === 'long_text') {
+                              return (
+                                <p className="text-sm text-gray-600 font-medium">
+                                  Réponse attendue : saisie d'un texte libre sur plusieurs lignes
+                                </p>
                               );
                             }
 

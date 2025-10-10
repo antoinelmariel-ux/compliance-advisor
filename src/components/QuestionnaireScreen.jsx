@@ -15,7 +15,8 @@ export const QuestionnaireScreen = ({ questions, currentIndex, answers, onAnswer
   const questionType = currentQuestion.type || 'choice';
   const currentAnswer = answers[currentQuestion.id];
   const multiSelection = Array.isArray(currentAnswer) ? currentAnswer : [];
-  const hasAnswer = Array.isArray(currentAnswer) ? currentAnswer.length > 0 : !!currentAnswer;
+  const isAnswerProvided = Array.isArray(currentAnswer) ? currentAnswer.length > 0 : !!currentAnswer;
+  const canProceed = currentQuestion?.required ? isAnswerProvided : true;
   const [showGuidance, setShowGuidance] = useState(false);
 
   useEffect(() => {
@@ -83,6 +84,11 @@ export const QuestionnaireScreen = ({ questions, currentIndex, answers, onAnswer
           <div className="mb-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <h2 className="text-3xl font-bold text-gray-800">{currentQuestion.question}</h2>
+              {!currentQuestion.required && (
+                <span className="inline-flex items-center px-3 py-1 text-xs font-semibold uppercase tracking-wide bg-gray-100 text-gray-600 rounded-full border border-gray-200">
+                  Réponse facultative
+                </span>
+              )}
               {hasGuidanceContent && (
                 <button
                   onClick={() => setShowGuidance(prev => !prev)}
@@ -250,6 +256,42 @@ export const QuestionnaireScreen = ({ questions, currentIndex, answers, onAnswer
             </div>
           )}
 
+          {questionType === 'text' && (
+            <div className="mb-8">
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                Renseignez votre réponse
+              </label>
+              <input
+                type="text"
+                value={currentAnswer ?? ''}
+                onChange={(e) => onAnswer(currentQuestion.id, e.target.value)}
+                placeholder="Saisissez une réponse en une ligne"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+              <p className="text-xs text-gray-500 mt-2">
+                Utilisez ce champ pour des réponses courtes sous forme de texte libre.
+              </p>
+            </div>
+          )}
+
+          {questionType === 'long_text' && (
+            <div className="mb-8">
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                Décrivez les éléments pertinents
+              </label>
+              <textarea
+                value={currentAnswer ?? ''}
+                onChange={(e) => onAnswer(currentQuestion.id, e.target.value)}
+                placeholder="Renseignez ici les informations détaillées..."
+                rows={5}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-y"
+              />
+              <p className="text-xs text-gray-500 mt-2">
+                Ce champ accepte plusieurs lignes : structurez votre réponse librement.
+              </p>
+            </div>
+          )}
+
           {questionType === 'number' && (
             <div className="mb-8">
               <label className="block text-sm font-medium text-gray-700 mb-3">
@@ -331,7 +373,7 @@ export const QuestionnaireScreen = ({ questions, currentIndex, answers, onAnswer
 
               <button
                 onClick={onNext}
-                disabled={!hasAnswer}
+                disabled={!canProceed}
               className="flex items-center px-6 py-3 rounded-lg font-medium bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               {currentIndex === questions.length - 1 ? 'Voir la synthèse' : 'Suivant'}
