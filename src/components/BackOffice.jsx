@@ -3,6 +3,7 @@ import { Settings, Plus, Edit, Trash2, Eye, Info } from './icons.js';
 import { QuestionEditor } from './QuestionEditor.jsx';
 import { RuleEditor } from './RuleEditor.jsx';
 import { renderTextWithLinks } from '../utils/linkify.js';
+import { normalizeTimingRequirement } from '../utils/rules.js';
 
 export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, setTeams }) => {
   const [activeTab, setActiveTab] = useState('questions');
