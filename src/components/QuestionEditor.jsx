@@ -208,7 +208,7 @@ export const QuestionEditor = ({ question, onSave, onCancel, allQuestions }) => 
       role="presentation"
     >
       <div
-        className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full my-8 max-h-[90vh] overflow-y-auto hv-surface"
+        className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full my-4 sm:my-8 max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-4rem)] overflow-y-auto hv-surface"
         role="dialog"
         aria-modal="true"
         aria-labelledby={dialogTitleId}
