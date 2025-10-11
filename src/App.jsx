@@ -162,7 +162,6 @@ export const App = () => {
 
   return (
     <div className="min-h-screen">
-      <a href="#main-content" className="skip-link">Aller au contenu principal</a>
       <nav className="bg-white shadow-sm border-b border-gray-200 hv-surface">
         <div className="max-w-7xl mx-auto px-8 py-4">
           <div className="flex justify-between items-center">
