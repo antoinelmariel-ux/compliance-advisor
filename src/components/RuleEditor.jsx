@@ -283,11 +283,11 @@ export const RuleEditor = ({ rule, onSave, onCancel, questions, teams }) => {
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto"
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-start sm:items-center justify-center z-50 p-4 overflow-y-auto"
       role="presentation"
     >
       <div
-        className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full my-8 max-h-[90vh] overflow-y-auto hv-surface"
+        className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full my-4 sm:my-8 max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-4rem)] overflow-y-auto hv-surface"
         role="dialog"
         aria-modal="true"
         aria-labelledby={dialogTitleId}
