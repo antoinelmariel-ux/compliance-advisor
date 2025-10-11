@@ -154,5 +154,102 @@ export const initialQuestions =  [
         'Mentionnez les éléments distinctifs ou contraintes majeures.'
       ]
     }
+  },
+  {
+    id: 'q9',
+    type: 'text',
+    question: 'Quelle est la proposition de valeur principale à mettre en avant lors du pitch ?',
+    options: [],
+    required: false,
+    conditions: [],
+    conditionLogic: 'all',
+    guidance: {
+      objective: 'Mettre en lumière l\'angle principal qui donnera envie d\'écouter ou de soutenir le projet.',
+      details: 'Une formulation claire de la proposition de valeur permet de bâtir l\'argumentaire du pitch et d\'aligner les équipes sur le bénéfice clé.',
+      tips: [
+        'Résumez en une phrase l\'impact différenciant du projet.',
+        'Utilisez un vocabulaire orienté bénéfice plutôt que description technique.'
+      ]
+    }
+  },
+  {
+    id: 'q10',
+    type: 'multi_choice',
+    question: 'Quels publics clés doivent être convaincus ?',
+    options: [
+      'Direction / sponsors internes',
+      'Équipes métiers',
+      'Partenaires externes',
+      'Clients / utilisateurs finaux',
+      'Autre (préciser dans vos notes)'
+    ],
+    required: false,
+    conditions: [],
+    conditionLogic: 'all',
+    guidance: {
+      objective: 'Identifier les audiences prioritaires pour adapter le message du pitch.',
+      details: 'Connaitre les cibles permet d\'adapter le ton, les preuves et les arguments à mettre en avant pour chaque interlocuteur.',
+      tips: [
+        'Sélectionnez toutes les audiences concernées pour préparer des messages différenciés.',
+        'Précisez dans vos notes les personae spécifiques si nécessaire.'
+      ]
+    }
+  },
+  {
+    id: 'q11',
+    type: 'long_text',
+    question: 'Quels résultats mesurables ou preuves souhaitez-vous valoriser ?',
+    options: [],
+    required: false,
+    conditions: [],
+    conditionLogic: 'all',
+    guidance: {
+      objective: 'Recenser les indicateurs de succès à intégrer dans l\'argumentaire.',
+      details: 'Les chiffres clés, retours utilisateurs ou faits marquants structurent la partie "preuves" du pitch et renforcent la crédibilité.',
+      tips: [
+        'Mentionnez des données quantitatives (KPI, ROI, nombre d\'utilisateurs) ou qualitatives (témoignages).',
+        'Indiquez la source et la période de référence quand c\'est possible.'
+      ]
+    }
+  },
+  {
+    id: 'q12',
+    type: 'text',
+    question: 'Quel appel à l\'action souhaitez-vous formuler à l\'issue du pitch ?',
+    options: [],
+    required: false,
+    conditions: [],
+    conditionLogic: 'all',
+    guidance: {
+      objective: 'Clarifier l\'attente principale vis-à-vis de l\'audience une fois le pitch terminé.',
+      details: 'Savoir quelle décision, quel soutien ou quelle action est attendue aide à structurer la conclusion et les prochaines étapes.',
+      tips: [
+        'Soyez explicite sur la décision attendue (validation, budget, ressources, lancement pilote, etc.).',
+        'Si plusieurs actions sont nécessaires, hiérarchisez-les pour guider votre audience.'
+      ]
+    }
+  },
+  {
+    id: 'q13',
+    type: 'multi_choice',
+    question: 'Quels supports ou formats de présentation envisagez-vous ?',
+    options: [
+      'Pitch deck (slides)',
+      'Démonstration produit / prototype',
+      'Note de synthèse ou one-pager',
+      'Vidéo courte',
+      'Autre support (préciser dans vos notes)'
+    ],
+    required: false,
+    conditions: [],
+    conditionLogic: 'all',
+    guidance: {
+      objective: 'Anticiper les supports nécessaires pour préparer le pitch dans le bon format.',
+      details: 'Le choix des formats influe sur la structure du pitch, les ressources de design et les délais de production.',
+      tips: [
+        'Sélectionnez plusieurs options si vous prévoyez un parcours multicanal (ex : réunion + support envoyé).',
+        'Précisez les contraintes de durée ou de format pour chaque support si elles sont connues.'
+      ]
+    }
   }
 ];
