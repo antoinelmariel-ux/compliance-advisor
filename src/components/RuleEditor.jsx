@@ -265,7 +265,7 @@ export const RuleEditor = ({ rule, onSave, onCancel, questions, teams }) => {
   const dialogTitleId = 'rule-editor-title';
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto" role="presentation">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start sm:items-start justify-center z-50 p-4 overflow-y-auto" role="presentation">
       <div
         className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full my-8 max-h-[90vh] overflow-y-auto hv-surface"
         role="dialog"
