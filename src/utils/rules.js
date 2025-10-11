@@ -272,7 +272,15 @@ export const analyzeAnswers = (answers, rules) => {
         allQuestions[teamId].push(...questions);
       });
 
-      allRisks.push(...rule.risks.map(risk => ({ ...risk, priority: rule.priority })));
+      allRisks.push(
+        ...rule.risks.map(risk => ({
+          ...risk,
+          priority: rule.priority,
+          ruleId: rule.id,
+          ruleName: rule.name,
+          teams: Array.isArray(rule.teams) ? [...rule.teams] : []
+        }))
+      );
     }
 
     evaluation.timingContexts.forEach(context => {

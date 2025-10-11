@@ -105,8 +105,46 @@ const getTeamPriority = (analysis, teamId) => {
     return 'Recommandé';
   }
 
-  const matchingRisk = analysis.risks.find(risk => analysis.questions?.[teamId]);
-  return matchingRisk?.priority || 'Recommandé';
+  const priorityWeights = {
+    Recommandé: 1,
+    Important: 2,
+    Critique: 3
+  };
+
+  const getWeight = (priority) => priorityWeights[priority] || 0;
+
+  const risks = Array.isArray(analysis.risks) ? analysis.risks : [];
+  let bestPriority = 'Recommandé';
+
+  risks.forEach(risk => {
+    if (!Array.isArray(risk.teams) || !risk.teams.includes(teamId)) {
+      return;
+    }
+
+    if (getWeight(risk.priority) > getWeight(bestPriority)) {
+      bestPriority = risk.priority;
+    }
+  });
+
+  if (bestPriority !== 'Recommandé') {
+    return bestPriority;
+  }
+
+  const triggeredRules = Array.isArray(analysis.triggeredRules)
+    ? analysis.triggeredRules
+    : [];
+
+  triggeredRules.forEach(rule => {
+    if (!Array.isArray(rule.teams) || !rule.teams.includes(teamId)) {
+      return;
+    }
+
+    if (getWeight(rule.priority) > getWeight(bestPriority)) {
+      bestPriority = rule.priority;
+    }
+  });
+
+  return bestPriority;
 };
 
 const escapeHtml = (value) => {
