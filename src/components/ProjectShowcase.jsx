@@ -231,7 +231,7 @@ export const ProjectShowcase = ({
                 <div className="max-w-3xl">
                   <p className="inline-flex items-center rounded-full bg-indigo-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-indigo-600">
                     <Sparkles className="mr-2" />
-                    Pitch de lancement
+                    Vitrine projet
                   </p>
                   <h2 className="mt-4 text-4xl sm:text-5xl font-black text-gray-900">
                     {safeProjectName}
@@ -242,20 +242,20 @@ export const ProjectShowcase = ({
                     </p>
                   )}
                   <p className="mt-4 max-w-2xl text-base sm:text-lg text-gray-600">
-                    Propulsez votre initiative compliance comme un produit phare : clarifiez la vision, mettez en avant la proposition de valeur et embarquez les sponsors en un clin d'œil.
+                    Offrez à votre initiative une vitrine inspirante : racontez l'histoire du projet, illustrez les bénéfices clés et donnez envie aux parties prenantes d'y adhérer.
                   </p>
                   <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                     <a
                       href="#"
                       className="inline-flex items-center justify-center rounded-full bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:-translate-y-1 hover:bg-indigo-500"
                     >
-                      Télécharger le one-pager
+                      Partager le dossier projet
                     </a>
                     <a
                       href="#"
                       className="inline-flex items-center justify-center rounded-full border border-indigo-600 px-6 py-3 text-sm font-semibold text-indigo-600 transition hover:-translate-y-1 hover:bg-indigo-50"
                     >
-                      Organiser la session pitch
+                      Planifier une présentation
                     </a>
                   </div>
                 </div>
@@ -273,15 +273,15 @@ export const ProjectShowcase = ({
                 <div className="rounded-2xl border border-indigo-100 bg-white/80 p-5 text-sm text-gray-600">
                   <p className="text-xs font-semibold uppercase tracking-widest text-indigo-500">Positionnement</p>
                   <p className="mt-2 text-2xl font-bold text-gray-900">{complexity}</p>
-                  <p className="mt-2 text-sm text-gray-500">Cadrez l'ambition et les exigences de conformité associées.</p>
+                  <p className="mt-2 text-sm text-gray-500">Situez l'ambition du projet et le niveau d'engagement attendu.</p>
                 </div>
                 <div className="rounded-2xl border border-indigo-100 bg-white/80 p-5 text-sm text-gray-600">
                   <p className="text-xs font-semibold uppercase tracking-widest text-indigo-500">Squad mobilisée</p>
                   <p className="mt-2 text-2xl font-bold text-gray-900">{teamCount}</p>
                   <p className="mt-2 text-sm text-gray-500">
                     {teamCount > 0
-                      ? 'Équipe pluridisciplinaire prête à accélérer la mise en œuvre.'
-                      : 'Identifiez vos relais clés pour sécuriser la livraison.'}
+                      ? 'Équipe pluridisciplinaire alignée pour porter la proposition de valeur.'
+                      : 'Identifiez les ambassadeurs qui porteront le message sur le terrain.'}
                   </p>
                 </div>
                 <div className="rounded-2xl border border-indigo-100 bg-white/80 p-5 text-sm text-gray-600">
@@ -289,8 +289,8 @@ export const ProjectShowcase = ({
                   <p className="mt-2 text-2xl font-bold text-gray-900">{risks.length}</p>
                   <p className="mt-2 text-sm text-gray-500">
                     {risks.length > 0
-                      ? 'Plan de remédiation priorisé pour sécuriser la trajectoire.'
-                      : 'Pas de blocant identifié à ce stade : restez en alerte.'}
+                      ? 'Points de vigilance pris en charge pour préserver la promesse projet.'
+                      : 'Pas de blocant identifié : continuez à capitaliser sur vos forces.'}
                   </p>
                 </div>
               </div>
@@ -303,7 +303,7 @@ export const ProjectShowcase = ({
                   <Users className="text-lg text-indigo-500" />
                 </div>
                 <p className="mt-4 text-sm text-gray-600">
-                  Un collectif mobilisé pour transformer l'essai :
+                  Les alliés du projet qui font vivre la proposition de valeur :
                 </p>
                 <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
                   {normalizedTeams.map(team => (
@@ -344,7 +344,7 @@ export const ProjectShowcase = ({
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-semibold uppercase tracking-widest text-indigo-500">Feuille de route</p>
-                      <h3 className="mt-2 text-2xl font-bold text-gray-900">Les prochaines étapes à rythmer</h3>
+                      <h3 className="mt-2 text-2xl font-bold text-gray-900">Les temps forts à orchestrer</h3>
                     </div>
                     <Rocket className="text-2xl text-indigo-500" />
                   </div>
@@ -399,10 +399,9 @@ export const ProjectShowcase = ({
               <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <div>
                   <p className="text-sm font-semibold uppercase tracking-widest text-indigo-100">Prêt pour la suite ?</p>
-                  <h3 className="mt-2 text-3xl font-bold">Transformez la compliance en levier de performance</h3>
+                  <h3 className="mt-2 text-3xl font-bold">Amplifiez la portée de votre projet</h3>
                   <p className="mt-3 max-w-2xl text-sm text-indigo-100">
-                    Animez vos comités, diffusez une vision partagée et pilotez la mise en œuvre grâce à cette vitrine.
-                    Téléchargez le rapport détaillé ou lancez un atelier collectif dès maintenant.
+                    Activez les bons leviers pour convaincre sponsors et contributeurs : partagez cette vitrine, collectez des feedbacks et enclenchez la dynamique de déploiement.
                   </p>
                 </div>
                 <div className="flex flex-col gap-3 sm:flex-row">
@@ -410,13 +409,13 @@ export const ProjectShowcase = ({
                     href="#"
                     className="inline-flex items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-semibold text-indigo-600 shadow-lg transform transition hover:-translate-y-1"
                   >
-                    Télécharger la plaquette
+                    Diffuser la présentation
                   </a>
                   <a
                     href="#"
                     className="inline-flex items-center justify-center rounded-full border border-white px-6 py-3 text-sm font-semibold text-white hover:bg-white hover:bg-opacity-10"
                   >
-                    Programmer un workshop
+                    Coordonner les prochaines actions
                   </a>
                 </div>
               </div>
