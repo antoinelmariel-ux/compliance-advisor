@@ -43,7 +43,7 @@ Prototype React monopage d'aide à la décision compliance lancé directement de
 Aucune étape de build n'est nécessaire :
 1. Ouvrir `index.html` dans un navigateur moderne.
 2. Le point d'entrée `src/main.jsx` est compilé à la volée par Babel (préréglages `env` et `react`) et charge automatiquement les modules de l'application.
-3. React/ReactDOM et Tailwind CSS sont chargés via CDN UMD.
+3. React, ReactDOM et Babel Standalone sont embarqués localement (pas de dépendance CDN) ; Tailwind CSS reste chargé via CDN.
 
 ## Architecture de l'application
 - **`src/components`** : regroupe les composants d'interface réutilisables (navigation, formulaires, synthèses).
