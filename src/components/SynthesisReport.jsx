@@ -210,7 +210,7 @@ const buildEmailHtml = ({
                   const formattedAnswer = formatAsHtmlText(formatAnswer(question, answers[question.id]));
                   return `
                     <tr>
-                      <td style="width:40%; padding:12px 16px; font-size:13px; color:#4b5563; border-bottom:1px solid #e5e7eb;">
+                      <td style="width:40%; padding:12px 16px; font-size:13px; font-weight:700; color:#001f3f; border-bottom:1px solid #e5e7eb;">
                         ${questionLabel}
                       </td>
                       <td style="padding:12px 16px; font-size:14px; font-weight:600; color:#1f2937; border-bottom:1px solid #e5e7eb;">
@@ -377,6 +377,9 @@ const buildEmailHtml = ({
                 Complexité : ${escapeHtml(analysis.complexity)}
               </div>
             </div>
+            <p style="margin:0 0 20px; font-size:14px; color:#1f2937;">
+              Bonjour équipe Compliance, un nouveau projet a été soumis pour revue. Vous trouverez ci-dessous les informations principales.
+            </p>
             ${overviewSection}
             ${timelineSection}
             ${teamSection}
