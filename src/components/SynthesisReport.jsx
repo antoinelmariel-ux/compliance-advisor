@@ -148,7 +148,7 @@ const getTeamPriority = (analysis, teamId) => {
 };
 
 const escapeHtml = (value) => {
-  if (value === undefined || value === null) {
+  if (value === null || value === undefined) {
     return '';
   }
 
@@ -160,7 +160,11 @@ const escapeHtml = (value) => {
     .replace(/'/g, '&#39;');
 };
 
-const buildEmailBody = ({
+const formatAsHtmlText = (value) => {
+  return escapeHtml(value).replace(/\r?\n/g, '<br />');
+};
+
+const buildEmailHtml = ({
   projectName,
   questions,
   answers,
@@ -169,18 +173,7 @@ const buildEmailBody = ({
   timelineByTeam,
   timelineDetails
 }) => {
-  const lines = [];
   const title = projectName || 'Projet sans nom';
-
-  const addSection = (label) => {
-    if (lines.length > 0 && lines[lines.length - 1] !== '') {
-      lines.push('');
-    }
-    const normalizedLabel = label.trim();
-    lines.push(normalizedLabel);
-    lines.push('-'.repeat(normalizedLabel.length));
-  };
-
   const answeredQuestions = questions.filter(question => {
     const value = answers[question.id];
     if (value === null || value === undefined) {
@@ -198,112 +191,202 @@ const buildEmailBody = ({
     return true;
   });
 
-  lines.push(`Rapport de compliance – ${title}`);
-  lines.push(`Complexité estimée : ${analysis.complexity}`);
-
-  if (answeredQuestions.length > 0) {
-    addSection("Vue d'ensemble du projet");
-    answeredQuestions.forEach(question => {
-      lines.push(`• ${question.question}`);
-      lines.push(`  → ${formatAnswer(question, answers[question.id])}`);
-    });
-  }
-
+  const risks = Array.isArray(analysis?.risks) ? analysis.risks : [];
   const firstTimelineDetail = timelineDetails.find(detail => detail.diff);
   const hasTimelineData = Object.keys(timelineByTeam).length > 0 || Boolean(firstTimelineDetail);
 
-  if (hasTimelineData) {
-    addSection('Délais compliance recommandés');
+  const overviewSection = answeredQuestions.length
+    ? `
+        <div style="margin-bottom:24px;">
+          <h2 style="font-size:18px; font-weight:600; color:#1f2937; margin-bottom:12px;">
+            Vue d'ensemble du projet
+          </h2>
+          <table style="width:100%; border-collapse:collapse; background-color:#f9fafb; border-radius:12px; overflow:hidden;">
+            <tbody>
+              ${answeredQuestions
+                .map(question => {
+                  const questionLabel = escapeHtml(question.question);
+                  const formattedAnswer = formatAsHtmlText(formatAnswer(question, answers[question.id]));
+                  return `
+                    <tr>
+                      <td style="width:40%; padding:12px 16px; font-size:13px; color:#4b5563; border-bottom:1px solid #e5e7eb;">
+                        ${questionLabel}
+                      </td>
+                      <td style="padding:12px 16px; font-size:14px; font-weight:600; color:#1f2937; border-bottom:1px solid #e5e7eb;">
+                        ${formattedAnswer || '<span style="color:#9ca3af;">Non renseigné</span>'}
+                      </td>
+                    </tr>
+                  `;
+                })
+                .join('')}
+            </tbody>
+          </table>
+        </div>
+      `
+    : '';
 
-    if (firstTimelineDetail?.diff) {
-      lines.push(
-        `• Buffer projet : ${formatWeeksValue(firstTimelineDetail.diff.diffInWeeks)} (${formatDaysValue(firstTimelineDetail.diff.diffInDays)})`
-      );
-    } else {
-      lines.push('• Dates projet incomplètes : les délais sont fournis à titre indicatif.');
-    }
+  const timelineSection = hasTimelineData
+    ? `
+        <div style="margin-bottom:24px;">
+          <h2 style="font-size:18px; font-weight:600; color:#1f2937; margin-bottom:12px;">
+            Délais compliance recommandés
+          </h2>
+          <div style="background-color:#eef2ff; border:1px solid #c7d2fe; border-radius:12px; padding:16px; color:#312e81; font-size:14px; margin-bottom:16px;">
+            ${firstTimelineDetail?.diff
+              ? `Buffer projet : <strong>${escapeHtml(
+                  formatWeeksValue(firstTimelineDetail.diff.diffInWeeks)
+                )}</strong> (${escapeHtml(formatDaysValue(firstTimelineDetail.diff.diffInDays))})`
+              : 'Dates projet incomplètes : les délais sont fournis à titre indicatif.'}
+          </div>
+          ${relevantTeams
+            .map(team => {
+              const timelineInfo = computeTeamTimeline(timelineByTeam, team.id);
+              const teamName = escapeHtml(team.name);
 
-    relevantTeams.forEach(team => {
-      const timelineInfo = computeTeamTimeline(timelineByTeam, team.id);
+              if (!timelineInfo) {
+                return `
+                  <div style="border:1px solid #e5e7eb; border-radius:12px; padding:16px; margin-bottom:12px; background-color:#ffffff;">
+                    <h3 style="margin:0 0 8px; font-size:16px; font-weight:600; color:#1f2937;">${teamName}</h3>
+                    <p style="margin:0; font-size:14px; color:#4b5563;">Aucune exigence de délai configurée.</p>
+                  </div>
+                `;
+              }
 
-      lines.push('');
-      lines.push(`Equipe : ${team.name}`);
+              const entriesHtml = timelineInfo.entries
+                .map(entry => {
+                  const statusColor = entry.satisfied ? '#059669' : '#dc2626';
+                  const statusLabel = entry.satisfied ? 'Délai respecté' : 'Délai insuffisant';
+                  const requirementLabel = escapeHtml(formatRequirementValue(entry));
+                  const profileLabel = escapeHtml(entry.profileLabel);
 
-      if (!timelineInfo) {
-        lines.push("  • Aucune exigence de délai configurée");
-        return;
-      }
+                  return `
+                    <li style="margin-bottom:6px;">
+                      <span style="font-weight:600; color:#1f2937;">${profileLabel}</span>
+                      <span style="color:#4b5563;"> — ${requirementLabel}</span>
+                      <span style="color:${statusColor}; font-weight:600;"> (${statusLabel})</span>
+                    </li>
+                  `;
+                })
+                .join('');
 
-      lines.push(
-        `  • Buffer actuel : ${formatWeeksValue(timelineInfo.actualWeeks)} (${formatDaysValue(timelineInfo.actualDays)})`
-      );
-      lines.push(`  • Exigence la plus stricte : ${formatWeeksValue(timelineInfo.strictestRequirement)}`);
+              return `
+                <div style="border:1px solid #e5e7eb; border-radius:12px; padding:16px; margin-bottom:12px; background-color:#ffffff;">
+                  <h3 style="margin:0 0 8px; font-size:16px; font-weight:600; color:#1f2937;">${teamName}</h3>
+                  <p style="margin:0; font-size:14px; color:#4b5563;">
+                    Buffer actuel : <strong>${escapeHtml(formatWeeksValue(timelineInfo.actualWeeks))}</strong>
+                    (${escapeHtml(formatDaysValue(timelineInfo.actualDays))})
+                  </p>
+                  <p style="margin:4px 0 10px; font-size:14px; color:#4b5563;">
+                    Exigence la plus stricte : <strong>${escapeHtml(
+                      formatWeeksValue(timelineInfo.strictestRequirement)
+                    )}</strong>
+                  </p>
+                  <ul style="margin:0; padding-left:18px; list-style-type:disc; color:#4b5563; font-size:13px;">
+                    ${entriesHtml}
+                  </ul>
+                </div>
+              `;
+            })
+            .join('')}
+        </div>
+      `
+    : '';
 
-      timelineInfo.entries.forEach(entry => {
-        const status = entry.satisfied ? '✅ Délai respecté' : '⚠️ Délai insuffisant';
-        const requirementLabel = formatRequirementValue(entry);
-        lines.push(`    - ${entry.profileLabel} : ${requirementLabel} (${status})`);
-      });
-    });
-  }
+  const teamSection = relevantTeams.length
+    ? `
+        <div style="margin-bottom:24px;">
+          <h2 style="font-size:18px; font-weight:600; color:#1f2937; margin-bottom:12px;">
+            Équipes à mobiliser
+          </h2>
+          ${relevantTeams
+            .map(team => {
+              const teamPriority = getTeamPriority(analysis, team.id);
+              const teamQuestions = analysis.questions?.[team.id] || [];
+              const contact = team.contact ? `<span style="color:#4b5563;"> | Contact : ${escapeHtml(team.contact)}</span>` : '';
 
-  if (relevantTeams.length > 0) {
-    addSection('Équipes à mobiliser');
-    relevantTeams.forEach(team => {
-      const teamPriority = getTeamPriority(analysis, team.id);
-      const contact = team.contact ? ` | Contact : ${team.contact}` : '';
-      lines.push(`• ${team.name} — Priorité : ${teamPriority}${contact}`);
+              const questionsHtml = Array.isArray(teamQuestions) && teamQuestions.length
+                ? `
+                    <div style="margin-top:8px;">
+                      <span style="font-size:13px; color:#4b5563; font-weight:600;">Points à préparer :</span>
+                      <ul style="margin:8px 0 0; padding-left:18px; list-style-type:disc; color:#4b5563; font-size:13px;">
+                        ${teamQuestions
+                          .map(question => `<li>${escapeHtml(question)}</li>`)
+                          .join('')}
+                      </ul>
+                    </div>
+                  `
+                : '';
 
-      const teamQuestions = analysis.questions?.[team.id] || [];
-      if (Array.isArray(teamQuestions) && teamQuestions.length > 0) {
-        lines.push('  Points à préparer :');
-        teamQuestions.forEach(question => {
-          lines.push(`    • ${question}`);
-        });
-      }
-    });
-  }
+              return `
+                <div style="border:1px solid #e5e7eb; border-radius:12px; padding:16px; margin-bottom:12px; background-color:#f9fafb;">
+                  <div style="font-size:15px; font-weight:600; color:#1f2937;">
+                    ${escapeHtml(team.name)} — Priorité : ${escapeHtml(teamPriority)}${contact}
+                  </div>
+                  ${questionsHtml}
+                </div>
+              `;
+            })
+            .join('')}
+        </div>
+      `
+    : '';
 
-  if (analysis.risks.length > 0) {
-    addSection('Risques identifiés et actions');
-    analysis.risks.forEach(risk => {
-      lines.push(`• ${risk.level} — Priorité : ${risk.priority}`);
-      lines.push(`  Description : ${risk.description}`);
-      lines.push(`  Mitigation : ${risk.mitigation}`);
-    });
-  }
+  const riskSection = risks.length
+    ? `
+        <div style="margin-bottom:24px;">
+          <h2 style="font-size:18px; font-weight:600; color:#1f2937; margin-bottom:12px;">
+            Risques identifiés et actions
+          </h2>
+          ${risks
+            .map(risk => {
+              return `
+                <div style="border:1px solid #fee2e2; border-radius:12px; padding:16px; margin-bottom:12px; background-color:#fef2f2;">
+                  <div style="font-size:15px; font-weight:600; color:#b91c1c;">
+                    ${escapeHtml(risk.level)} — Priorité : ${escapeHtml(risk.priority)}
+                  </div>
+                  <p style="margin:8px 0 4px; font-size:14px; color:#4b5563;">
+                    <strong>Description :</strong> ${formatAsHtmlText(risk.description)}
+                  </p>
+                  <p style="margin:0; font-size:14px; color:#4b5563;">
+                    <strong>Mitigation :</strong> ${formatAsHtmlText(risk.mitigation)}
+                  </p>
+                </div>
+              `;
+            })
+            .join('')}
+        </div>
+      `
+    : '';
 
-  return lines.join('\n');
+  return `<!DOCTYPE html>
+    <html lang="fr">
+      <head>
+        <meta charset="UTF-8" />
+        <title>${escapeHtml(title)}</title>
+      </head>
+      <body style="margin:0; padding:0; background-color:#f3f4f6; font-family:'Segoe UI', Arial, sans-serif; color:#1f2937;">
+        <div style="max-width:720px; margin:0 auto; padding:32px 24px;">
+          <div style="background-color:#ffffff; border-radius:20px; padding:32px; box-shadow:0 10px 30px rgba(15, 23, 42, 0.08); border:1px solid #e5e7eb;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+              <div>
+                <h1 style="font-size:24px; color:#111827; margin:0 0 6px;">Rapport de Compliance</h1>
+                <p style="margin:0; color:#4b5563; font-size:14px;">${escapeHtml(title)}</p>
+              </div>
+              <div style="padding:10px 16px; background-color:#eef2ff; color:#4338ca; border-radius:9999px; font-weight:600; font-size:14px;">
+                Complexité : ${escapeHtml(analysis.complexity)}
+              </div>
+            </div>
+            ${overviewSection}
+            ${timelineSection}
+            ${teamSection}
+            ${riskSection}
+          </div>
+        </div>
+      </body>
+    </html>`;
 };
 
-const buildEmailHtmlBody = ({
-  projectName,
-  questions,
-  answers,
-  analysis,
-  relevantTeams,
-  timelineByTeam,
-  timelineDetails
-}) => {
-  const plainText = buildEmailBody({
-    projectName,
-    questions,
-    answers,
-    analysis,
-    relevantTeams,
-    timelineByTeam,
-    timelineDetails
-  });
-
-  const escaped = escapeHtml(plainText)
-    .split('\n\n')
-    .map(section => section.replace(/\n/g, '<br/>'))
-    .join('<br/><br/>');
-
-  return `<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8" /></head><body style="font-family: Arial, sans-serif; white-space: normal;">${escaped}</body></html>`;
-};
-
-const buildMailtoLink = ({ projectName, relevantTeams, emailBody }) => {
+const buildMailtoLink = ({ projectName, relevantTeams, emailHtml }) => {
   const recipients = relevantTeams
     .map(team => (team.contact || '').trim())
     .filter(contact => contact.length > 0);
@@ -313,7 +396,9 @@ const buildMailtoLink = ({ projectName, relevantTeams, emailBody }) => {
   const params = new URLSearchParams();
 
   params.set('subject', subject);
-  params.set('body', emailBody);
+  const normalizedBody = emailHtml.replace(/\r?\n/g, '\r\n');
+  params.set('body', normalizedBody);
+  params.set('content-type', 'text/html; charset=UTF-8');
 
   const paramString = params.toString();
   const prefix = toField ? `mailto:${toField}` : 'mailto:';
@@ -351,7 +436,7 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
   const projectName = extractProjectName(answers, questions);
 
   const handleSubmitByEmail = () => {
-    const emailBody = buildEmailHtmlBody({
+    const emailHtml = buildEmailHtml({
       projectName,
       questions,
       answers,
@@ -361,7 +446,7 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
       timelineDetails
     });
 
-    const mailtoLink = buildMailtoLink({ projectName, relevantTeams, emailBody });
+    const mailtoLink = buildMailtoLink({ projectName, relevantTeams, emailHtml });
     if (typeof window !== 'undefined') {
       window.location.href = mailtoLink;
     }
