@@ -386,6 +386,48 @@ const buildEmailHtml = ({
     </html>`;
 };
 
+const decodeHtmlEntities = (text) =>
+  text
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
+
+const buildPlainTextEmail = (html) => {
+  if (!html) {
+    return '';
+  }
+
+  let text = html
+    .replace(/<!DOCTYPE[^>]*>/gi, '')
+    .replace(/<head[\s\S]*?<\/head>/gi, '')
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<script[\s\S]*?<\/script>/gi, '');
+
+  text = text
+    .replace(/<br\s*\/?\s*>/gi, '\n')
+    .replace(/<\/(?:p|div|section|article)\s*>/gi, '\n\n')
+    .replace(/<\/(?:h[1-6])\s*>/gi, '\n')
+    .replace(/<\/(?:ul|ol)\s*>/gi, '\n')
+    .replace(/<li\s*>/gi, '• ')
+    .replace(/<\/(?:tr)\s*>/gi, '\n')
+    .replace(/<\/(?:td|th)\s*>/gi, '\t');
+
+  text = text.replace(/<[^>]+>/g, '');
+  text = decodeHtmlEntities(text);
+
+  text = text
+    .replace(/\r/g, '')
+    .replace(/\t+/g, ' ')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n[ \t]+/g, '\n')
+    .replace(/\n{3,}/g, '\n\n');
+
+  return text.trim();
+};
+
 const buildMailtoLink = ({ projectName, relevantTeams, emailHtml }) => {
   const recipients = relevantTeams
     .map(team => (team.contact || '').trim())
@@ -396,9 +438,9 @@ const buildMailtoLink = ({ projectName, relevantTeams, emailHtml }) => {
   const params = new URLSearchParams();
 
   params.set('subject', subject);
-  const normalizedBody = emailHtml.replace(/\r?\n/g, '\r\n');
+  const emailText = buildPlainTextEmail(emailHtml);
+  const normalizedBody = emailText.replace(/\r?\n/g, '\r\n');
   params.set('body', normalizedBody);
-  params.set('content-type', 'text/html; charset=UTF-8');
 
   const paramString = params.toString();
   const prefix = toField ? `mailto:${toField}` : 'mailto:';
