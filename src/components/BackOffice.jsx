@@ -452,22 +452,22 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8 hv-background">
+    <div className="min-h-screen bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 hv-background">
       <div className="max-w-7xl mx-auto space-y-6">
-        <div className="bg-white rounded-2xl shadow-xl p-8 hv-surface" role="region" aria-label="Back-office compliance">
-          <header className="flex items-center justify-between mb-8">
+        <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 hv-surface" role="region" aria-label="Back-office compliance">
+          <header className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between mb-8">
             <div className="flex items-center space-x-3">
               <span className="inline-flex items-center justify-center w-12 h-12 bg-indigo-600 text-white rounded-xl">
                 <Settings className="w-6 h-6" />
               </span>
               <div>
-                <h1 className="text-3xl font-bold text-gray-800">Back-Office Compliance</h1>
+                <h1 className="text-2xl font-bold text-gray-800 sm:text-3xl">Back-Office Compliance</h1>
                 <p className="text-sm text-gray-500">Configurez vos référentiels et automatisations</p>
               </div>
             </div>
           </header>
 
-          <nav className="flex space-x-2 border-b border-gray-200 pb-2 mb-6" role="tablist" aria-label="Navigation back-office">
+          <nav className="flex flex-wrap gap-2 border-b border-gray-200 pb-2 mb-6" role="tablist" aria-label="Navigation back-office">
             {tabDefinitions.map((tab) => (
               <button
                 key={tab.id}
@@ -491,7 +491,7 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
           {activeTab === 'questions' && (
             <section id="backoffice-tabpanel-questions" role="tabpanel" aria-labelledby="backoffice-tab-questions" className="space-y-4">
               <div className="sr-only" aria-live="polite">{reorderAnnouncement}</div>
-              <div className="flex justify-between items-center">
+              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
                   <h2 className="text-2xl font-bold text-gray-800">Gestion des questions</h2>
                   <p className="text-sm text-gray-600">Définissez les questions et leur logique d'affichage conditionnel.</p>
@@ -499,7 +499,7 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
                 <button
                   type="button"
                   onClick={addQuestion}
-                  className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg shadow-sm hover:bg-indigo-700 hv-button hv-button-primary"
+                  className="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white rounded-lg shadow-sm hover:bg-indigo-700 hv-button hv-button-primary w-full sm:w-auto text-sm sm:text-base"
                 >
                   <Plus className="w-5 h-5 mr-2" />
                   Ajouter une question
@@ -530,7 +530,7 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
                     onDragOver={(event) => handleDragOver(event, index)}
                     onDrop={(event) => handleDrop(event, index)}
                   >
-                    <header className="flex justify-between items-start">
+                    <header className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                       <div className="space-y-2">
                         <div className="flex items-center space-x-3">
                           <span className="text-xs font-semibold uppercase tracking-wide bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full">
@@ -548,7 +548,7 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
                         <p className="text-sm text-gray-500">{typeMeta.description}</p>
                       </div>
 
-                      <div className="flex items-center space-x-2">
+                      <div className="flex flex-wrap gap-2">
                         <button
                           type="button"
                           className="p-2 text-gray-500 hover:text-indigo-600 rounded hv-button cursor-move"
@@ -669,7 +669,7 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
 
           {activeTab === 'rules' && (
             <section id="backoffice-tabpanel-rules" role="tabpanel" aria-labelledby="backoffice-tab-rules" className="space-y-4">
-              <div className="flex justify-between items-center">
+              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
                   <h2 className="text-2xl font-bold text-gray-800">Gestion des règles</h2>
                   <p className="text-sm text-gray-600">Identifiez les combinaisons à risque et les équipes concernées.</p>
@@ -677,7 +677,7 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
                 <button
                   type="button"
                   onClick={addRule}
-                  className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg shadow-sm hover:bg-indigo-700 hv-button hv-button-primary"
+                  className="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white rounded-lg shadow-sm hover:bg-indigo-700 hv-button hv-button-primary w-full sm:w-auto text-sm sm:text-base"
                 >
                   <Plus className="w-5 h-5 mr-2" />
                   Ajouter une règle
@@ -697,7 +697,7 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
 
                 return (
                   <article key={rule.id} className="border border-gray-200 rounded-xl p-6 bg-white shadow-sm hv-surface">
-                    <header className="flex justify-between items-start">
+                    <header className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                       <div className="space-y-1">
                         <div className="flex items-center space-x-3 text-sm text-gray-500">
                           <span className="bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full font-semibold">{rule.id}</span>
@@ -705,7 +705,7 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
                         </div>
                         <h3 className="text-xl font-semibold text-gray-800">{rule.name}</h3>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex flex-wrap gap-2">
                         <button
                           type="button"
                           onClick={() => setEditingRule(rule)}
@@ -790,7 +790,7 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
 
           {activeTab === 'teams' && (
             <section id="backoffice-tabpanel-teams" role="tabpanel" aria-labelledby="backoffice-tab-teams" className="space-y-4">
-              <div className="flex justify-between items-center">
+              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
                   <h2 className="text-2xl font-bold text-gray-800">Gestion des équipes</h2>
                   <p className="text-sm text-gray-600">Définissez les équipes contactées selon les scénarios identifiés.</p>
@@ -798,7 +798,7 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
                 <button
                   type="button"
                   onClick={addTeam}
-                  className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg shadow-sm hover:bg-indigo-700 hv-button hv-button-primary"
+                  className="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white rounded-lg shadow-sm hover:bg-indigo-700 hv-button hv-button-primary w-full sm:w-auto text-sm sm:text-base"
                 >
                   <Plus className="w-5 h-5 mr-2" />
                   Ajouter une équipe
@@ -814,7 +814,7 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {teams.map((team, index) => (
                   <article key={team.id} className="border border-gray-200 rounded-xl p-6 bg-white shadow-sm hv-surface" aria-label={`Équipe ${team.name}`}>
-                    <div className="flex items-start justify-between mb-4">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-4">
                       <input
                         type="text"
                         value={team.name}
@@ -822,14 +822,16 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
                         className="text-lg font-semibold text-gray-800 border-b border-transparent focus:border-indigo-600 focus:outline-none flex-1 hv-focus-ring"
                         aria-label={`Nom de l'équipe ${team.id}`}
                       />
-                      <button
-                        type="button"
-                        onClick={() => deleteTeam(team.id)}
-                        className="ml-3 p-2 text-red-600 hover:bg-red-50 rounded hv-button"
-                        aria-label={`Supprimer l'équipe ${team.name}`}
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </button>
+                      <div className="flex justify-end sm:justify-start">
+                        <button
+                          type="button"
+                          onClick={() => deleteTeam(team.id)}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded hv-button"
+                          aria-label={`Supprimer l'équipe ${team.name}`}
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                      </div>
                     </div>
 
                     <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1" htmlFor={`${team.id}-contact`}>

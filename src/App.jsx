@@ -197,23 +197,27 @@ export const App = () => {
   return (
     <div className="min-h-screen">
       <nav className="bg-white shadow-sm border-b border-gray-200 hv-surface">
-        <div className="max-w-7xl mx-auto px-8 py-4">
-          <div className="flex justify-between items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 py-4">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center">
                 <CheckCircle className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-800">Compliance Advisor</h1>
+                <h1 className="text-lg font-bold text-gray-800 sm:text-xl">Compliance Advisor</h1>
                 <p className="text-xs text-gray-500">Outil d'aide à la décision</p>
               </div>
             </div>
 
-            <div className="flex space-x-3" role="group" aria-label="Sélection du mode d'affichage">
+            <div
+              className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-3 lg:justify-end"
+              role="group"
+              aria-label="Sélection du mode d'affichage"
+            >
               <button
                 type="button"
                 onClick={() => setMode('user')}
-                className={`px-4 py-2 rounded-lg font-medium transition-all hv-button ${
+                className={`w-full sm:w-auto px-4 py-2 rounded-lg font-medium text-sm sm:text-base transition-all hv-button ${
                   mode === 'user'
                     ? 'bg-indigo-600 text-white hv-button-primary'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -226,7 +230,7 @@ export const App = () => {
               <button
                 type="button"
                 onClick={() => setMode('admin')}
-                className={`px-4 py-2 rounded-lg font-medium transition-all hv-button ${
+                className={`w-full sm:w-auto px-4 py-2 rounded-lg font-medium text-sm sm:text-base transition-all hv-button ${
                   mode === 'admin'
                     ? 'bg-indigo-600 text-white hv-button-primary'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -239,7 +243,7 @@ export const App = () => {
               <button
                 type="button"
                 onClick={handleToggleHighVisibility}
-                className={`px-4 py-2 rounded-lg font-medium transition-all hv-button hv-focus-ring ${
+                className={`w-full sm:w-auto px-4 py-2 rounded-lg font-medium text-sm sm:text-base transition-all hv-button hv-focus-ring ${
                   isHighVisibility ? 'hv-button-primary' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
                 aria-pressed={isHighVisibility}

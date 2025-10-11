@@ -91,7 +91,7 @@ export const QuestionnaireScreen = ({
       case 'date':
         return (
           <div className="mb-8">
-            <label className="block text-sm font-medium text-gray-700 mb-3" htmlFor={`${currentQuestion.id}-date`}>
+            <label className="block text-sm sm:text-base font-medium text-gray-700 mb-3" htmlFor={`${currentQuestion.id}-date`}>
               <span className="flex items-center">
                 <Calendar className="w-4 h-4 mr-2" />
                 Sélectionnez une date
@@ -103,7 +103,7 @@ export const QuestionnaireScreen = ({
               onChange={(e) => onAnswer(currentQuestion.id, e.target.value)}
               id={`${currentQuestion.id}-date`}
               aria-describedby={currentIndex === 0 ? instructionsId : undefined}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent hv-focus-ring"
+              className="w-full px-4 py-2.5 sm:py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent hv-focus-ring"
             />
             <p className="text-xs text-gray-500 mt-2">
               Utilisez le sélecteur ou le format AAAA-MM-JJ pour garantir une analyse correcte.
@@ -122,7 +122,7 @@ export const QuestionnaireScreen = ({
                 <label
                   key={idx}
                   htmlFor={optionId}
-                  className={`w-full p-4 flex items-center justify-between rounded-xl border-2 transition-all duration-200 cursor-pointer hv-focus-ring ${
+                  className={`w-full p-3 sm:p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border-2 transition-all duration-200 cursor-pointer hv-focus-ring ${
                     isSelected
                       ? 'border-indigo-600 bg-indigo-50 text-indigo-900'
                       : 'border-gray-200 hover:border-indigo-300 hover:bg-gray-50'
@@ -138,9 +138,9 @@ export const QuestionnaireScreen = ({
                       onChange={() => onAnswer(currentQuestion.id, option)}
                       className="w-5 h-5 text-indigo-600 border-gray-300 focus:ring-indigo-500 hv-focus-ring"
                     />
-                    <span className="ml-3 font-medium">{option}</span>
+                    <span className="ml-3 font-medium text-sm sm:text-base">{option}</span>
                   </div>
-                  {isSelected && <CheckCircle className="w-5 h-5 text-indigo-600" />}
+                  {isSelected && <CheckCircle className="w-5 h-5 text-indigo-600 self-end sm:self-auto" />}
                 </label>
               );
             })}
@@ -168,7 +168,7 @@ export const QuestionnaireScreen = ({
                 <label
                   key={idx}
                   htmlFor={optionId}
-                  className={`w-full p-4 flex items-center justify-between rounded-xl border-2 transition-all duration-200 cursor-pointer hv-focus-ring ${
+                  className={`w-full p-3 sm:p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border-2 transition-all duration-200 cursor-pointer hv-focus-ring ${
                     isSelected
                       ? 'border-indigo-600 bg-indigo-50 text-indigo-900'
                       : 'border-gray-200 hover:border-indigo-300 hover:bg-gray-50'
@@ -182,9 +182,9 @@ export const QuestionnaireScreen = ({
                       id={optionId}
                       className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 hv-focus-ring"
                     />
-                    <span className="ml-3 font-medium">{option}</span>
+                    <span className="ml-3 font-medium text-sm sm:text-base">{option}</span>
                   </div>
-                  {isSelected && <CheckCircle className="w-5 h-5 text-indigo-600" />}
+                  {isSelected && <CheckCircle className="w-5 h-5 text-indigo-600 self-end sm:self-auto" />}
                 </label>
               );
             })}
@@ -193,7 +193,7 @@ export const QuestionnaireScreen = ({
       case 'text':
         return (
           <div className="mb-8">
-            <label className="block text-sm font-medium text-gray-700 mb-3" htmlFor={`${currentQuestion.id}-text`}>
+            <label className="block text-sm sm:text-base font-medium text-gray-700 mb-3" htmlFor={`${currentQuestion.id}-text`}>
               Renseignez votre réponse
             </label>
             <input
@@ -202,7 +202,7 @@ export const QuestionnaireScreen = ({
               onChange={(e) => onAnswer(currentQuestion.id, e.target.value)}
               placeholder="Saisissez une réponse en une ligne"
               id={`${currentQuestion.id}-text`}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent hv-focus-ring"
+              className="w-full px-4 py-2.5 sm:py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent hv-focus-ring"
             />
             <p className="text-xs text-gray-500 mt-2">
               Utilisez ce champ pour des réponses courtes sous forme de texte libre.
@@ -212,7 +212,7 @@ export const QuestionnaireScreen = ({
       case 'long_text':
         return (
           <div className="mb-8">
-            <label className="block text-sm font-medium text-gray-700 mb-3" htmlFor={`${currentQuestion.id}-long-text`}>
+            <label className="block text-sm sm:text-base font-medium text-gray-700 mb-3" htmlFor={`${currentQuestion.id}-long-text`}>
               Décrivez les éléments pertinents
             </label>
             <textarea
@@ -221,7 +221,7 @@ export const QuestionnaireScreen = ({
               placeholder="Renseignez ici les informations détaillées..."
               rows={5}
               id={`${currentQuestion.id}-long-text`}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-y hv-focus-ring"
+              className="w-full px-4 py-2.5 sm:py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-y hv-focus-ring"
             />
             <p className="text-xs text-gray-500 mt-2">
               Ce champ accepte plusieurs lignes : structurez votre réponse librement.
@@ -231,7 +231,7 @@ export const QuestionnaireScreen = ({
       case 'number':
         return (
           <div className="mb-8">
-            <label className="block text-sm font-medium text-gray-700 mb-3" htmlFor={`${currentQuestion.id}-number`}>
+            <label className="block text-sm sm:text-base font-medium text-gray-700 mb-3" htmlFor={`${currentQuestion.id}-number`}>
               Renseignez une valeur numérique
             </label>
             <input
@@ -240,7 +240,7 @@ export const QuestionnaireScreen = ({
               value={currentAnswer ?? ''}
               onChange={(e) => onAnswer(currentQuestion.id, e.target.value)}
               id={`${currentQuestion.id}-number`}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent hv-focus-ring"
+              className="w-full px-4 py-2.5 sm:py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent hv-focus-ring"
             />
             <p className="text-xs text-gray-500 mt-2">
               Vous pouvez saisir un nombre entier ou décimal.
@@ -250,7 +250,7 @@ export const QuestionnaireScreen = ({
       case 'url':
         return (
           <div className="mb-8">
-            <label className="block text-sm font-medium text-gray-700 mb-3" htmlFor={`${currentQuestion.id}-url`}>
+            <label className="block text-sm sm:text-base font-medium text-gray-700 mb-3" htmlFor={`${currentQuestion.id}-url`}>
               Indiquez une adresse URL
             </label>
             <input
@@ -259,7 +259,7 @@ export const QuestionnaireScreen = ({
               onChange={(e) => onAnswer(currentQuestion.id, e.target.value)}
               placeholder="https://exemple.com"
               id={`${currentQuestion.id}-url`}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent hv-focus-ring"
+              className="w-full px-4 py-2.5 sm:py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent hv-focus-ring"
             />
             <p className="text-xs text-gray-500 mt-2">
               Incluez le protocole (https://) pour une URL valide.
@@ -269,7 +269,7 @@ export const QuestionnaireScreen = ({
       case 'file':
         return (
           <div className="mb-8">
-            <label className="block text-sm font-medium text-gray-700 mb-3" htmlFor={`${currentQuestion.id}-file`}>
+            <label className="block text-sm sm:text-base font-medium text-gray-700 mb-3" htmlFor={`${currentQuestion.id}-file`}>
               Téléversez un fichier de référence
             </label>
             <input
@@ -307,15 +307,15 @@ export const QuestionnaireScreen = ({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-8 hv-background">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 px-4 py-6 sm:px-8 sm:py-10 hv-background">
       <div className="max-w-3xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-xl p-8 hv-surface">
+        <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 hv-surface">
           <div className="mb-8">
-            <div className="flex justify-between items-center mb-2">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-2">
               <span id={progressLabelId} className="text-sm font-medium text-gray-600 hv-text-muted" aria-live="polite">
                 Question {currentIndex + 1} sur {questions.length}
               </span>
-              <span className="text-sm font-medium text-indigo-600" aria-live="polite">
+              <span className="text-sm font-medium text-indigo-600 sm:text-right" aria-live="polite">
                 {Math.round(progress)}% complété
               </span>
             </div>
@@ -341,12 +341,12 @@ export const QuestionnaireScreen = ({
           </div>
 
           <div className="mb-8">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <h2 id={questionTextId} className="text-3xl font-bold text-gray-800">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              <h2 id={questionTextId} className="text-2xl font-bold text-gray-800 sm:text-3xl">
                 {currentQuestion.question}
               </h2>
               {!currentQuestion.required && (
-                <span className="inline-flex items-center px-3 py-1 text-xs font-semibold uppercase tracking-wide bg-gray-100 text-gray-600 rounded-full border border-gray-200 hv-badge">
+                <span className="inline-flex items-center px-3 py-1 text-xs font-semibold uppercase tracking-wide bg-gray-100 text-gray-600 rounded-full border border-gray-200 hv-badge self-start">
                   Réponse facultative
                 </span>
               )}
@@ -354,7 +354,7 @@ export const QuestionnaireScreen = ({
                 <button
                   type="button"
                   onClick={() => setShowGuidance(prev => !prev)}
-                  className={`inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg border transition-all hv-button hv-focus-ring ${
+                  className={`inline-flex items-center justify-center w-full sm:w-auto px-4 py-2 text-sm font-medium rounded-lg border transition-all hv-button hv-focus-ring ${
                     showGuidance
                       ? 'bg-indigo-600 text-white border-indigo-600 hover:bg-indigo-700'
                       : 'bg-indigo-50 text-indigo-600 border-indigo-200 hover:bg-indigo-100'
@@ -499,12 +499,16 @@ export const QuestionnaireScreen = ({
 
           {renderQuestionInput()}
 
-          <div className={`flex ${currentIndex === 0 ? 'justify-end' : 'justify-between'}`}>
+          <div
+            className={`flex flex-col-reverse gap-3 sm:flex-row ${
+              currentIndex === 0 ? 'sm:justify-end' : 'sm:justify-between'
+            }`}
+          >
             {currentIndex > 0 && (
               <button
                 type="button"
                 onClick={onBack}
-                className="flex items-center px-6 py-3 rounded-lg font-medium text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all hv-button"
+                className="flex items-center justify-center px-6 py-3 rounded-lg font-medium text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all hv-button w-full sm:w-auto text-sm sm:text-base"
               >
                 <ChevronLeft className="w-5 h-5 mr-2" />
                 Précédent
@@ -514,7 +518,7 @@ export const QuestionnaireScreen = ({
             <button
               type="button"
               onClick={onNext}
-              className="flex items-center px-6 py-3 rounded-lg font-medium bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all hv-button hv-button-primary"
+              className="flex items-center justify-center px-6 py-3 rounded-lg font-medium bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all hv-button hv-button-primary w-full sm:w-auto text-sm sm:text-base"
             >
               {currentIndex === questions.length - 1 ? 'Voir la synthèse' : 'Suivant'}
               <ChevronRight className="w-5 h-5 ml-2" />

@@ -505,17 +505,17 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-8 hv-background">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 px-4 py-6 sm:px-8 sm:py-10 hv-background">
       <div className="max-w-6xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-xl p-8 mb-6 hv-surface" role="region" aria-label="Synthèse du projet">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-4xl font-bold text-gray-800">Rapport de Compliance</h1>
-            <div className="flex space-x-3">
+        <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 mb-6 hv-surface" role="region" aria-label="Synthèse du projet">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between mb-6">
+            <h1 className="text-3xl font-bold text-gray-800 sm:text-4xl">Rapport de Compliance</h1>
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-3 w-full lg:w-auto">
               {onBack && (
                 <button
                   type="button"
                   onClick={onBack}
-                  className="px-4 py-2 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg font-medium text-gray-700 transition-all hv-button hv-focus-ring"
+                  className="px-4 py-2 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg font-medium text-gray-700 transition-all hv-button hv-focus-ring w-full sm:w-auto justify-center text-sm sm:text-base"
                 >
                   Retour au questionnaire
                 </button>
@@ -523,7 +523,7 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
               <button
                 type="button"
                 onClick={handleSubmitByEmail}
-                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-all flex items-center hv-button hv-button-primary"
+                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-all flex items-center justify-center hv-button hv-button-primary w-full sm:w-auto text-sm sm:text-base"
               >
                 <Send className="w-4 h-4 mr-2" />
                 Soumettre par e-mail
@@ -531,7 +531,7 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
               <button
                 type="button"
                 onClick={handleOpenShowcase}
-                className="px-4 py-2 bg-white border border-indigo-200 text-indigo-600 hover:bg-indigo-50 rounded-lg font-medium transition-all flex items-center hv-button hv-focus-ring"
+                className="px-4 py-2 bg-white border border-indigo-200 text-indigo-600 hover:bg-indigo-50 rounded-lg font-medium transition-all flex items-center justify-center hv-button hv-focus-ring w-full sm:w-auto text-sm sm:text-base"
               >
                 <Sparkles className="w-4 h-4 mr-2" />
                 Vitrine du projet
@@ -539,7 +539,7 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
               <button
                 type="button"
                 onClick={onRestart}
-                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium text-gray-700 transition-all hv-button"
+                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium text-gray-700 transition-all hv-button w-full sm:w-auto justify-center text-sm sm:text-base"
               >
                 Nouveau projet
               </button>
@@ -547,7 +547,7 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
           </div>
 
           {/* Vue d'ensemble */}
-          <section className="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl p-6 mb-8 border border-indigo-200 hv-surface" aria-labelledby="overview-heading">
+          <section className="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl p-5 sm:p-6 mb-8 border border-indigo-200 hv-surface" aria-labelledby="overview-heading">
             <h2 id="overview-heading" className="text-xl font-bold text-gray-800 mb-4 flex items-center">
               <FileText className="w-6 h-6 mr-2 text-indigo-600" />
               Vue d'ensemble du projet
@@ -564,7 +564,7 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
                 ) : null
               )}
             </div>
-            <div className="mt-6 flex items-center justify-between bg-white rounded-lg p-4 border border-gray-200 hv-surface" role="status" aria-live="polite">
+            <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between bg-white rounded-lg p-4 border border-gray-200 hv-surface" role="status" aria-live="polite">
               <span className="font-medium text-gray-700">Niveau de complexité compliance :</span>
               <span className={`text-xl font-bold ${complexityColors[analysis.complexity]}`}>
                 {analysis.complexity}
@@ -578,7 +578,7 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
                 <Calendar className="w-6 h-6 mr-2 text-indigo-600" />
                 Délais compliance recommandés
               </h2>
-              {firstTimelineDetail?.diff ? (
+                {firstTimelineDetail?.diff ? (
                 <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-4 text-sm text-gray-700 hv-surface">
                   <span className="font-semibold text-gray-800">Buffer projet calculé :</span>{' '}
                   {formatWeeksValue(firstTimelineDetail.diff.diffInWeeks)}
@@ -597,7 +597,7 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
                   if (!timelineInfo) {
                     return (
                       <div key={team.id} className="bg-white rounded-xl border border-gray-200 p-5 hv-surface">
-                        <div className="flex justify-between items-start mb-2">
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between mb-2">
                           <h3 className="text-lg font-bold text-gray-800">{team.name}</h3>
                           <span className="px-3 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-600 border border-gray-200 hv-badge">
                             Pas d'exigence
@@ -616,22 +616,22 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
 
                   return (
                     <div key={team.id} className="bg-white rounded-xl border border-gray-200 p-5 hv-surface" role="article" aria-label={`Exigences de délai pour ${team.name}`}>
-                      <div className="flex justify-between items-start mb-3">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-3">
                         <div>
                           <h3 className="text-lg font-bold text-gray-800">{team.name}</h3>
                           <p className="text-xs text-gray-500">{team.expertise}</p>
                         </div>
-                        <span className={`px-3 py-1 text-xs font-semibold rounded-full border ${statusClasses}`}>
+                        <span className={`px-3 py-1 text-xs font-semibold rounded-full border ${statusClasses} self-start sm:self-auto`}>
                           {timelineInfo.meetsAll ? 'Délai suffisant' : 'Délai insuffisant'}
                         </span>
                       </div>
 
                       <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm text-gray-700 mb-3 hv-surface">
-                        <div className="flex justify-between">
+                        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                           <span className="font-medium text-gray-800">Buffer actuel</span>
                           <span>{formatWeeksValue(timelineInfo.actualWeeks)} ({formatDaysValue(timelineInfo.actualDays)})</span>
                         </div>
-                        <div className="flex justify-between mt-1">
+                        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between mt-2 sm:mt-1">
                           <span className="text-gray-600">Exigence la plus stricte</span>
                           <span>{formatWeeksValue(timelineInfo.strictestRequirement)}</span>
                         </div>
@@ -722,7 +722,7 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
             <div className="space-y-3">
               {analysis.risks.map((risk, idx) => (
                 <div key={idx} className={`p-4 rounded-xl border hv-surface ${riskColors[risk.level]}`} role="article" aria-label={`Risque ${risk.level}`}>
-                  <div className="flex justify-between items-center mb-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                     <span className="text-sm font-semibold text-gray-700">{risk.level}</span>
                     <span className={`px-3 py-1 rounded-full text-xs font-semibold border hv-badge ${priorityColors[risk.priority]}`}>
                       {risk.priority}
