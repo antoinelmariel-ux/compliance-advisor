@@ -36,6 +36,7 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
       options: ['Option 1', 'Option 2'],
       required: true,
       conditions: [],
+      conditionLogic: 'all',
       guidance: {
         objective: '',
         details: '',
@@ -67,6 +68,7 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
       id: `rule${rules.length + 1}`,
       name: 'Nouvelle règle',
       conditions: [],
+      conditionLogic: 'all',
       teams: [],
       questions: {},
       risks: [],
@@ -269,14 +271,15 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
                         {q.conditions && q.conditions.length > 0 ? (
                           <div className="mt-3 bg-green-50 rounded-lg p-3 border border-green-200">
                             <p className="text-xs font-semibold text-green-800 mb-1">
-                              🎯 Conditions d'affichage :
+                              🎯 Conditions d'affichage ({q.conditionLogic === 'any' ? 'logique OU' : 'logique ET'})
                             </p>
                             <div className="space-y-1">
                               {q.conditions.map((cond, condIdx) => {
                                 const refQuestion = questions.find(rq => rq.id === cond.question);
+                                const connectorLabel = q.conditionLogic === 'any' ? 'OU' : 'ET';
                                 return (
                                   <div key={condIdx} className="text-xs text-green-700">
-                                    {condIdx > 0 && <strong>ET </strong>}
+                                    {condIdx > 0 && <strong>{connectorLabel} </strong>}
                                     <span className="font-mono bg-white px-2 py-0.5 rounded">
                                       {refQuestion?.id || cond.question}{' '}
                                       {cond.operator === 'equals' ? '=' : cond.operator === 'not_equals' ? '≠' : 'contient'}{' '}
@@ -430,10 +433,13 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-700">
                       <div>
-                        <h4 className="font-semibold text-gray-800 mb-2">Conditions</h4>
+                        <h4 className="font-semibold text-gray-800 mb-2">
+                          Conditions ({ruleItem.conditionLogic === 'any' ? 'logique OU' : 'logique ET'})
+                        </h4>
                         <ul className="space-y-1">
                           {ruleItem.conditions.map((condition, idx) => {
                             const conditionType = condition.type || 'question';
+                            const connectorLabel = ruleItem.conditionLogic === 'any' ? 'OU' : 'ET';
 
                             if (conditionType === 'timing') {
                               const startQuestion = questions.find(q => q.id === condition.startQuestion);
@@ -466,6 +472,11 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
                                 <li key={idx} className="flex items-start">
                                   <span className="text-indigo-500 mr-2">•</span>
                                   <div>
+                                    {idx > 0 && (
+                                      <span className="inline-flex items-center px-2 py-0.5 mb-2 text-[11px] font-semibold uppercase tracking-wide rounded-full bg-indigo-100 text-indigo-700">
+                                        {connectorLabel}
+                                      </span>
+                                    )}
                                     <div className="font-medium text-gray-800">
                                       Fenêtre entre « {startLabel} » et « {endLabel} »
                                     </div>
@@ -493,7 +504,7 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
                                                 </span>
                                                 <span className="text-indigo-600 font-mono">
                                                   {profile.conditions && profile.conditions.length > 0
-                                                    ? `${profile.conditions.length} condition(s)`
+                                                    ? `${profile.conditions.length} condition(s) • ${profile.conditionLogic === 'any' ? 'OU' : 'ET'}`
                                                     : 'Par défaut'}
                                                 </span>
                                               </div>
@@ -551,7 +562,11 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
 
                                                     return (
                                                       <div key={condIdx}>
-                                                        {condIdx === 0 ? 'Si ' : 'et '}
+                                                        {condIdx === 0
+                                                          ? 'Si '
+                                                          : profile.conditionLogic === 'any'
+                                                            ? 'ou '
+                                                            : 'et '}
                                                         <span className="font-mono bg-gray-100 px-1 py-0.5 rounded">
                                                           {refQuestion?.id || cond.question}
                                                         </span>{' '}
@@ -579,6 +594,11 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
                               <li key={idx} className="flex items-start">
                                 <span className="text-indigo-500 mr-2">•</span>
                                 <span>
+                                  {idx > 0 && (
+                                    <span className="inline-flex items-center px-2 py-0.5 mr-2 text-[11px] font-semibold uppercase tracking-wide rounded-full bg-indigo-100 text-indigo-700">
+                                      {connectorLabel}
+                                    </span>
+                                  )}
                                   {condition.question} {condition.operator === 'equals' ? '=' : condition.operator === 'not_equals' ? '≠' : 'contient'} "{condition.value}"
                                 </span>
                               </li>

@@ -28,6 +28,7 @@ export const RuleEditor = ({ rule, onSave, onCancel, questions, teams }) => {
           label: profile.label || '',
           description: profile.description || '',
           requirements: profile.requirements || {},
+          conditionLogic: profile.conditionLogic === 'any' ? 'any' : 'all',
           conditions: (profile.conditions || []).map(cond => ({
             question: cond.question || '',
             operator: cond.operator || 'equals',
@@ -48,6 +49,7 @@ export const RuleEditor = ({ rule, onSave, onCancel, questions, teams }) => {
 
   const [editedRule, setEditedRule] = useState({
     ...rule,
+    conditionLogic: rule.conditionLogic === 'any' ? 'any' : 'all',
     conditions: (rule.conditions || []).map(normalizeCondition),
     questions: rule.questions || {},
     risks: rule.risks || []
@@ -114,7 +116,8 @@ export const RuleEditor = ({ rule, onSave, onCancel, questions, teams }) => {
       label: 'Nouveau scénario',
       description: '',
       requirements: {},
-      conditions: []
+      conditions: [],
+      conditionLogic: 'all'
     });
     condition.complianceProfiles = profiles;
     newConditions[conditionIndex] = condition;
@@ -327,15 +330,31 @@ export const RuleEditor = ({ rule, onSave, onCancel, questions, teams }) => {
 
           {/* Conditions */}
           <div>
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
               <h3 className="text-xl font-bold text-gray-800">🎯 Conditions de déclenchement</h3>
-              <button
-                onClick={addCondition}
-                className="flex items-center px-3 py-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-all text-sm font-medium"
-              >
-                <Plus className="w-4 h-4 mr-1" />
-                Ajouter une condition
-              </button>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs font-semibold uppercase tracking-wide text-indigo-700">Logique</span>
+                <select
+                  value={editedRule.conditionLogic}
+                  onChange={(e) =>
+                    setEditedRule(prev => ({
+                      ...prev,
+                      conditionLogic: e.target.value === 'any' ? 'any' : 'all'
+                    }))
+                  }
+                  className="px-3 py-1.5 border border-indigo-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="all">Toutes les conditions (ET)</option>
+                  <option value="any">Au moins une condition (OU)</option>
+                </select>
+                <button
+                  onClick={addCondition}
+                  className="flex items-center px-3 py-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-all text-sm font-medium"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Ajouter une condition
+                </button>
+              </div>
             </div>
 
             {editedRule.conditions.length === 0 ? (
@@ -354,7 +373,7 @@ export const RuleEditor = ({ rule, onSave, onCancel, questions, teams }) => {
                       <div className="flex flex-wrap items-center gap-3 mb-4">
                         {idx > 0 && (
                           <span className="bg-indigo-600 text-white px-3 py-1 rounded-full text-xs font-bold">
-                            ET
+                            {editedRule.conditionLogic === 'any' ? 'OU' : 'ET'}
                           </span>
                         )}
                         <span className="text-sm font-semibold text-gray-700">
@@ -507,17 +526,37 @@ export const RuleEditor = ({ rule, onSave, onCancel, questions, teams }) => {
                                           </div>
 
                                           <div className="mb-4">
-                                            <div className="flex justify-between items-center mb-2">
+                                            <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                                               <h5 className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
                                                 Conditions d'application
                                               </h5>
-                                              <button
-                                                onClick={() => addTimingProfileCondition(idx, profileIdx)}
-                                                className="flex items-center px-2.5 py-1 text-xs bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
-                                              >
-                                                <Plus className="w-3 h-3 mr-1" />
-                                                Ajouter une condition
-                                              </button>
+                                              <div className="flex flex-wrap items-center gap-2">
+                                                <span className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+                                                  Logique
+                                                </span>
+                                                <select
+                                                  value={profile.conditionLogic || 'all'}
+                                                  onChange={(e) =>
+                                                    updateTimingProfileField(
+                                                      idx,
+                                                      profileIdx,
+                                                      'conditionLogic',
+                                                      e.target.value === 'any' ? 'any' : 'all'
+                                                    )
+                                                  }
+                                                  className="px-2.5 py-1 text-xs border border-gray-300 rounded bg-white focus:ring-2 focus:ring-indigo-500"
+                                                >
+                                                  <option value="all">Toutes (ET)</option>
+                                                  <option value="any">Au moins une (OU)</option>
+                                                </select>
+                                                <button
+                                                  onClick={() => addTimingProfileCondition(idx, profileIdx)}
+                                                  className="flex items-center px-2.5 py-1 text-xs bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+                                                >
+                                                  <Plus className="w-3 h-3 mr-1" />
+                                                  Ajouter une condition
+                                                </button>
+                                              </div>
                                             </div>
 
                                             {profile.conditions && profile.conditions.length > 0 ? (

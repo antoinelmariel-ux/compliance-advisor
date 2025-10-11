@@ -46,6 +46,7 @@ export const QuestionnaireScreen = ({
     contains: 'contient'
   };
 
+  const conditionLogic = currentQuestion.conditionLogic === 'any' ? 'any' : 'all';
   const conditionSummaries = (currentQuestion.conditions || []).map(condition => {
     const referenceQuestion = questionBank.find(q => q.id === condition.question);
     const label = referenceQuestion?.question || `Question ${condition.question}`;
@@ -154,6 +155,11 @@ export const QuestionnaireScreen = ({
                     {conditionSummaries.length > 0 && (
                       <div>
                         <h4 className="text-xs font-semibold uppercase tracking-wide text-indigo-700">Pourquoi cette question apparaît</h4>
+                        <p className="text-xs text-indigo-600 mt-1">
+                          Elle s'affiche lorsque {conditionLogic === 'any'
+                            ? "au moins une des conditions suivantes est remplie"
+                            : 'toutes les conditions suivantes sont remplies'}.
+                        </p>
                         <ul className="mt-2 space-y-2">
                           {conditionSummaries.map((item, idx) => (
                             <li
@@ -161,7 +167,13 @@ export const QuestionnaireScreen = ({
                               className="bg-white border border-indigo-100 rounded-xl p-3 hv-surface"
                             >
                               <p className="text-sm font-medium text-gray-800">
-                                • {item.label} {item.operator} "{item.value}"
+                                •{' '}
+                                {idx > 0 && (
+                                  <span className="inline-flex items-center px-2 py-0.5 mr-2 text-[11px] font-semibold uppercase tracking-wide rounded-full bg-indigo-100 text-indigo-700">
+                                    {conditionLogic === 'any' ? 'OU' : 'ET'}
+                                  </span>
+                                )}
+                                {item.label} {item.operator} "{item.value}"
                               </p>
                               {item.answer && (
                                 <p className="text-xs text-gray-500 mt-1">

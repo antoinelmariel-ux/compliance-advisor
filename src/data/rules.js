@@ -6,6 +6,7 @@ export const initialRules =  [
       { question: 'q1', operator: 'equals', value: 'Externe (professionnels de santé)' },
       { question: 'q2', operator: 'not_equals', value: 'Non' }
     ],
+    conditionLogic: 'all',
     teams: ['bpp', 'it', 'legal'],
     questions: {
       bpp: ['Le contenu a-t-il été validé médicalement ?', 'Les mentions légales sont-elles conformes ?'],
@@ -27,6 +28,7 @@ export const initialRules =  [
     conditions: [
       { question: 'q3', operator: 'equals', value: 'Oui - Données de santé' }
     ],
+    conditionLogic: 'all',
     teams: ['privacy', 'it', 'quality', 'legal'],
     questions: {
       privacy: ['Une DPIA a-t-elle été réalisée ?', 'Le registre des traitements est-il à jour ?', 'Les consentements sont-ils conformes RGPD ?'],
@@ -54,6 +56,7 @@ export const initialRules =  [
     conditions: [
       { question: 'q4', operator: 'equals', value: 'Oui' }
     ],
+    conditionLogic: 'all',
     teams: ['legal', 'quality'],
     questions: {
       legal: ['Les contrats incluent-ils les clauses de confidentialité ?', 'Les assurances sont-elles adéquates ?'],
@@ -75,6 +78,7 @@ export const initialRules =  [
       { question: 'q1', operator: 'equals', value: 'Externe (patients/public)' },
       { question: 'q2', operator: 'not_equals', value: 'Non' }
     ],
+    conditionLogic: 'all',
     teams: ['legal', 'it', 'privacy'],
     questions: {
       legal: ["Le site respecte-t-il les obligations d'information des consommateurs ?", "L'accessibilité numérique est-elle assurée ?"],
@@ -109,7 +113,8 @@ export const initialRules =  [
               legal: 6,
               privacy: 7,
               quality: 8
-            }
+            },
+            conditionLogic: 'all'
           },
           {
             id: 'digital_public_launch',
@@ -125,7 +130,8 @@ export const initialRules =  [
               legal: 8,
               privacy: 8,
               quality: 10
-            }
+            },
+            conditionLogic: 'all'
           },
           {
             id: 'health_data_launch',
@@ -139,11 +145,13 @@ export const initialRules =  [
               legal: 9,
               privacy: 12,
               quality: 10
-            }
+            },
+            conditionLogic: 'all'
           }
         ]
       }
     ],
+    conditionLogic: 'all',
     teams: ['quality'],
     questions: {
       quality: [
