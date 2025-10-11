@@ -201,7 +201,7 @@ export const ProjectShowcase = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto pt-10 pb-16 sm:items-center sm:pt-0"
       role="dialog"
       aria-modal="true"
       aria-label="Vitrine du projet"
