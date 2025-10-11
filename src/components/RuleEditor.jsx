@@ -1,7 +1,20 @@
-import React, { useState } from '../react.js';
+import React, { useEffect, useRef, useState } from '../react.js';
 import { Plus, Trash2, CheckCircle } from './icons.js';
 
 export const RuleEditor = ({ rule, onSave, onCancel, questions, teams }) => {
+  const overlayRef = useRef(null);
+  const titleRef = useRef(null);
+
+  useEffect(() => {
+    if (overlayRef.current) {
+      overlayRef.current.scrollTo({ top: 0 });
+    }
+
+    if (titleRef.current) {
+      titleRef.current.focus();
+    }
+  }, []);
+
   const normalizeCondition = (condition) => {
     if (!condition) {
       return { type: 'question', question: '', operator: 'equals', value: '' };
@@ -268,7 +281,11 @@ export const RuleEditor = ({ rule, onSave, onCancel, questions, teams }) => {
   const dialogTitleId = 'rule-editor-title';
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto" role="presentation">
+    <div
+      ref={overlayRef}
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto"
+      role="presentation"
+    >
       <div
         className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full my-8 max-h-[90vh] overflow-y-auto hv-surface"
         role="dialog"
@@ -277,7 +294,14 @@ export const RuleEditor = ({ rule, onSave, onCancel, questions, teams }) => {
       >
         <div className="sticky top-0 bg-white border-b border-gray-200 px-8 py-6 rounded-t-2xl hv-surface">
           <div className="flex justify-between items-center">
-            <h2 id={dialogTitleId} className="text-3xl font-bold text-gray-800">Édition de règle</h2>
+            <h2
+              id={dialogTitleId}
+              ref={titleRef}
+              tabIndex={-1}
+              className="text-3xl font-bold text-gray-800 focus:outline-none"
+            >
+              Édition de règle
+            </h2>
             <div className="flex space-x-3">
               <button
                 type="button"

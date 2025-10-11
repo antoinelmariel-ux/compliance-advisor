@@ -1,4 +1,4 @@
-import React, { useState } from '../react.js';
+import React, { useEffect, useRef, useState } from '../react.js';
 import { Plus, Trash2, GripVertical } from './icons.js';
 
 export const QuestionEditor = ({ question, onSave, onCancel, allQuestions }) => {
@@ -188,8 +188,22 @@ export const QuestionEditor = ({ question, onSave, onCancel, allQuestions }) => 
   const availableQuestions = allQuestions.filter(q => q.id !== editedQuestion.id);
   const dialogTitleId = 'question-editor-title';
 
+  const overlayRef = useRef(null);
+  const titleRef = useRef(null);
+
+  useEffect(() => {
+    if (overlayRef.current) {
+      overlayRef.current.scrollTo({ top: 0 });
+    }
+
+    if (titleRef.current) {
+      titleRef.current.focus();
+    }
+  }, []);
+
   return (
     <div
+      ref={overlayRef}
       className="fixed inset-0 bg-black bg-opacity-50 flex items-start sm:items-center justify-center z-50 p-4 overflow-y-auto"
       role="presentation"
     >
@@ -201,7 +215,14 @@ export const QuestionEditor = ({ question, onSave, onCancel, allQuestions }) => 
       >
         <div className="sticky top-0 bg-white border-b border-gray-200 px-8 py-6 rounded-t-2xl hv-surface">
           <div className="flex justify-between items-center">
-            <h2 id={dialogTitleId} className="text-3xl font-bold text-gray-800">Édition de question</h2>
+            <h2
+              id={dialogTitleId}
+              ref={titleRef}
+              tabIndex={-1}
+              className="text-3xl font-bold text-gray-800 focus:outline-none"
+            >
+              Édition de question
+            </h2>
             <div className="flex space-x-3">
               <button
                 type="button"
