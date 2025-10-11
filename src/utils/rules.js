@@ -1,4 +1,6 @@
 import { normalizeAnswerForComparison } from './questions.js';
+import { normalizeConditionGroups } from './conditionGroups.js';
+import { sanitizeRuleCondition } from './ruleConditions.js';
 
 const matchesCondition = (condition, answers) => {
   if (!condition || !condition.question) {
@@ -149,97 +151,103 @@ const getActiveTimelineProfiles = (condition, answers) => {
 
 export const evaluateRule = (rule, answers) => {
   const timingContexts = [];
-  const conditions = Array.isArray(rule.conditions) ? rule.conditions : [];
-  const conditionLogic = rule.conditionLogic === 'any' ? 'any' : 'all';
-  const results = [];
+  const conditionGroups = normalizeConditionGroups(rule, sanitizeRuleCondition);
 
-  conditions.forEach(condition => {
-    const conditionType = condition.type || 'question';
+  const evaluateTimingCondition = (condition) => {
+    const diff = computeTimingDiff(condition, answers);
 
-    if (conditionType === 'timing') {
-      const diff = computeTimingDiff(condition, answers);
-
-      if (!diff) {
-        timingContexts.push({
-          type: 'timing',
-          diff: null,
-          profiles: [],
-          satisfied: false,
-          startQuestion: condition.startQuestion,
-          endQuestion: condition.endQuestion
-        });
-        results.push(false);
-        return;
-      }
-
-      const activeProfiles = getActiveTimelineProfiles(condition, answers);
-      const normalizedProfiles = activeProfiles.map(profile => ({
-        id: profile.id || `profile_${Date.now()}`,
-        label: profile.label || 'Exigence de timing',
-        description: profile.description || '',
-        requirements: Object.fromEntries(
-          Object.entries(profile.requirements || {}).map(([teamId, value]) => [
-            teamId,
-            normalizeTimingRequirement(value)
-          ])
-        )
-      }));
-
-      let satisfied = true;
-
-      normalizedProfiles.forEach(profile => {
-        Object.values(profile.requirements).forEach(requirement => {
-          if (requirement.minimumDays !== undefined && diff.diffInDays < requirement.minimumDays) {
-            satisfied = false;
-          }
-
-          if (requirement.minimumWeeks !== undefined && diff.diffInWeeks < requirement.minimumWeeks) {
-            satisfied = false;
-          }
-        });
-      });
-
-      if (typeof condition.minimumWeeks === 'number' && diff.diffInWeeks < condition.minimumWeeks) {
-        satisfied = false;
-      }
-
-      if (typeof condition.maximumWeeks === 'number' && diff.diffInWeeks > condition.maximumWeeks) {
-        satisfied = false;
-      }
-
-      if (typeof condition.minimumDays === 'number' && diff.diffInDays < condition.minimumDays) {
-        satisfied = false;
-      }
-
-      if (typeof condition.maximumDays === 'number' && diff.diffInDays > condition.maximumDays) {
-        satisfied = false;
-      }
-
+    if (!diff) {
       timingContexts.push({
         type: 'timing',
-        diff,
-        profiles: normalizedProfiles,
-        satisfied,
+        diff: null,
+        profiles: [],
+        satisfied: false,
         startQuestion: condition.startQuestion,
         endQuestion: condition.endQuestion
       });
-
-      results.push(satisfied);
-      return;
+      return false;
     }
 
-    results.push(matchesCondition(condition, answers));
+    const activeProfiles = getActiveTimelineProfiles(condition, answers);
+    const normalizedProfiles = activeProfiles.map(profile => ({
+      id: profile.id || `profile_${Date.now()}`,
+      label: profile.label || 'Exigence de timing',
+      description: profile.description || '',
+      requirements: Object.fromEntries(
+        Object.entries(profile.requirements || {}).map(([teamId, value]) => [
+          teamId,
+          normalizeTimingRequirement(value)
+        ])
+      )
+    }));
+
+    let satisfied = true;
+
+    normalizedProfiles.forEach(profile => {
+      Object.values(profile.requirements).forEach(requirement => {
+        if (requirement.minimumDays !== undefined && diff.diffInDays < requirement.minimumDays) {
+          satisfied = false;
+        }
+
+        if (requirement.minimumWeeks !== undefined && diff.diffInWeeks < requirement.minimumWeeks) {
+          satisfied = false;
+        }
+      });
+    });
+
+    if (typeof condition.minimumWeeks === 'number' && diff.diffInWeeks < condition.minimumWeeks) {
+      satisfied = false;
+    }
+
+    if (typeof condition.maximumWeeks === 'number' && diff.diffInWeeks > condition.maximumWeeks) {
+      satisfied = false;
+    }
+
+    if (typeof condition.minimumDays === 'number' && diff.diffInDays < condition.minimumDays) {
+      satisfied = false;
+    }
+
+    if (typeof condition.maximumDays === 'number' && diff.diffInDays > condition.maximumDays) {
+      satisfied = false;
+    }
+
+    timingContexts.push({
+      type: 'timing',
+      diff,
+      profiles: normalizedProfiles,
+      satisfied,
+      startQuestion: condition.startQuestion,
+      endQuestion: condition.endQuestion
+    });
+
+    return satisfied;
+  };
+
+  const evaluateSingleCondition = (condition) => {
+    const conditionType = condition.type || 'question';
+
+    if (conditionType === 'timing') {
+      return evaluateTimingCondition(condition);
+    }
+
+    return matchesCondition(condition, answers);
+  };
+
+  const groupResults = conditionGroups.map(group => {
+    const conditions = Array.isArray(group.conditions) ? group.conditions : [];
+    if (conditions.length === 0) {
+      return true;
+    }
+
+    const logic = group.logic === 'any' ? 'any' : 'all';
+    const results = conditions.map(evaluateSingleCondition);
+
+    return logic === 'any' ? results.some(Boolean) : results.every(Boolean);
   });
 
-  let triggered;
-
-  if (conditions.length === 0) {
-    triggered = true;
-  } else if (conditionLogic === 'any') {
-    triggered = results.some(Boolean);
-  } else {
-    triggered = results.every(Boolean);
-  }
+  const triggered = conditionGroups.length === 0
+    ? true
+    : groupResults.every(Boolean);
 
   return { triggered, timingContexts };
 };
