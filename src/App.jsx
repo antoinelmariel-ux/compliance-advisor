@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from './react.js';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from './react.js';
 import { QuestionnaireScreen } from './components/QuestionnaireScreen.jsx';
 import { SynthesisReport } from './components/SynthesisReport.jsx';
 import { BackOffice } from './components/BackOffice.jsx';
@@ -23,6 +23,7 @@ export const App = () => {
   const [rules, setRules] = useState(initialRules);
   const [teams, setTeams] = useState(initialTeams);
   const [isHydrated, setIsHydrated] = useState(false);
+  const persistTimeoutRef = useRef(null);
 
   useEffect(() => {
     const savedState = loadPersistedState();
@@ -47,19 +48,42 @@ export const App = () => {
   }, []);
 
   useEffect(() => {
-    if (!isHydrated) return;
+    return () => {
+      if (persistTimeoutRef.current) {
+        clearTimeout(persistTimeoutRef.current);
+        persistTimeoutRef.current = null;
+      }
+    };
+  }, []);
 
-    persistState({
-      mode,
-      screen,
-      currentQuestionIndex,
-      answers,
-      analysis,
-      questions,
-      rules,
-      teams,
-      isHighVisibility
-    });
+  useEffect(() => {
+    if (!isHydrated) return undefined;
+
+    if (persistTimeoutRef.current) {
+      clearTimeout(persistTimeoutRef.current);
+    }
+
+    persistTimeoutRef.current = setTimeout(() => {
+      persistState({
+        mode,
+        screen,
+        currentQuestionIndex,
+        answers,
+        analysis,
+        questions,
+        rules,
+        teams,
+        isHighVisibility
+      });
+      persistTimeoutRef.current = null;
+    }, 200);
+
+    return () => {
+      if (persistTimeoutRef.current) {
+        clearTimeout(persistTimeoutRef.current);
+        persistTimeoutRef.current = null;
+      }
+    };
   }, [mode, screen, currentQuestionIndex, answers, analysis, questions, rules, teams, isHighVisibility, isHydrated]);
 
   useEffect(() => {
@@ -73,7 +97,10 @@ export const App = () => {
     }
   }, [isHighVisibility]);
 
-  const activeQuestions = questions.filter(q => shouldShowQuestion(q, answers));
+  const activeQuestions = useMemo(
+    () => questions.filter(q => shouldShowQuestion(q, answers)),
+    [questions, answers]
+  );
 
   useEffect(() => {
     if (!isHydrated) return;
@@ -83,26 +110,33 @@ export const App = () => {
     }
   }, [activeQuestions.length, currentQuestionIndex, isHydrated]);
 
-  const handleAnswer = (questionId, answer) => {
-    const newAnswers = { ...answers, [questionId]: answer };
+  const handleAnswer = useCallback((questionId, answer) => {
+    setAnswers(prevAnswers => {
+      const nextAnswers = { ...prevAnswers, [questionId]: answer };
 
-    const questionsToRemove = questions
-      .filter(q => !shouldShowQuestion(q, newAnswers))
-      .map(q => q.id);
+      const questionsToRemove = questions
+        .filter(q => !shouldShowQuestion(q, nextAnswers))
+        .map(q => q.id);
 
-    questionsToRemove.forEach(qId => {
-      delete newAnswers[qId];
+      if (questionsToRemove.length === 0) {
+        return nextAnswers;
+      }
+
+      const sanitizedAnswers = { ...nextAnswers };
+      questionsToRemove.forEach(qId => {
+        delete sanitizedAnswers[qId];
+      });
+
+      return sanitizedAnswers;
     });
-
-    setAnswers(newAnswers);
 
     setValidationError(prev => {
       if (!prev) return null;
       return prev.questionId === questionId ? null : prev;
     });
-  };
+  }, [questions]);
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     const currentQuestion = activeQuestions[currentQuestionIndex];
     if (currentQuestion?.required) {
       const answer = answers[currentQuestion.id];
@@ -126,28 +160,28 @@ export const App = () => {
       setAnalysis(result);
       setScreen('synthesis');
     }
-  };
+  }, [activeQuestions, currentQuestionIndex, answers, rules]);
 
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(currentQuestionIndex - 1);
     }
     setValidationError(null);
-  };
+  }, [currentQuestionIndex]);
 
-  const handleRestart = () => {
+  const handleRestart = useCallback(() => {
     setAnswers({});
     setCurrentQuestionIndex(0);
     setScreen('questionnaire');
     setAnalysis(null);
     setValidationError(null);
-  };
+  }, []);
 
-  const handleToggleHighVisibility = () => {
+  const handleToggleHighVisibility = useCallback(() => {
     setIsHighVisibility(prev => !prev);
-  };
+  }, []);
 
-  const handleBackToQuestionnaire = () => {
+  const handleBackToQuestionnaire = useCallback(() => {
     if (activeQuestions.length > 0) {
       const lastIndex = activeQuestions.length - 1;
       setCurrentQuestionIndex(prevIndex => {
@@ -158,7 +192,7 @@ export const App = () => {
       });
     }
     setScreen('questionnaire');
-  };
+  }, [activeQuestions]);
 
   return (
     <div className="min-h-screen">

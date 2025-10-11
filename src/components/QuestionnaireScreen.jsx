@@ -1,8 +1,14 @@
-import React, { useEffect, useState } from '../react.js';
+import React, { useEffect, useMemo, useState } from '../react.js';
 import { Info, Calendar, CheckCircle, ChevronLeft, ChevronRight, AlertTriangle } from './icons.js';
 import { formatAnswer } from '../utils/questions.js';
 import { normalizeConditionGroups } from '../utils/conditionGroups.js';
 import { renderTextWithLinks } from '../utils/linkify.js';
+
+const OPERATOR_LABELS = {
+  equals: 'est égal à',
+  not_equals: 'est différent de',
+  contains: 'contient'
+};
 
 export const QuestionnaireScreen = ({
   questions,
@@ -37,46 +43,48 @@ export const QuestionnaireScreen = ({
   }, [currentQuestion.id]);
 
   const guidance = currentQuestion.guidance || {};
-  const guidanceTips = Array.isArray(guidance.tips)
-    ? guidance.tips.filter(tip => typeof tip === 'string' && tip.trim() !== '')
-    : [];
+  const guidanceTips = useMemo(() => (
+    Array.isArray(guidance.tips)
+      ? guidance.tips.filter(tip => typeof tip === 'string' && tip.trim() !== '')
+      : []
+  ), [guidance]);
 
-  const operatorLabels = {
-    equals: 'est égal à',
-    not_equals: 'est différent de',
-    contains: 'contient'
-  };
+  const conditionSummaries = useMemo(() => {
+    const conditionGroups = normalizeConditionGroups(currentQuestion);
+    return conditionGroups.map((group, groupIdx) => {
+      const logic = group.logic === 'any' ? 'any' : 'all';
+      const conditions = (group.conditions || []).map(condition => {
+        const referenceQuestion = questionBank.find(q => q.id === condition.question);
+        const label = referenceQuestion?.question || `Question ${condition.question}`;
+        const formattedAnswer = formatAnswer(referenceQuestion, answers[condition.question]);
 
-  const conditionGroups = normalizeConditionGroups(currentQuestion);
-  const conditionSummaries = conditionGroups.map((group, groupIdx) => {
-    const logic = group.logic === 'any' ? 'any' : 'all';
-    const conditions = (group.conditions || []).map(condition => {
-      const referenceQuestion = questionBank.find(q => q.id === condition.question);
-      const label = referenceQuestion?.question || `Question ${condition.question}`;
-      const formattedAnswer = formatAnswer(referenceQuestion, answers[condition.question]);
+        return {
+          label,
+          operator: OPERATOR_LABELS[condition.operator] || condition.operator,
+          value: condition.value,
+          answer: formattedAnswer
+        };
+      });
 
       return {
-        label,
-        operator: operatorLabels[condition.operator] || condition.operator,
-        value: condition.value,
-        answer: formattedAnswer
+        logic,
+        conditions,
+        groupIdx
       };
     });
+  }, [answers, currentQuestion, questionBank]);
 
-    return {
-      logic,
-      conditions,
-      groupIdx
-    };
-  });
-  const hasConditions = conditionSummaries.some(summary => summary.conditions.length > 0);
-
-  const hasGuidanceContent = Boolean(
-    (typeof guidance.objective === 'string' && guidance.objective.trim() !== '') ||
-      (typeof guidance.details === 'string' && guidance.details.trim() !== '') ||
-      guidanceTips.length > 0 ||
-      hasConditions
+  const hasConditions = useMemo(
+    () => conditionSummaries.some(summary => summary.conditions.length > 0),
+    [conditionSummaries]
   );
+
+  const hasGuidanceContent = useMemo(() => {
+    const hasObjective = typeof guidance.objective === 'string' && guidance.objective.trim() !== '';
+    const hasDetails = typeof guidance.details === 'string' && guidance.details.trim() !== '';
+
+    return hasObjective || hasDetails || guidanceTips.length > 0 || hasConditions;
+  }, [guidance, guidanceTips, hasConditions]);
 
   const renderQuestionInput = () => {
     switch (questionType) {
