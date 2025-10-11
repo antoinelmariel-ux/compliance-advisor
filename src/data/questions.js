@@ -1,254 +1,364 @@
 export const initialQuestions =  [
   {
-    id: 'q1',
-    type: 'choice',
-    question: 'Quel est le périmètre de votre projet ?',
-    options: [
-      'Interne uniquement',
-      'Externe (patients/public)',
-      'Externe (professionnels de santé)',
-      'Mixte'
-    ],
-    required: true,
-    conditions: [],
-    conditionLogic: 'all',
-    guidance: {
-      objective: 'Identifier l\'exposition du projet pour adapter le parcours compliance.',
-      details: 'Selon le public ciblé, différentes règles de communication, de consentement et de sécurité s\'appliquent. Cette information permet d\'activer les bons contrôles dès le départ.',
-      tips: [
-        'Sélectionnez la réponse correspondant au public final le plus exposé.',
-        'Si plusieurs cibles sont prévues, choisissez "Mixte" et précisez les nuances dans vos notes de projet.'
-      ]
-    }
-  },
-  {
-    id: 'q2',
-    type: 'choice',
-    question: 'Le projet implique-t-il du digital ?',
-    options: [
-      'Oui - Application mobile',
-      'Oui - Site web',
-      'Oui - Plateforme en ligne',
-      'Non'
-    ],
-    required: true,
-    conditions: [],
-    conditionLogic: 'all',
-    guidance: {
-      objective: 'Confirmer la présence d\'un canal digital nécessitant des validations techniques et réglementaires.',
-      details: 'Les supports digitaux déclenchent l\'intervention des équipes IT, Juridique et BPP pour vérifier sécurité, mentions légales et conformité marketing.',
-      tips: [
-        'Choisissez le support principal si plusieurs dispositifs digitaux sont envisagés.',
-        'En cas de doute, optez pour l\'option la plus proche et précisez vos intentions dans le dossier.'
-      ]
-    }
-  },
-  {
-    id: 'q3',
-    type: 'choice',
-    question: 'Des données personnelles seront-elles collectées ?',
-    options: [
-      'Oui - Données de santé',
-      'Oui - Données personnelles standard',
-      'Non'
-    ],
-    required: true,
-    conditions: [
-      { question: 'q2', operator: 'not_equals', value: 'Non' }
-    ],
-    conditionLogic: 'all',
-    guidance: {
-      objective: 'Qualifier la nature des données personnelles manipulées.',
-      details: 'Les données de santé impliquent une analyse d\'impact renforcée (DPIA), un hébergement certifié HDS et des clauses contractuelles spécifiques.',
-      tips: [
-        'Identifiez la catégorie la plus sensible de données que vous collecterez.',
-        'Si la collecte est incertaine, retenez l\'hypothèse la plus protectrice pour planifier les validations.'
-      ]
-    }
-  },
-  {
-    id: 'q4',
-    type: 'choice',
-    question: 'Le projet implique-t-il des prestataires externes ?',
-    options: [
-      'Oui',
-      'Non',
-      'Pas encore décidé'
-    ],
-    required: true,
-    conditions: [],
-    conditionLogic: 'all',
-    guidance: {
-      objective: 'Anticiper l\'implication de prestataires externes et les contrôles associés.',
-      details: 'Les partenariats imposent une revue juridique des contrats, la vérification des assurances et parfois un audit qualité des fournisseurs.',
-      tips: [
-        'Sélectionnez "Pas encore décidé" si un appel d\'offres est en cours.',
-        'Notez les prestataires pressentis pour faciliter la revue par les équipes concernées.'
-      ]
-    }
-  },
-  {
-    id: 'q5',
-    type: 'date',
-    question: 'Quelle est la date de soumission du projet ?',
-    options: [],
-    required: true,
-    conditions: [],
-    conditionLogic: 'all',
-    guidance: {
-      objective: 'Caler le point de départ du calendrier compliance.',
-      details: 'Cette date sert de référence pour estimer le temps disponible afin de mobiliser les experts et réaliser les validations obligatoires.',
-      tips: [
-        'Renseignez la date à laquelle le dossier complet sera transmis pour revue.',
-        'Mettez à jour cette information si la soumission est décalée.'
-      ]
-    }
-  },
-  {
-    id: 'q6',
-    type: 'date',
-    question: 'Quelle est la date de lancement souhaitée ?',
-    options: [],
-    required: true,
-    conditions: [],
-    conditionLogic: 'all',
-    guidance: {
-      objective: 'Projeter la fenêtre de lancement afin de vérifier la faisabilité du planning.',
-      details: 'Le moteur calcule l\'écart entre soumission et lancement et le compare aux délais minimaux recommandés pour chaque équipe compliance.',
-      tips: [
-        'Indiquez la première date de mise en service ou de diffusion prévue.',
-        'Si le planning n\'est pas figé, fournissez l\'estimation la plus réaliste pour sécuriser les ressources.'
-      ]
-    }
-  },
-  {
-    id: 'q7',
+    id: 'projectName',
     type: 'text',
-    question: 'Qui est le chef de projet référent ?',
+    question: "Quel est le nom du projet ou de l'offre ?",
     options: [],
     required: true,
     conditions: [],
     conditionLogic: 'all',
     guidance: {
-      objective: 'Identifier l\'interlocuteur principal pour les échanges compliance.',
-      details: 'Cette information permet aux équipes expertes de contacter la bonne personne pour clarifier les éléments du dossier.',
+      objective: "Nommer clairement l'initiative pour qu'elle soit mémorisée dès les premières secondes.",
+      details: "Le nom affiché dans la vitrine marketing sert de repère pour toutes les équipes qui contribuent au pitch.",
       tips: [
-        'Renseignez le prénom et le nom du chef de projet.',
-        'Ajoutez si besoin un alias ou une précision entre parenthèses.'
+        'Renseignez le nom officiel ou celui que vous souhaitez tester auprès des parties prenantes.',
+        'Si un nom de code interne existe, ajoutez-le entre parenthèses pour faciliter le suivi.'
       ]
     }
   },
   {
-    id: 'q8',
+    id: 'projectSlogan',
+    type: 'text',
+    question: 'Quel slogan ou promesse courte souhaitez-vous mettre en avant ?',
+    options: [],
+    required: false,
+    conditions: [],
+    conditionLogic: 'all',
+    guidance: {
+      objective: "Résumer l'accroche en moins de 10 mots pour capter l'attention immédiatement.",
+      details: "Le slogan apparaît dans la hero section et doit être simple, mémorable et orienté bénéfice.",
+      tips: [
+        'Utilisez un verbe d’action qui évoque le résultat attendu.',
+        'Préférez un ton conversationnel : adressez-vous directement à votre audience.'
+      ]
+    }
+  },
+  {
+    id: 'valueProposition',
     type: 'long_text',
-    question: 'Décrivez brièvement le besoin ou le concept proposé.',
+    question: 'Formulez votre proposition de valeur en une ou deux phrases.',
     options: [],
-    required: false,
+    required: true,
     conditions: [],
     conditionLogic: 'all',
     guidance: {
-      objective: 'Offrir une vision synthétique du projet pour faciliter la lecture des réponses.',
-      details: 'Utilisez ce bloc pour résumer le contexte, les objectifs principaux et les points d\'attention connus à date.',
+      objective: 'Clarifier ce que le projet apporte, pour qui et en quoi il est différent.',
+      details: "Cette proposition de valeur structure toute la narration : elle sera reprise dans la hero section et les sections suivantes.",
       tips: [
-        'Structurez votre réponse en 2 à 3 phrases clés.',
-        'Mentionnez les éléments distinctifs ou contraintes majeures.'
+        'Précisez le public cible, le bénéfice clé et l’impact mesurable.',
+        'Évitez le jargon technique : privilégiez un langage accessible.'
       ]
     }
   },
   {
-    id: 'q9',
-    type: 'text',
-    question: 'Quelle est la proposition de valeur principale à mettre en avant lors du pitch ?',
-    options: [],
-    required: false,
-    conditions: [],
-    conditionLogic: 'all',
-    guidance: {
-      objective: 'Mettre en lumière l\'angle principal qui donnera envie d\'écouter ou de soutenir le projet.',
-      details: 'Une formulation claire de la proposition de valeur permet de bâtir l\'argumentaire du pitch et d\'aligner les équipes sur le bénéfice clé.',
-      tips: [
-        'Résumez en une phrase l\'impact différenciant du projet.',
-        'Utilisez un vocabulaire orienté bénéfice plutôt que description technique.'
-      ]
-    }
-  },
-  {
-    id: 'q10',
+    id: 'targetAudience',
     type: 'multi_choice',
-    question: 'Quels publics clés doivent être convaincus ?',
+    question: 'Quelles audiences doivent être convaincues en priorité ?',
     options: [
-      'Direction / sponsors internes',
-      'Équipes métiers',
-      'Partenaires externes',
-      'Clients / utilisateurs finaux',
-      'Autre (préciser dans vos notes)'
+      'Grand public / clients finaux',
+      'Professionnels ou experts métiers',
+      'Décideurs internes / sponsors',
+      'Investisseurs',
+      'Partenaires ou prescripteurs'
     ],
-    required: false,
+    required: true,
     conditions: [],
     conditionLogic: 'all',
     guidance: {
-      objective: 'Identifier les audiences prioritaires pour adapter le message du pitch.',
-      details: 'Connaitre les cibles permet d\'adapter le ton, les preuves et les arguments à mettre en avant pour chaque interlocuteur.',
+      objective: "Identifier les personae principaux pour adapter la narration et les preuves d'impact.",
+      details: 'Chaque audience attend un angle différent : lister les cibles permet de personnaliser les sections du pitch.',
       tips: [
-        'Sélectionnez toutes les audiences concernées pour préparer des messages différenciés.',
-        'Précisez dans vos notes les personae spécifiques si nécessaire.'
+        'Sélectionnez plusieurs options si votre pitch est multicanal.',
+        'Ajoutez des précisions dans vos notes internes si certains personae doivent recevoir un message dédié.'
       ]
     }
   },
   {
-    id: 'q11',
+    id: 'problemInsight',
+    type: 'text',
+    question: 'Quel chiffre fort ou constat illustre le problème que vous résolvez ?',
+    options: [],
+    required: true,
+    conditions: [],
+    conditionLogic: 'all',
+    guidance: {
+      objective: 'Ancrer le récit dans un fait marquant qui crée de la tension dramatique.',
+      details: 'Cette statistique ou observation sert d’accroche dans la section “Problème”.',
+      tips: [
+        'Précisez la source (étude, observation terrain, retour client).',
+        'Formulez la donnée sous forme de phrase courte et percutante.'
+      ]
+    }
+  },
+  {
+    id: 'problemPainPoints',
     type: 'long_text',
-    question: 'Quels résultats mesurables ou preuves souhaitez-vous valoriser ?',
+    question: 'Listez 2 à 3 pain points concrets vécus par vos utilisateurs.',
+    options: [],
+    required: true,
+    conditions: [],
+    conditionLogic: 'all',
+    guidance: {
+      objective: 'Montrer que vous comprenez la réalité terrain de votre audience.',
+      details: 'Chaque pain point s’affichera comme un bullet point pour renforcer l’empathie.',
+      tips: [
+        'Utilisez une ligne par pain point pour faciliter la lecture.',
+        'Décrivez la situation vécue plutôt que la solution souhaitée.'
+      ]
+    }
+  },
+  {
+    id: 'problemTestimonial',
+    type: 'long_text',
+    question: 'Partagez un témoignage utilisateur ou une mini mise en situation.',
     options: [],
     required: false,
     conditions: [],
     conditionLogic: 'all',
     guidance: {
-      objective: 'Recenser les indicateurs de succès à intégrer dans l\'argumentaire.',
-      details: 'Les chiffres clés, retours utilisateurs ou faits marquants structurent la partie "preuves" du pitch et renforcent la crédibilité.',
+      objective: 'Humaniser le problème grâce à une voix ou un scénario concret.',
+      details: 'Ce témoignage sera présenté dans un encart pour créer une connexion émotionnelle.',
       tips: [
-        'Mentionnez des données quantitatives (KPI, ROI, nombre d\'utilisateurs) ou qualitatives (témoignages).',
-        'Indiquez la source et la période de référence quand c\'est possible.'
+        'Privilégiez un format court (2-3 phrases) centré sur une émotion ou un obstacle.',
+        'Si vous n’avez pas encore de témoignage, décrivez une scène type “avant projet”.'
       ]
     }
   },
   {
-    id: 'q12',
+    id: 'solutionDescription',
+    type: 'long_text',
+    question: 'Décrivez en quoi consiste votre solution ou votre service.',
+    options: [],
+    required: true,
+    conditions: [],
+    conditionLogic: 'all',
+    guidance: {
+      objective: 'Clarifier l’expérience proposée avant de détailler les bénéfices.',
+      details: 'Cette description introduit la section “Solution” et doit rester simple à comprendre.',
+      tips: [
+        'Structurez en 2-3 phrases : quoi, pour qui, comment.',
+        'Évitez le vocabulaire interne : imaginez que vous présentez le concept à un prospect.'
+      ]
+    }
+  },
+  {
+    id: 'solutionBenefits',
+    type: 'long_text',
+    question: 'Quels bénéfices tangibles votre solution apporte-t-elle ?',
+    options: [],
+    required: true,
+    conditions: [],
+    conditionLogic: 'all',
+    guidance: {
+      objective: 'Mettre en avant les résultats obtenus plutôt que les fonctionnalités.',
+      details: 'Chaque ligne sera transformée en bénéfice clé dans la vitrine.',
+      tips: [
+        'Rédigez une phrase par bénéfice, orientée résultat (“Gain de 2h par semaine”).',
+        'Priorisez les bénéfices les plus différenciants pour votre audience.'
+      ]
+    }
+  },
+  {
+    id: 'solutionExperience',
     type: 'text',
-    question: 'Quel appel à l\'action souhaitez-vous formuler à l\'issue du pitch ?',
+    question: 'Quel visuel, maquette ou démonstration illustre le mieux votre solution ?',
     options: [],
     required: false,
     conditions: [],
     conditionLogic: 'all',
     guidance: {
-      objective: 'Clarifier l\'attente principale vis-à-vis de l\'audience une fois le pitch terminé.',
-      details: 'Savoir quelle décision, quel soutien ou quelle action est attendue aide à structurer la conclusion et les prochaines étapes.',
+      objective: 'Donner un aperçu concret de l’expérience proposée.',
+      details: 'Cette information permet de suggérer un visuel ou un format immersif dans la vitrine.',
       tips: [
-        'Soyez explicite sur la décision attendue (validation, budget, ressources, lancement pilote, etc.).',
-        'Si plusieurs actions sont nécessaires, hiérarchisez-les pour guider votre audience.'
+        'Mentionnez le support disponible (mockup, capture, vidéo, prototype).',
+        'Précisez le moment du parcours où cette preuve visuelle sera présentée.'
       ]
     }
   },
   {
-    id: 'q13',
-    type: 'multi_choice',
-    question: 'Quels supports ou formats de présentation envisagez-vous ?',
-    options: [
-      'Pitch deck (slides)',
-      'Démonstration produit / prototype',
-      'Note de synthèse ou one-pager',
-      'Vidéo courte',
-      'Autre support (préciser dans vos notes)'
-    ],
+    id: 'solutionComparison',
+    type: 'long_text',
+    question: 'En quoi votre approche se distingue-t-elle des alternatives actuelles ?',
+    options: [],
     required: false,
     conditions: [],
     conditionLogic: 'all',
     guidance: {
-      objective: 'Anticiper les supports nécessaires pour préparer le pitch dans le bon format.',
-      details: 'Le choix des formats influe sur la structure du pitch, les ressources de design et les délais de production.',
+      objective: 'Souligner la différenciation sans dénigrer la concurrence.',
+      details: 'Cette réponse apparaît dans la section “Solution” comme une comparaison subtile.',
       tips: [
-        'Sélectionnez plusieurs options si vous prévoyez un parcours multicanal (ex : réunion + support envoyé).',
-        'Précisez les contraintes de durée ou de format pour chaque support si elles sont connues.'
+        'Comparez-vous à un comportement ou à une solution existante plutôt qu’à un concurrent direct.',
+        'Appuyez-vous sur un bénéfice mesurable ou une expérience utilisateur plus fluide.'
+      ]
+    }
+  },
+  {
+    id: 'innovationSecret',
+    type: 'long_text',
+    question: 'Quelle est votre “secret sauce” ou élément différenciant clé ?',
+    options: [],
+    required: true,
+    conditions: [],
+    conditionLogic: 'all',
+    guidance: {
+      objective: 'Expliquer en quoi votre approche dépasse les standards du marché.',
+      details: 'Ce contenu nourrit la section “Innovation” et crédibilise votre avance.',
+      tips: [
+        'Insistez sur la méthode, la technologie ou l’insight qui change tout.',
+        'Reliez cet élément différenciant à une preuve utilisateur ou métier.'
+      ]
+    }
+  },
+  {
+    id: 'innovationProcess',
+    type: 'long_text',
+    question: 'Comment votre équipe transforme cette innovation en expérience fluide ?',
+    options: [],
+    required: false,
+    conditions: [],
+    conditionLogic: 'all',
+    guidance: {
+      objective: 'Décrire le process ou l’architecture qui garantit une exécution sans friction.',
+      details: 'Cette réponse est mise en scène comme un mini schéma narratif.',
+      tips: [
+        'Décrivez 3 étapes clés maximum pour garder la lecture fluide.',
+        'Mentionnez les outils, rituels ou partenaires qui rendent le parcours intuitif.'
+      ]
+    }
+  },
+  {
+    id: 'marketSize',
+    type: 'text',
+    question: 'Quel chiffre illustre le potentiel de marché ou la traction attendue ?',
+    options: [],
+    required: false,
+    conditions: [],
+    conditionLogic: 'all',
+    guidance: {
+      objective: 'Ancrer la vision dans des données marché ou business.',
+      details: 'Cette information sera mise en avant dans la section “Potentiel & impact”.',
+      tips: [
+        'Utilisez un indicateur simple : taille de marché, croissance, revenu projeté, etc.',
+        'Précisez si possible la source ou la période de référence.'
+      ]
+    }
+  },
+  {
+    id: 'tractionSignals',
+    type: 'long_text',
+    question: 'Quelles preuves ou signaux de traction pouvez-vous mettre en avant ?',
+    options: [],
+    required: false,
+    conditions: [],
+    conditionLogic: 'all',
+    guidance: {
+      objective: 'Rassurer votre audience avec des éléments concrets (chiffres, retours, partenaires).',
+      details: 'Chaque ligne sera affichée comme une preuve dans la section “Potentiel & impact”.',
+      tips: [
+        'Listez des chiffres clés, logos partenaires, mentions presse ou résultats de pilote.',
+        'Associez chaque preuve à une courte description pour contextualiser.'
+      ]
+    }
+  },
+  {
+    id: 'visionStatement',
+    type: 'long_text',
+    question: 'Quelle vision inspirante souhaitez-vous partager pour conclure la narration ?',
+    options: [],
+    required: false,
+    conditions: [],
+    conditionLogic: 'all',
+    guidance: {
+      objective: 'Projeter votre audience sur le futur souhaité grâce au projet.',
+      details: 'Cette phrase finale apporte une touche émotionnelle dans la section “Potentiel & impact”.',
+      tips: [
+        'Employez le futur ou le conditionnel pour ouvrir sur la suite.',
+        'Reliez la vision à l’impact sociétal, business ou humain que vous visez.'
+      ]
+    }
+  },
+  {
+    id: 'campaignKickoffDate',
+    type: 'date',
+    question: 'Quand débutez-vous la préparation active de la campagne ?',
+    options: [],
+    required: false,
+    conditions: [],
+    conditionLogic: 'all',
+    guidance: {
+      objective: 'Poser le point de départ du run marketing.',
+      details: 'Cette date permet de calculer le runway entre préparation et lancement.',
+      tips: [
+        'Indiquez la date à laquelle vous souhaitez lancer la production des supports.',
+        'Mettez à jour la date si la préparation démarre plus tôt ou plus tard que prévu.'
+      ]
+    }
+  },
+  {
+    id: 'launchDate',
+    type: 'date',
+    question: 'Quelle est la date de lancement ou de reveal souhaitée ?',
+    options: [],
+    required: false,
+    conditions: [],
+    conditionLogic: 'all',
+    guidance: {
+      objective: 'Aligner toutes les parties prenantes sur la cible de lancement.',
+      details: 'Associée à la date de kick-off, cette information permet de vérifier la faisabilité du planning.',
+      tips: [
+        'Renseignez la première date de mise en avant (événement, publication, annonce).',
+        'Si la date n’est pas figée, indiquez l’hypothèse la plus réaliste pour planifier les ressources.'
+      ]
+    }
+  },
+  {
+    id: 'teamLead',
+    type: 'text',
+    question: 'Qui porte la narration et coordonne le projet ?',
+    options: [],
+    required: true,
+    conditions: [],
+    conditionLogic: 'all',
+    guidance: {
+      objective: 'Identifier la personne qui centralise les retours et valide les contenus.',
+      details: "Ce contact sera mentionné dans la vitrine pour renforcer la crédibilité de l'équipe.",
+      tips: [
+        'Indiquez prénom, nom et rôle.',
+        'Ajoutez si besoin un canal de contact (LinkedIn, e-mail) dans vos notes internes.'
+      ]
+    }
+  },
+  {
+    id: 'teamCoreMembers',
+    type: 'long_text',
+    question: 'Quels sont les membres clés qui incarnent le projet ?',
+    options: [],
+    required: false,
+    conditions: [],
+    conditionLogic: 'all',
+    guidance: {
+      objective: 'Mettre en avant la complémentarité de l’équipe.',
+      details: 'Chaque ligne sera affichée comme un membre du “collectif moteur”.',
+      tips: [
+        'Mentionnez pour chaque personne le rôle ou l’expertise apportée.',
+        'Incluez éventuellement les partenaires ou experts externes essentiels.'
+      ]
+    }
+  },
+  {
+    id: 'teamValues',
+    type: 'long_text',
+    question: 'Quelles valeurs ou principes guident votre équipe ?',
+    options: [],
+    required: false,
+    conditions: [],
+    conditionLogic: 'all',
+    guidance: {
+      objective: 'Rassurer sur la posture de l’équipe face aux parties prenantes.',
+      details: 'Chaque valeur sera transformée en badge pour renforcer la signature du projet.',
+      tips: [
+        'Listez 3 valeurs maximum pour rester mémorable.',
+        'Formulez-les de manière positive (“Transparence proactive”, “Sens du terrain”, etc.).'
       ]
     }
   }

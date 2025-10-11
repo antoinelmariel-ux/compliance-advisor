@@ -1,32 +1,32 @@
 export const initialTeams =  [
   {
-    id: 'bpp',
-    name: 'Bonnes Pratiques Promotionnelles',
-    contact: 'bpp@company.com',
-    expertise: 'Conformité réglementaire des communications professionnelles de santé'
+    id: 'story',
+    name: 'Storytelling & Brand',
+    contact: 'story@company.com',
+    expertise: 'Narration marketing, tonalité éditoriale et cohérence du message'
   },
   {
-    id: 'it',
-    name: 'IT & Sécurité',
-    contact: 'it-security@company.com',
-    expertise: "Sécurité des systèmes d'information et protection des données"
+    id: 'product',
+    name: 'Produit & Expérience',
+    contact: 'product@company.com',
+    expertise: 'Démonstrations produit, scénarios d’usage et maquettes immersives'
   },
   {
-    id: 'legal',
-    name: 'Juridique',
-    contact: 'legal@company.com',
-    expertise: 'Conformité légale et contractuelle'
+    id: 'growth',
+    name: 'Growth & Impact',
+    contact: 'growth@company.com',
+    expertise: 'Données marché, KPIs business et preuves de traction'
   },
   {
-    id: 'privacy',
-    name: 'Privacy & RGPD',
-    contact: 'privacy@company.com',
-    expertise: 'Protection des données personnelles et conformité RGPD'
+    id: 'press',
+    name: 'Relations Presse & Influence',
+    contact: 'press@company.com',
+    expertise: 'Diffusion médiatique, social media et gestion des messages sensibles'
   },
   {
-    id: 'quality',
-    name: 'Qualité & GxP',
-    contact: 'quality@company.com',
-    expertise: 'Bonnes pratiques pharmaceutiques et qualité'
+    id: 'partners',
+    name: 'Partenariats stratégiques',
+    contact: 'partners@company.com',
+    expertise: 'Alliances business, co-marketing et activation prescripteurs'
   }
 ];
