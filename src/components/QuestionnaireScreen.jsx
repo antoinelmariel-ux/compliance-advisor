@@ -78,6 +78,226 @@ export const QuestionnaireScreen = ({
       hasConditions
   );
 
+  const renderQuestionInput = () => {
+    switch (questionType) {
+      case 'date':
+        return (
+          <div className="mb-8">
+            <label className="block text-sm font-medium text-gray-700 mb-3" htmlFor={`${currentQuestion.id}-date`}>
+              <span className="flex items-center">
+                <Calendar className="w-4 h-4 mr-2" />
+                Sélectionnez une date
+              </span>
+            </label>
+            <input
+              type="date"
+              value={currentAnswer ?? ''}
+              onChange={(e) => onAnswer(currentQuestion.id, e.target.value)}
+              id={`${currentQuestion.id}-date`}
+              aria-describedby={currentIndex === 0 ? instructionsId : undefined}
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent hv-focus-ring"
+            />
+            <p className="text-xs text-gray-500 mt-2">
+              Utilisez le sélecteur ou le format AAAA-MM-JJ pour garantir une analyse correcte.
+            </p>
+          </div>
+        );
+      case 'choice':
+        return (
+          <fieldset className="space-y-3 mb-8" aria-describedby={currentIndex === 0 ? instructionsId : undefined}>
+            <legend className="sr-only">{currentQuestion.question}</legend>
+            {currentQuestion.options.map((option, idx) => {
+              const isSelected = answers[currentQuestion.id] === option;
+              const optionId = `${currentQuestion.id}-option-${idx}`;
+
+              return (
+                <label
+                  key={idx}
+                  htmlFor={optionId}
+                  className={`w-full p-4 flex items-center justify-between rounded-xl border-2 transition-all duration-200 cursor-pointer hv-focus-ring ${
+                    isSelected
+                      ? 'border-indigo-600 bg-indigo-50 text-indigo-900'
+                      : 'border-gray-200 hover:border-indigo-300 hover:bg-gray-50'
+                  }`}
+                >
+                  <div className="flex items-center">
+                    <input
+                      type="radio"
+                      id={optionId}
+                      name={currentQuestion.id}
+                      value={option}
+                      checked={isSelected}
+                      onChange={() => onAnswer(currentQuestion.id, option)}
+                      className="w-5 h-5 text-indigo-600 border-gray-300 focus:ring-indigo-500 hv-focus-ring"
+                    />
+                    <span className="ml-3 font-medium">{option}</span>
+                  </div>
+                  {isSelected && <CheckCircle className="w-5 h-5 text-indigo-600" />}
+                </label>
+              );
+            })}
+          </fieldset>
+        );
+      case 'multi_choice':
+        return (
+          <div className="space-y-3 mb-8">
+            {currentQuestion.options.map((option, idx) => {
+              const isSelected = multiSelection.includes(option);
+              const optionId = `${currentQuestion.id}-multi-option-${idx}`;
+
+              const toggleOption = () => {
+                if (isSelected) {
+                  onAnswer(
+                    currentQuestion.id,
+                    multiSelection.filter(item => item !== option)
+                  );
+                } else {
+                  onAnswer(currentQuestion.id, [...multiSelection, option]);
+                }
+              };
+
+              return (
+                <label
+                  key={idx}
+                  htmlFor={optionId}
+                  className={`w-full p-4 flex items-center justify-between rounded-xl border-2 transition-all duration-200 cursor-pointer hv-focus-ring ${
+                    isSelected
+                      ? 'border-indigo-600 bg-indigo-50 text-indigo-900'
+                      : 'border-gray-200 hover:border-indigo-300 hover:bg-gray-50'
+                  }`}
+                >
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={toggleOption}
+                      id={optionId}
+                      className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 hv-focus-ring"
+                    />
+                    <span className="ml-3 font-medium">{option}</span>
+                  </div>
+                  {isSelected && <CheckCircle className="w-5 h-5 text-indigo-600" />}
+                </label>
+              );
+            })}
+          </div>
+        );
+      case 'text':
+        return (
+          <div className="mb-8">
+            <label className="block text-sm font-medium text-gray-700 mb-3" htmlFor={`${currentQuestion.id}-text`}>
+              Renseignez votre réponse
+            </label>
+            <input
+              type="text"
+              value={currentAnswer ?? ''}
+              onChange={(e) => onAnswer(currentQuestion.id, e.target.value)}
+              placeholder="Saisissez une réponse en une ligne"
+              id={`${currentQuestion.id}-text`}
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent hv-focus-ring"
+            />
+            <p className="text-xs text-gray-500 mt-2">
+              Utilisez ce champ pour des réponses courtes sous forme de texte libre.
+            </p>
+          </div>
+        );
+      case 'long_text':
+        return (
+          <div className="mb-8">
+            <label className="block text-sm font-medium text-gray-700 mb-3" htmlFor={`${currentQuestion.id}-long-text`}>
+              Décrivez les éléments pertinents
+            </label>
+            <textarea
+              value={currentAnswer ?? ''}
+              onChange={(e) => onAnswer(currentQuestion.id, e.target.value)}
+              placeholder="Renseignez ici les informations détaillées..."
+              rows={5}
+              id={`${currentQuestion.id}-long-text`}
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-y hv-focus-ring"
+            />
+            <p className="text-xs text-gray-500 mt-2">
+              Ce champ accepte plusieurs lignes : structurez votre réponse librement.
+            </p>
+          </div>
+        );
+      case 'number':
+        return (
+          <div className="mb-8">
+            <label className="block text-sm font-medium text-gray-700 mb-3" htmlFor={`${currentQuestion.id}-number`}>
+              Renseignez une valeur numérique
+            </label>
+            <input
+              type="number"
+              inputMode="decimal"
+              value={currentAnswer ?? ''}
+              onChange={(e) => onAnswer(currentQuestion.id, e.target.value)}
+              id={`${currentQuestion.id}-number`}
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent hv-focus-ring"
+            />
+            <p className="text-xs text-gray-500 mt-2">
+              Vous pouvez saisir un nombre entier ou décimal.
+            </p>
+          </div>
+        );
+      case 'url':
+        return (
+          <div className="mb-8">
+            <label className="block text-sm font-medium text-gray-700 mb-3" htmlFor={`${currentQuestion.id}-url`}>
+              Indiquez une adresse URL
+            </label>
+            <input
+              type="url"
+              value={currentAnswer ?? ''}
+              onChange={(e) => onAnswer(currentQuestion.id, e.target.value)}
+              placeholder="https://exemple.com"
+              id={`${currentQuestion.id}-url`}
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent hv-focus-ring"
+            />
+            <p className="text-xs text-gray-500 mt-2">
+              Incluez le protocole (https://) pour une URL valide.
+            </p>
+          </div>
+        );
+      case 'file':
+        return (
+          <div className="mb-8">
+            <label className="block text-sm font-medium text-gray-700 mb-3" htmlFor={`${currentQuestion.id}-file`}>
+              Téléversez un fichier de référence
+            </label>
+            <input
+              type="file"
+              onChange={(e) => {
+                const file = e.target.files && e.target.files[0];
+                if (file) {
+                  onAnswer(currentQuestion.id, {
+                    name: file.name,
+                    size: file.size,
+                    type: file.type
+                  });
+                } else {
+                  onAnswer(currentQuestion.id, null);
+                }
+              }}
+              id={`${currentQuestion.id}-file`}
+              className="w-full focus:outline-none hv-focus-ring"
+            />
+            {currentAnswer && (
+              <p className="text-xs text-gray-500 mt-2">
+                {(() => {
+                  const size = typeof currentAnswer.size === 'number'
+                    ? ` (${Math.round(currentAnswer.size / 1024)} Ko)`
+                    : '';
+                  return `Fichier sélectionné : ${currentAnswer.name}${size}`;
+                })()}
+              </p>
+            )}
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-8 hv-background">
       <div className="max-w-3xl mx-auto">
@@ -269,217 +489,7 @@ export const QuestionnaireScreen = ({
             </div>
           )}
 
-          {questionType === 'date' && (
-            <div className="mb-8">
-              <label className="block text-sm font-medium text-gray-700 mb-3" htmlFor={`${currentQuestion.id}-date`}>
-                <span className="flex items-center">
-                  <Calendar className="w-4 h-4 mr-2" />
-                  Sélectionnez une date
-                </span>
-              </label>
-              <input
-                type="date"
-                value={currentAnswer || ''}
-                onChange={(e) => onAnswer(currentQuestion.id, e.target.value)}
-                id={`${currentQuestion.id}-date`}
-                aria-describedby={currentIndex === 0 ? instructionsId : undefined}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent hv-focus-ring"
-              />
-              <p className="text-xs text-gray-500 mt-2">
-                Utilisez le sélecteur ou le format AAAA-MM-JJ pour garantir une analyse correcte.
-              </p>
-            </div>
-          )}
-
-          {questionType === 'choice' && (
-            <fieldset className="space-y-3 mb-8" aria-describedby={currentIndex === 0 ? instructionsId : undefined}>
-              <legend className="sr-only">{currentQuestion.question}</legend>
-              {currentQuestion.options.map((option, idx) => {
-                const isSelected = answers[currentQuestion.id] === option;
-                const optionId = `${currentQuestion.id}-option-${idx}`;
-
-                return (
-                  <label
-                    key={idx}
-                    htmlFor={optionId}
-                    className={`w-full p-4 flex items-center justify-between rounded-xl border-2 transition-all duration-200 cursor-pointer hv-focus-ring ${
-                      isSelected
-                        ? 'border-indigo-600 bg-indigo-50 text-indigo-900'
-                        : 'border-gray-200 hover:border-indigo-300 hover:bg-gray-50'
-                    }`}
-                  >
-                    <div className="flex items-center">
-                      <input
-                        type="radio"
-                        id={optionId}
-                        name={currentQuestion.id}
-                        value={option}
-                        checked={isSelected}
-                        onChange={() => onAnswer(currentQuestion.id, option)}
-                        className="w-5 h-5 text-indigo-600 border-gray-300 focus:ring-indigo-500 hv-focus-ring"
-                      />
-                      <span className="ml-3 font-medium">{option}</span>
-                    </div>
-                    {isSelected && <CheckCircle className="w-5 h-5 text-indigo-600" />}
-                  </label>
-                );
-              })}
-            </fieldset>
-          )}
-
-          {questionType === 'multi_choice' && (
-            <div className="space-y-3 mb-8">
-              {currentQuestion.options.map((option, idx) => {
-                const isSelected = multiSelection.includes(option);
-                const optionId = `${currentQuestion.id}-multi-option-${idx}`;
-
-                const toggleOption = () => {
-                  if (isSelected) {
-                    onAnswer(
-                      currentQuestion.id,
-                      multiSelection.filter(item => item !== option)
-                    );
-                  } else {
-                    onAnswer(currentQuestion.id, [...multiSelection, option]);
-                  }
-                };
-
-                return (
-                  <label
-                    key={idx}
-                    htmlFor={optionId}
-                    className={`w-full p-4 flex items-center justify-between rounded-xl border-2 transition-all duration-200 cursor-pointer hv-focus-ring ${
-                      isSelected
-                        ? 'border-indigo-600 bg-indigo-50 text-indigo-900'
-                        : 'border-gray-200 hover:border-indigo-300 hover:bg-gray-50'
-                    }`}
-                  >
-                    <div className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={toggleOption}
-                        id={optionId}
-                        className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 hv-focus-ring"
-                      />
-                      <span className="ml-3 font-medium">{option}</span>
-                    </div>
-                    {isSelected && <CheckCircle className="w-5 h-5 text-indigo-600" />}
-                  </label>
-                );
-              })}
-            </div>
-          )}
-
-          {questionType === 'text' && (
-            <div className="mb-8">
-              <label className="block text-sm font-medium text-gray-700 mb-3" htmlFor={`${currentQuestion.id}-text`}>
-                Renseignez votre réponse
-              </label>
-              <input
-                type="text"
-                value={currentAnswer ?? ''}
-                onChange={(e) => onAnswer(currentQuestion.id, e.target.value)}
-                placeholder="Saisissez une réponse en une ligne"
-                id={`${currentQuestion.id}-text`}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent hv-focus-ring"
-              />
-              <p className="text-xs text-gray-500 mt-2">
-                Utilisez ce champ pour des réponses courtes sous forme de texte libre.
-              </p>
-            </div>
-          )}
-
-          {questionType === 'long_text' && (
-            <div className="mb-8">
-              <label className="block text-sm font-medium text-gray-700 mb-3" htmlFor={`${currentQuestion.id}-long-text`}>
-                Décrivez les éléments pertinents
-              </label>
-              <textarea
-                value={currentAnswer ?? ''}
-                onChange={(e) => onAnswer(currentQuestion.id, e.target.value)}
-                placeholder="Renseignez ici les informations détaillées..."
-                rows={5}
-                id={`${currentQuestion.id}-long-text`}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-y hv-focus-ring"
-              />
-              <p className="text-xs text-gray-500 mt-2">
-                Ce champ accepte plusieurs lignes : structurez votre réponse librement.
-              </p>
-            </div>
-          )}
-
-          {questionType === 'number' && (
-            <div className="mb-8">
-              <label className="block text-sm font-medium text-gray-700 mb-3" htmlFor={`${currentQuestion.id}-number`}>
-                Renseignez une valeur numérique
-              </label>
-              <input
-                type="number"
-                value={currentAnswer ?? ''}
-                onChange={(e) => onAnswer(currentQuestion.id, e.target.value)}
-                id={`${currentQuestion.id}-number`}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent hv-focus-ring"
-              />
-              <p className="text-xs text-gray-500 mt-2">
-                Vous pouvez saisir un nombre entier ou décimal.
-              </p>
-            </div>
-          )}
-
-          {questionType === 'url' && (
-            <div className="mb-8">
-              <label className="block text-sm font-medium text-gray-700 mb-3" htmlFor={`${currentQuestion.id}-url`}>
-                Indiquez une adresse URL
-              </label>
-              <input
-                type="url"
-                value={currentAnswer || ''}
-                onChange={(e) => onAnswer(currentQuestion.id, e.target.value)}
-                placeholder="https://exemple.com"
-                id={`${currentQuestion.id}-url`}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent hv-focus-ring"
-              />
-              <p className="text-xs text-gray-500 mt-2">
-                Incluez le protocole (https://) pour une URL valide.
-              </p>
-            </div>
-          )}
-
-          {questionType === 'file' && (
-            <div className="mb-8">
-              <label className="block text-sm font-medium text-gray-700 mb-3" htmlFor={`${currentQuestion.id}-file`}>
-                Téléversez un fichier de référence
-              </label>
-              <input
-                type="file"
-                onChange={(e) => {
-                  const file = e.target.files && e.target.files[0];
-                  if (file) {
-                    onAnswer(currentQuestion.id, {
-                      name: file.name,
-                      size: file.size,
-                      type: file.type
-                    });
-                  } else {
-                    onAnswer(currentQuestion.id, null);
-                  }
-                }}
-                id={`${currentQuestion.id}-file`}
-                className="w-full focus:outline-none hv-focus-ring"
-              />
-              {currentAnswer && (
-                <p className="text-xs text-gray-500 mt-2">
-                  {(() => {
-                    const size = typeof currentAnswer.size === 'number'
-                      ? ` (${Math.round(currentAnswer.size / 1024)} Ko)`
-                      : '';
-                    return `Fichier sélectionné : ${currentAnswer.name}${size}`;
-                  })()}
-                </p>
-              )}
-            </div>
-          )}
+          {renderQuestionInput()}
 
           <div className={`flex ${currentIndex === 0 ? 'justify-end' : 'justify-between'}`}>
             {currentIndex > 0 && (
