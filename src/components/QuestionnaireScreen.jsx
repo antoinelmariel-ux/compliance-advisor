@@ -481,16 +481,17 @@ export const QuestionnaireScreen = ({
             </div>
           )}
 
-          <div className="flex justify-between">
-            <button
-              type="button"
-              onClick={onBack}
-              disabled={currentIndex === 0}
-              className="flex items-center px-6 py-3 rounded-lg font-medium text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all hv-button"
-            >
-              <ChevronLeft className="w-5 h-5 mr-2" />
-              Précédent
-            </button>
+          <div className={`flex ${currentIndex === 0 ? 'justify-end' : 'justify-between'}`}>
+            {currentIndex > 0 && (
+              <button
+                type="button"
+                onClick={onBack}
+                className="flex items-center px-6 py-3 rounded-lg font-medium text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all hv-button"
+              >
+                <ChevronLeft className="w-5 h-5 mr-2" />
+                Précédent
+              </button>
+            )}
 
             <button
               type="button"
