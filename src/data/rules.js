@@ -1,169 +1,180 @@
 export const initialRules =  [
   {
-    id: 'rule1',
-    name: 'Projet externe digital avec professionnels de santé',
-    conditions: [
-      { question: 'q1', operator: 'equals', value: 'Externe (professionnels de santé)' },
-      { question: 'q2', operator: 'not_equals', value: 'Non' }
-    ],
+    id: 'rule_story_foundations',
+    name: 'Narration de base à structurer',
+    conditions: [],
     conditionLogic: 'all',
-    teams: ['bpp', 'it', 'legal'],
+    teams: ['story'],
     questions: {
-      bpp: ['Le contenu a-t-il été validé médicalement ?', 'Les mentions légales sont-elles conformes ?'],
-      it: ["Quelles sont les mesures de sécurité prévues pour l'hébergement ?", 'Un audit de sécurité est-il planifié ?'],
-      legal: ['Les CGU/CGV sont-elles conformes au Code de la Santé Publique ?']
+      story: [
+        'Le slogan résume-t-il la promesse en moins de 10 mots ?',
+        'La proposition de valeur précise-t-elle bien le public, le problème et le bénéfice clé ?',
+        'Les pain points sont-ils formulés dans le langage de l’audience ?'
+      ]
     },
     risks: [
       {
-        description: 'Communication non conforme aux bonnes pratiques promotionnelles',
-        level: 'Élevé',
-        mitigation: 'Validation BPP avant tout déploiement'
+        title: 'Promesse à affiner',
+        description: 'Sans promesse claire dès le hero, le pitch perd en impact dès les premières secondes.',
+        level: 'Modéré',
+        mitigation: 'Tester plusieurs formulations courtes et les faire relire par un pair.',
+        priority: 'Recommandé'
       }
     ],
-    priority: 'Critique'
+    priority: 'Recommandé'
   },
   {
-    id: 'rule2',
-    name: 'Projet avec données de santé',
+    id: 'rule_public_launch',
+    name: 'Diffusion grand public',
     conditions: [
-      { question: 'q3', operator: 'equals', value: 'Oui - Données de santé' }
+      { question: 'targetAudience', operator: 'contains', value: 'Grand public / clients finaux' }
     ],
     conditionLogic: 'all',
-    teams: ['privacy', 'it', 'quality', 'legal'],
+    teams: ['story', 'press'],
     questions: {
-      privacy: ['Une DPIA a-t-elle été réalisée ?', 'Le registre des traitements est-il à jour ?', 'Les consentements sont-ils conformes RGPD ?'],
-      it: ["L'hébergement est-il certifié HDS ?", 'Le chiffrement des données est-il implémenté ?'],
-      quality: ['Les processus respectent-ils les GxP applicables ?'],
-      legal: ['Les clauses contractuelles incluent-elles les garanties RGPD ?']
+      story: [
+        'Le ton est-il inclusif et dépourvu de jargon ?',
+        'Une illustration forte est-elle identifiée pour soutenir le message ?'
+      ],
+      press: [
+        'Les éléments de preuve sont-ils sourcés et prêts à être partagés ?',
+        'Un plan de diffusion média ou social est-il esquissé ?'
+      ]
     },
     risks: [
       {
-        description: 'Non-conformité RGPD - Données de santé sensibles',
-        level: 'Élevé',
-        mitigation: 'DPIA obligatoire et hébergement HDS'
-      },
-      {
-        description: 'Violation de données personnelles',
-        level: 'Élevé',
-        mitigation: 'Mesures de sécurité renforcées et chiffrement'
-      }
-    ],
-    priority: 'Critique'
-  },
-  {
-    id: 'rule3',
-    name: 'Projet avec prestataires externes',
-    conditions: [
-      { question: 'q4', operator: 'equals', value: 'Oui' }
-    ],
-    conditionLogic: 'all',
-    teams: ['legal', 'quality'],
-    questions: {
-      legal: ['Les contrats incluent-ils les clauses de confidentialité ?', 'Les assurances sont-elles adéquates ?'],
-      quality: ['Les prestataires sont-ils qualifiés selon nos standards ?', 'Un audit fournisseur est-il prévu ?']
-    },
-    risks: [
-      {
-        description: 'Risque contractuel avec prestataires',
+        title: 'Narration grand public insuffisamment adaptée',
+        description: 'Un message trop technique peut créer une rupture d’adhésion chez les audiences larges.',
         level: 'Moyen',
-        mitigation: 'Validation juridique des contrats avant signature'
+        mitigation: 'Simplifier les formulations et prévoir une validation éditoriale.',
+        priority: 'Important'
       }
     ],
     priority: 'Important'
   },
   {
-    id: 'rule4',
-    name: 'Projet digital externe (patients/public)',
+    id: 'rule_investor_focus',
+    name: 'Roadshow investisseurs',
     conditions: [
-      { question: 'q1', operator: 'equals', value: 'Externe (patients/public)' },
-      { question: 'q2', operator: 'not_equals', value: 'Non' }
+      { question: 'targetAudience', operator: 'contains', value: 'Investisseurs' }
     ],
     conditionLogic: 'all',
-    teams: ['legal', 'it', 'privacy'],
+    teams: ['growth', 'partners'],
     questions: {
-      legal: ["Le site respecte-t-il les obligations d'information des consommateurs ?", "L'accessibilité numérique est-elle assurée ?"],
-      it: ['Les standards de sécurité web sont-ils respectés ?'],
-      privacy: ['Les cookies sont-ils conformes aux règles CNIL ?', 'La politique de confidentialité est-elle claire ?']
+      growth: [
+        'Les chiffres de marché et de traction sont-ils consolidés dans un format partageable ?',
+        "Le plan d'impact financier ou d'adoption est-il prêt à être commenté ?"
+      ],
+      partners: [
+        'Les synergies ou partenariats stratégiques sont-ils clairement identifiés ?',
+        'Les besoins de financement ou de ressources sont-ils explicites ?'
+      ]
     },
     risks: [
       {
-        description: 'Non-conformité accessibilité numérique',
+        title: 'Dossier investisseurs incomplet',
+        description: 'Sans indicateurs solides, la crédibilité business peut être questionnée lors du pitch.',
+        level: 'Élevé',
+        mitigation: 'Préparer un one-pager financier et valider les hypothèses clés avec l’équipe growth.',
+        priority: 'Critique'
+      }
+    ],
+    priority: 'Critique'
+  },
+  {
+    id: 'rule_partner_activation',
+    name: 'Activation partenaires & prescripteurs',
+    conditions: [
+      { question: 'targetAudience', operator: 'contains', value: 'Partenaires ou prescripteurs' }
+    ],
+    conditionLogic: 'all',
+    teams: ['partners', 'product'],
+    questions: {
+      partners: [
+        'Le rôle attendu des partenaires est-il décrit clairement ?',
+        'Les bénéfices mutuels sont-ils tangibles et chiffrés ?'
+      ],
+      product: [
+        'Une démonstration spécifique partenaires est-elle prévue ?',
+        'Les ressources (kits, argumentaires) sont-elles identifiées ?'
+      ]
+    },
+    risks: [
+      {
+        title: 'Proposition partenaire à clarifier',
+        description: 'Sans proposition de valeur bilatérale, la collaboration risque de manquer d’engagement.',
         level: 'Moyen',
-        mitigation: 'Audit accessibilité et remédiation'
+        mitigation: 'Formaliser les bénéfices partagés et préparer des assets dédiés.',
+        priority: 'Important'
       }
     ],
     priority: 'Important'
   },
   {
-    id: 'rule5',
-    name: 'Respect du délai de préparation projet',
+    id: 'rule_launch_runway',
+    name: 'Runway avant lancement',
     conditions: [
       {
         type: 'timing',
-        startQuestion: 'q5',
-        endQuestion: 'q6',
+        startQuestion: 'campaignKickoffDate',
+        endQuestion: 'launchDate',
         complianceProfiles: [
           {
-            id: 'standard_preparation',
-            label: 'Préparation standard',
-            description: 'Délai minimal recommandé pour préparer les contributions compliance.',
+            id: 'standard_story',
+            label: 'Narratif prêt',
+            description: 'Temps minimal pour construire la narration et les assets essentiels.',
             requirements: {
-              bpp: 6,
-              it: 6,
-              legal: 6,
-              privacy: 7,
-              quality: 8
-            },
-            conditionLogic: 'all'
+              story: { minimumWeeks: 4 },
+              product: { minimumWeeks: 4 }
+            }
           },
           {
-            id: 'digital_public_launch',
-            label: 'Projet digital grand public',
-            description: 'Projets digitaux externes nécessitent davantage de coordination.',
+            id: 'public_launch',
+            label: 'Diffusion grand public',
+            description: 'Prévoir un buffer supplémentaire pour orchestrer la communication externe.',
             conditions: [
-              { question: 'q1', operator: 'equals', value: 'Externe (patients/public)' },
-              { question: 'q2', operator: 'not_equals', value: 'Non' }
+              { question: 'targetAudience', operator: 'contains', value: 'Grand public / clients finaux' }
             ],
             requirements: {
-              bpp: 8,
-              it: 9,
-              legal: 8,
-              privacy: 8,
-              quality: 10
-            },
-            conditionLogic: 'all'
+              story: { minimumWeeks: 6 },
+              press: { minimumWeeks: 6 }
+            }
           },
           {
-            id: 'health_data_launch',
-            label: 'Projet avec données de santé',
-            description: 'Les projets manipulant des données de santé demandent un délai renforcé.',
+            id: 'investor_roadshow',
+            label: 'Roadshow investisseurs',
+            description: 'Temps recommandé pour consolider les éléments financiers et partenariaux.',
             conditions: [
-              { question: 'q3', operator: 'equals', value: 'Oui - Données de santé' }
+              { question: 'targetAudience', operator: 'contains', value: 'Investisseurs' }
             ],
             requirements: {
-              it: 9,
-              legal: 9,
-              privacy: 12,
-              quality: 10
-            },
-            conditionLogic: 'all'
+              growth: { minimumWeeks: 7 },
+              partners: { minimumWeeks: 7 }
+            }
           }
         ]
       }
     ],
     conditionLogic: 'all',
-    teams: ['quality'],
+    teams: ['story', 'product', 'growth'],
     questions: {
-      quality: [
-        'Le rétroplanning intègre-t-il toutes les validations compliance ?',
-        'Le lancement tient-il compte des actions préalables obligatoires ?'
+      story: [
+        'Le rétroplanning de production des contenus est-il aligné avec la date de lancement ?'
+      ],
+      product: [
+        'Les démonstrations et preuves produit sont-elles planifiées dans le calendrier ?'
+      ],
+      growth: [
+        'Les KPI de suivi post-lancement sont-ils définis avant la diffusion ?'
       ]
     },
     risks: [
       {
-        description: 'Lancement prévu sans délai suffisant pour les revues compliance',
+        title: 'Runway insuffisant',
+        description: 'Un délai trop court entre kick-off et lancement fragilise la qualité du storytelling.',
         level: 'Moyen',
-        mitigation: 'Reprogrammer le lancement ou accélérer les jalons de validation'
+        mitigation: 'Allonger la phase de préparation ou prioriser les assets critiques.',
+        priority: 'Important'
       }
     ],
     priority: 'Important'
