@@ -14,6 +14,10 @@ export const initialQuestions =  [
         'Renseignez le nom officiel ou celui que vous souhaitez tester auprès des parties prenantes.',
         'Si un nom de code interne existe, ajoutez-le entre parenthèses pour faciliter le suivi.'
       ]
+    },
+    showcase: {
+      sections: ['hero'],
+      usage: 'Titre principal affiché dans la vitrine marketing.'
     }
   },
   {
@@ -31,6 +35,10 @@ export const initialQuestions =  [
         'Utilisez un verbe d’action qui évoque le résultat attendu.',
         'Préférez un ton conversationnel : adressez-vous directement à votre audience.'
       ]
+    },
+    showcase: {
+      sections: ['hero'],
+      usage: 'Promesse courte située sous le nom du projet.'
     }
   },
   {
@@ -48,6 +56,10 @@ export const initialQuestions =  [
         'Précisez le public cible, le bénéfice clé et l’impact mesurable.',
         'Évitez le jargon technique : privilégiez un langage accessible.'
       ]
+    },
+    showcase: {
+      sections: ['hero'],
+      usage: 'Résumé principal repris dans le paragraphe d’introduction.'
     }
   },
   {
@@ -71,6 +83,10 @@ export const initialQuestions =  [
         'Sélectionnez plusieurs options si votre pitch est multicanal.',
         'Ajoutez des précisions dans vos notes internes si certains personae doivent recevoir un message dédié.'
       ]
+    },
+    showcase: {
+      sections: ['hero'],
+      usage: 'Badge « Audience principale » dans le bandeau de la vitrine.'
     }
   },
   {
@@ -88,6 +104,10 @@ export const initialQuestions =  [
         'Précisez la source (étude, observation terrain, retour client).',
         'Formulez la donnée sous forme de phrase courte et percutante.'
       ]
+    },
+    showcase: {
+      sections: ['problem'],
+      usage: 'Phrase introductive en surbrillance dans la section problème.'
     }
   },
   {
@@ -105,6 +125,10 @@ export const initialQuestions =  [
         'Utilisez une ligne par pain point pour faciliter la lecture.',
         'Décrivez la situation vécue plutôt que la solution souhaitée.'
       ]
+    },
+    showcase: {
+      sections: ['problem'],
+      usage: 'Liste des irritants principaux affichée dans la colonne de gauche.'
     }
   },
   {
@@ -122,6 +146,10 @@ export const initialQuestions =  [
         'Privilégiez un format court (2-3 phrases) centré sur une émotion ou un obstacle.',
         'Si vous n’avez pas encore de témoignage, décrivez une scène type “avant projet”.'
       ]
+    },
+    showcase: {
+      sections: ['problem'],
+      usage: 'Encart témoignage situé à droite de la section problème.'
     }
   },
   {
@@ -139,6 +167,10 @@ export const initialQuestions =  [
         'Structurez en 2-3 phrases : quoi, pour qui, comment.',
         'Évitez le vocabulaire interne : imaginez que vous présentez le concept à un prospect.'
       ]
+    },
+    showcase: {
+      sections: ['solution'],
+      usage: 'Bloc « Expérience proposée » dans la partie solution.'
     }
   },
   {
@@ -156,6 +188,10 @@ export const initialQuestions =  [
         'Rédigez une phrase par bénéfice, orientée résultat (“Gain de 2h par semaine”).',
         'Priorisez les bénéfices les plus différenciants pour votre audience.'
       ]
+    },
+    showcase: {
+      sections: ['solution'],
+      usage: 'Liste des bénéfices clés dans la section solution.'
     }
   },
   {
@@ -173,6 +209,10 @@ export const initialQuestions =  [
         'Mentionnez le support disponible (mockup, capture, vidéo, prototype).',
         'Précisez le moment du parcours où cette preuve visuelle sera présentée.'
       ]
+    },
+    showcase: {
+      sections: ['solution'],
+      usage: 'Bloc « Preuve immersive » mettant en avant le support visuel.'
     }
   },
   {
@@ -190,6 +230,10 @@ export const initialQuestions =  [
         'Comparez-vous à un comportement ou à une solution existante plutôt qu’à un concurrent direct.',
         'Appuyez-vous sur un bénéfice mesurable ou une expérience utilisateur plus fluide.'
       ]
+    },
+    showcase: {
+      sections: ['solution'],
+      usage: 'Bloc « Pourquoi c’est différent » dans la section solution.'
     }
   },
   {
@@ -207,6 +251,10 @@ export const initialQuestions =  [
         'Insistez sur la méthode, la technologie ou l’insight qui change tout.',
         'Reliez cet élément différenciant à une preuve utilisateur ou métier.'
       ]
+    },
+    showcase: {
+      sections: ['innovation'],
+      usage: 'Paragraphe principal de la section innovation.'
     }
   },
   {
@@ -224,6 +272,10 @@ export const initialQuestions =  [
         'Décrivez 3 étapes clés maximum pour garder la lecture fluide.',
         'Mentionnez les outils, rituels ou partenaires qui rendent le parcours intuitif.'
       ]
+    },
+    showcase: {
+      sections: ['innovation'],
+      usage: 'Encart explicatif sur le fonctionnement de l’innovation.'
     }
   },
   {
@@ -241,6 +293,10 @@ export const initialQuestions =  [
         'Utilisez un indicateur simple : taille de marché, croissance, revenu projeté, etc.',
         'Précisez si possible la source ou la période de référence.'
       ]
+    },
+    showcase: {
+      sections: ['hero', 'impact'],
+      usage: 'Chiffre clé utilisé dans les encadrés « Potentiel de marché ».'
     }
   },
   {
@@ -258,6 +314,10 @@ export const initialQuestions =  [
         'Listez des chiffres clés, logos partenaires, mentions presse ou résultats de pilote.',
         'Associez chaque preuve à une courte description pour contextualiser.'
       ]
+    },
+    showcase: {
+      sections: ['impact'],
+      usage: 'Liste des signaux de traction mise en évidence dans la vitrine.'
     }
   },
   {
@@ -275,6 +335,10 @@ export const initialQuestions =  [
         'Employez le futur ou le conditionnel pour ouvrir sur la suite.',
         'Reliez la vision à l’impact sociétal, business ou humain que vous visez.'
       ]
+    },
+    showcase: {
+      sections: ['impact'],
+      usage: 'Citation de conclusion dans la section impact.'
     }
   },
   {
@@ -292,6 +356,10 @@ export const initialQuestions =  [
         'Indiquez la date à laquelle vous souhaitez lancer la production des supports.',
         'Mettez à jour la date si la préparation démarre plus tôt ou plus tard que prévu.'
       ]
+    },
+    showcase: {
+      sections: ['timeline'],
+      usage: 'Point de départ utilisé pour calculer le runway et les prochaines étapes.'
     }
   },
   {
@@ -309,6 +377,10 @@ export const initialQuestions =  [
         'Renseignez la première date de mise en avant (événement, publication, annonce).',
         'Si la date n’est pas figée, indiquez l’hypothèse la plus réaliste pour planifier les ressources.'
       ]
+    },
+    showcase: {
+      sections: ['timeline'],
+      usage: 'Date cible utilisée pour le calcul du runway et du calendrier.'
     }
   },
   {
@@ -326,6 +398,10 @@ export const initialQuestions =  [
         'Indiquez prénom, nom et rôle.',
         'Ajoutez si besoin un canal de contact (LinkedIn, e-mail) dans vos notes internes.'
       ]
+    },
+    showcase: {
+      sections: ['team'],
+      usage: 'Bloc « Lead du projet » dans la section équipe.'
     }
   },
   {
@@ -343,6 +419,10 @@ export const initialQuestions =  [
         'Mentionnez pour chaque personne le rôle ou l’expertise apportée.',
         'Incluez éventuellement les partenaires ou experts externes essentiels.'
       ]
+    },
+    showcase: {
+      sections: ['team'],
+      usage: 'Liste « Collectif moteur » dans la section équipe.'
     }
   },
   {
@@ -360,6 +440,10 @@ export const initialQuestions =  [
         'Listez 3 valeurs maximum pour rester mémorable.',
         'Formulez-les de manière positive (“Transparence proactive”, “Sens du terrain”, etc.).'
       ]
+    },
+    showcase: {
+      sections: ['team'],
+      usage: 'Badges de valeurs dans la section équipe.'
     }
   }
 ];

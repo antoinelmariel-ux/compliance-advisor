@@ -156,6 +156,30 @@ const getPrimaryRisk = (analysis) => {
   }, null);
 };
 
+const REQUIRED_SHOWCASE_QUESTION_IDS = [
+  'projectName',
+  'projectSlogan',
+  'valueProposition',
+  'targetAudience',
+  'marketSize',
+  'problemInsight',
+  'problemPainPoints',
+  'problemTestimonial',
+  'solutionDescription',
+  'solutionBenefits',
+  'solutionExperience',
+  'solutionComparison',
+  'innovationSecret',
+  'innovationProcess',
+  'tractionSignals',
+  'visionStatement',
+  'teamLead',
+  'teamCoreMembers',
+  'teamValues',
+  'campaignKickoffDate',
+  'launchDate'
+];
+
 const buildHeroHighlights = ({ targetAudience, marketSize, runway, tractionSignalsCount }) => {
   const highlights = [];
 
@@ -226,6 +250,11 @@ export const ProjectShowcase = ({
   const normalizedTeams = Array.isArray(relevantTeams) ? relevantTeams : [];
   const complexity = analysis?.complexity || 'Modérée';
 
+  const missingShowcaseQuestions = useMemo(() => {
+    const available = new Set(Array.isArray(questions) ? questions.map(question => question?.id).filter(Boolean) : []);
+    return REQUIRED_SHOWCASE_QUESTION_IDS.filter(id => !available.has(id));
+  }, [questions]);
+
   const slogan = getFormattedAnswer(questions, answers, 'projectSlogan');
   const valueProposition = getFormattedAnswer(questions, answers, 'valueProposition');
   const targetAudience = getFormattedAnswer(questions, answers, 'targetAudience');
@@ -264,6 +293,19 @@ export const ProjectShowcase = ({
       }),
     [targetAudience, marketSize, runway, tractionSignals.length]
   );
+
+  useEffect(() => {
+    if (missingShowcaseQuestions.length === 0) {
+      return;
+    }
+
+    if (typeof console !== 'undefined' && typeof console.warn === 'function') {
+      console.warn(
+        '[ProjectShowcase] Les questions suivantes sont absentes alors que la vitrine les attend :',
+        missingShowcaseQuestions.join(', ')
+      );
+    }
+  }, [missingShowcaseQuestions]);
 
   useEffect(() => {
     if (typeof document === 'undefined') {
