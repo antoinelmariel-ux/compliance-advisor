@@ -1,5 +1,5 @@
-import React, { useState } from '../react.js';
-import { Settings, Plus, Edit, Trash2, Eye, Info } from './icons.js';
+import React, { useEffect, useState } from '../react.js';
+import { Settings, Plus, Edit, Trash2, Eye, Info, GripVertical } from './icons.js';
 import { QuestionEditor } from './QuestionEditor.jsx';
 import { RuleEditor } from './RuleEditor.jsx';
 import { renderTextWithLinks } from '../utils/linkify.js';
@@ -198,6 +198,111 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
   const [activeTab, setActiveTab] = useState('questions');
   const [editingRule, setEditingRule] = useState(null);
   const [editingQuestion, setEditingQuestion] = useState(null);
+  const [draggedQuestionIndex, setDraggedQuestionIndex] = useState(null);
+  const [dragOverIndex, setDragOverIndex] = useState(null);
+  const [reorderAnnouncement, setReorderAnnouncement] = useState('');
+
+  useEffect(() => {
+    if (!reorderAnnouncement || typeof window === 'undefined') {
+      return undefined;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setReorderAnnouncement('');
+    }, 2000);
+
+    return () => {
+      window.clearTimeout(timeout);
+    };
+  }, [reorderAnnouncement]);
+
+  const moveQuestion = (fromIndex, toIndex) => {
+    if (fromIndex === toIndex) {
+      return;
+    }
+
+    setQuestions(prevQuestions => {
+      if (
+        fromIndex < 0 ||
+        fromIndex >= prevQuestions.length ||
+        toIndex < 0 ||
+        toIndex >= prevQuestions.length
+      ) {
+        return prevQuestions;
+      }
+
+      const updated = [...prevQuestions];
+      const [movedQuestion] = updated.splice(fromIndex, 1);
+      updated.splice(toIndex, 0, movedQuestion);
+
+      if (movedQuestion) {
+        const label = movedQuestion.question || movedQuestion.id || 'Question';
+        setReorderAnnouncement(`La question « ${label} » est maintenant en position ${toIndex + 1} sur ${updated.length}.`);
+      }
+
+      return updated;
+    });
+  };
+
+  const handleDragStart = (event, index) => {
+    if (event?.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', String(index));
+    }
+    setDraggedQuestionIndex(index);
+    setDragOverIndex(index);
+  };
+
+  const handleDragOver = (event, index) => {
+    event.preventDefault();
+    if (dragOverIndex !== index) {
+      setDragOverIndex(index);
+    }
+  };
+
+  const handleDrop = (event, index) => {
+    event.preventDefault();
+
+    let fromIndex = draggedQuestionIndex;
+    if (fromIndex === null) {
+      const transferIndex = Number.parseInt(event?.dataTransfer?.getData('text/plain'), 10);
+      if (Number.isFinite(transferIndex)) {
+        fromIndex = transferIndex;
+      }
+    }
+
+    if (fromIndex !== null) {
+      moveQuestion(fromIndex, index);
+    }
+
+    setDraggedQuestionIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedQuestionIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleKeyboardReorder = (event, index) => {
+    if (questions.length <= 1) {
+      return;
+    }
+
+    if (event.key === 'ArrowUp' && index > 0) {
+      event.preventDefault();
+      moveQuestion(index, index - 1);
+    } else if (event.key === 'ArrowDown' && index < questions.length - 1) {
+      event.preventDefault();
+      moveQuestion(index, index + 1);
+    } else if (event.key === 'Home') {
+      event.preventDefault();
+      moveQuestion(index, 0);
+    } else if (event.key === 'End') {
+      event.preventDefault();
+      moveQuestion(index, questions.length - 1);
+    }
+  };
 
   const getNextId = (items, prefix) => {
     const ids = new Set(items.map((item) => item.id));
@@ -373,6 +478,7 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
 
           {activeTab === 'questions' && (
             <section id="backoffice-tabpanel-questions" role="tabpanel" aria-labelledby="backoffice-tab-questions" className="space-y-4">
+              <div className="sr-only" aria-live="polite">{reorderAnnouncement}</div>
               <div className="flex justify-between items-center">
                 <div>
                   <h2 className="text-2xl font-bold text-gray-800">Gestion des questions</h2>
@@ -394,7 +500,7 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
                 </div>
               )}
 
-              {questions.map((question) => {
+              {questions.map((question, index) => {
                 const typeMeta = getQuestionTypeMeta(question.type);
                 const conditionSummary = buildConditionSummary(question, questions);
                 const guidance = question.guidance || {};
@@ -403,8 +509,14 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
                 return (
                   <article
                     key={question.id}
-                    className="border border-gray-200 rounded-xl p-6 bg-white shadow-sm hv-surface"
+                    className={`border border-gray-200 rounded-xl p-6 bg-white shadow-sm hv-surface transition-shadow ${
+                      dragOverIndex === index ? 'ring-2 ring-indigo-400 ring-offset-2' : ''
+                    } ${
+                      draggedQuestionIndex === index ? 'opacity-75' : ''
+                    }`}
                     aria-label={`Question ${question.id}`}
+                    onDragOver={(event) => handleDragOver(event, index)}
+                    onDrop={(event) => handleDrop(event, index)}
                   >
                     <header className="flex justify-between items-start">
                       <div className="space-y-2">
@@ -420,10 +532,25 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
                           )}
                         </div>
                         <h3 className="text-xl font-semibold text-gray-800">{question.question}</h3>
+                        <p id={`question-${question.id}-position`} className="text-xs text-gray-500">Position {index + 1} sur {questions.length}</p>
                         <p className="text-sm text-gray-500">{typeMeta.description}</p>
                       </div>
 
                       <div className="flex items-center space-x-2">
+                        <button
+                          type="button"
+                          className="p-2 text-gray-500 hover:text-indigo-600 rounded hv-button cursor-move"
+                          aria-label={`Réorganiser la question ${question.id}. Position ${index + 1} sur ${questions.length}. Utilisez les flèches haut et bas.`}
+                          aria-describedby={`question-${question.id}-position`}
+                          draggable
+                          onDragStart={(event) => handleDragStart(event, index)}
+                          onDragOver={(event) => handleDragOver(event, index)}
+                          onDrop={(event) => handleDrop(event, index)}
+                          onDragEnd={handleDragEnd}
+                          onKeyDown={(event) => handleKeyboardReorder(event, index)}
+                        >
+                          <GripVertical className="w-4 h-4" />
+                        </button>
                         <button
                           type="button"
                           onClick={() => setEditingQuestion(question)}
