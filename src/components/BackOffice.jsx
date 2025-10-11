@@ -340,25 +340,37 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
     }
   ];
 
+  const createDefaultQuestion = (existingQuestions) => ({
+    id: getNextId(existingQuestions, 'q'),
+    type: 'choice',
+    question: 'Nouvelle question',
+    options: ['Option 1', 'Option 2'],
+    required: true,
+    conditions: [],
+    conditionLogic: 'all',
+    conditionGroups: [],
+    guidance: {
+      objective: '',
+      details: '',
+      tips: []
+    }
+  });
+
   const addQuestion = () => {
-    const newQuestion = {
-      id: getNextId(questions, 'q'),
-      type: 'choice',
-      question: 'Nouvelle question',
-      options: ['Option 1', 'Option 2'],
-      required: true,
-      conditions: [],
-      conditionLogic: 'all',
-      conditionGroups: [],
-      guidance: {
-        objective: '',
-        details: '',
-        tips: []
-      }
-    };
+    const newQuestion = createDefaultQuestion(questions);
 
     setQuestions([...questions, newQuestion]);
     setEditingQuestion(newQuestion);
+  };
+
+  const addQuestionAtIndex = (targetIndex) => {
+    const newQuestion = createDefaultQuestion(questions);
+    const next = questions.slice();
+    next.splice(targetIndex, 0, newQuestion);
+
+    setQuestions(next);
+    setEditingQuestion(newQuestion);
+    setReorderAnnouncement(`Nouvelle question ajoutée en position ${targetIndex + 1} sur ${next.length}.`);
   };
 
   const deleteQuestion = (id) => {
@@ -507,9 +519,9 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
                 const tips = formatGuidanceTips(guidance);
 
                 return (
-                  <article
-                    key={question.id}
-                    className={`border border-gray-200 rounded-xl p-6 bg-white shadow-sm hv-surface transition-shadow ${
+                  <React.Fragment key={question.id}>
+                    <article
+                      className={`border border-gray-200 rounded-xl p-6 bg-white shadow-sm hv-surface transition-shadow ${
                       dragOverIndex === index ? 'ring-2 ring-indigo-400 ring-offset-2' : ''
                     } ${
                       draggedQuestionIndex === index ? 'opacity-75' : ''
@@ -636,6 +648,20 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
                       </div>
                     )}
                   </article>
+                    {index < questions.length - 1 && (
+                      <div className="flex justify-center my-3">
+                        <button
+                          type="button"
+                          onClick={() => addQuestionAtIndex(index + 1)}
+                          className="w-10 h-10 rounded-full border-2 border-dashed border-indigo-300 text-indigo-600 bg-white flex items-center justify-center shadow-sm hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 hv-button"
+                          aria-label={`Insérer une nouvelle question après la question ${question.id}`}
+                        >
+                          <Plus className="w-5 h-5" />
+                          <span className="sr-only">Ajouter une question à cet emplacement</span>
+                        </button>
+                      </div>
+                    )}
+                  </React.Fragment>
                 );
               })}
             </section>
