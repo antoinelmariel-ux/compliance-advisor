@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from '../react.js';
 import { Plus, Trash2, GripVertical } from './icons.js';
+import { applyConditionGroups, normalizeConditionGroups } from '../utils/conditionGroups.js';
 
 export const QuestionEditor = ({ question, onSave, onCancel, allQuestions }) => {
   const ensureGuidance = (guidance) => {
@@ -14,14 +15,23 @@ export const QuestionEditor = ({ question, onSave, onCancel, allQuestions }) => 
     };
   };
 
-  const [editedQuestion, setEditedQuestion] = useState({
-    ...question,
-    type: question.type || 'choice',
-    options: question.options || [],
-    conditions: question.conditions || [],
-    conditionLogic: question.conditionLogic === 'any' ? 'any' : 'all',
-    guidance: ensureGuidance(question.guidance)
-  });
+  const buildQuestionState = (source) => {
+    const base = {
+      ...source,
+      type: source.type || 'choice',
+      options: source.options || [],
+      guidance: ensureGuidance(source.guidance)
+    };
+
+    const groups = normalizeConditionGroups(base);
+    return applyConditionGroups(base, groups);
+  };
+
+  const [editedQuestion, setEditedQuestion] = useState(() => buildQuestionState(question));
+  useEffect(() => {
+    setEditedQuestion(buildQuestionState(question));
+  }, [question]);
+
   const [draggedOptionIndex, setDraggedOptionIndex] = useState(null);
   const [dragOverIndex, setDragOverIndex] = useState(null);
   const questionType = editedQuestion.type || 'choice';
@@ -135,31 +145,73 @@ export const QuestionEditor = ({ question, onSave, onCancel, allQuestions }) => 
     setDragOverIndex(null);
   };
 
-  const addCondition = () => {
-    setEditedQuestion({
-      ...editedQuestion,
-      conditions: [...editedQuestion.conditions, { question: '', operator: 'equals', value: '' }]
+  const updateConditionGroupsState = (updater) => {
+    setEditedQuestion(prev => {
+      const currentGroups = Array.isArray(prev.conditionGroups) ? prev.conditionGroups : [];
+      const nextGroups = updater(currentGroups);
+      return applyConditionGroups(prev, nextGroups);
     });
   };
 
-  const updateConditionLogic = (logic) => {
-    setEditedQuestion(prev => ({
-      ...prev,
-      conditionLogic: logic === 'any' ? 'any' : 'all'
-    }));
+  const addConditionGroup = () => {
+    updateConditionGroupsState(groups => ([
+      ...groups,
+      {
+        logic: 'all',
+        conditions: [{ question: '', operator: 'equals', value: '' }]
+      }
+    ]));
   };
 
-  const updateCondition = (index, field, value) => {
-    const newConditions = [...editedQuestion.conditions];
-    newConditions[index][field] = value;
-    setEditedQuestion({ ...editedQuestion, conditions: newConditions });
-  };
-
-  const deleteCondition = (index) => {
-    setEditedQuestion({
-      ...editedQuestion,
-      conditions: editedQuestion.conditions.filter((_, i) => i !== index)
+  const updateConditionGroupLogic = (groupIndex, logic) => {
+    updateConditionGroupsState(groups => {
+      const updated = [...groups];
+      const target = updated[groupIndex] || { logic: 'all', conditions: [] };
+      updated[groupIndex] = {
+        ...target,
+        logic: logic === 'any' ? 'any' : 'all'
+      };
+      return updated;
     });
+  };
+
+  const addConditionToGroup = (groupIndex) => {
+    updateConditionGroupsState(groups => {
+      const updated = [...groups];
+      const target = updated[groupIndex] || { logic: 'all', conditions: [] };
+      updated[groupIndex] = {
+        ...target,
+        conditions: [...target.conditions, { question: '', operator: 'equals', value: '' }]
+      };
+      return updated;
+    });
+  };
+
+  const updateConditionInGroup = (groupIndex, conditionIndex, field, value) => {
+    updateConditionGroupsState(groups => {
+      const updated = [...groups];
+      const target = updated[groupIndex] || { logic: 'all', conditions: [] };
+      const conditions = [...(target.conditions || [])];
+      const condition = { ...conditions[conditionIndex] };
+      condition[field] = value;
+      conditions[conditionIndex] = condition;
+      updated[groupIndex] = { ...target, conditions };
+      return updated;
+    });
+  };
+
+  const deleteConditionFromGroup = (groupIndex, conditionIndex) => {
+    updateConditionGroupsState(groups => {
+      const updated = [...groups];
+      const target = updated[groupIndex] || { logic: 'all', conditions: [] };
+      const conditions = (target.conditions || []).filter((_, idx) => idx !== conditionIndex);
+      updated[groupIndex] = { ...target, conditions };
+      return updated;
+    });
+  };
+
+  const deleteConditionGroup = (groupIndex) => {
+    updateConditionGroupsState(groups => groups.filter((_, idx) => idx !== groupIndex));
   };
 
   const addOption = () => {
@@ -186,7 +238,12 @@ export const QuestionEditor = ({ question, onSave, onCancel, allQuestions }) => 
 
   // Filtrer les questions pour ne pas inclure la question en cours d'édition
   const availableQuestions = allQuestions.filter(q => q.id !== editedQuestion.id);
+  const conditionGroups = Array.isArray(editedQuestion.conditionGroups) ? editedQuestion.conditionGroups : [];
   const dialogTitleId = 'question-editor-title';
+
+  const handleSave = () => {
+    onSave(applyConditionGroups(editedQuestion, conditionGroups));
+  };
 
   const overlayRef = useRef(null);
   const titleRef = useRef(null);
@@ -233,7 +290,7 @@ export const QuestionEditor = ({ question, onSave, onCancel, allQuestions }) => 
               </button>
               <button
                 type="button"
-                onClick={() => onSave(editedQuestion)}
+                onClick={handleSave}
                 className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-all hv-button hv-button-primary"
               >
                 Enregistrer
@@ -469,166 +526,250 @@ export const QuestionEditor = ({ question, onSave, onCancel, allQuestions }) => 
                 </p>
               </div>
               <button
-                onClick={addCondition}
+                type="button"
+                onClick={addConditionGroup}
                 className="flex items-center px-3 py-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-all text-sm font-medium"
               >
                 <Plus className="w-4 h-4 mr-1" />
-                Ajouter une condition
+                Ajouter un groupe
               </button>
             </div>
 
-            {editedQuestion.conditions.length === 0 ? (
+            {conditionGroups.length === 0 ? (
               <div className="bg-gray-50 rounded-lg p-6 text-center">
                 <p className="text-gray-600 mb-2">Cette question s'affiche toujours</p>
                 <p className="text-sm text-gray-500">
-                  Ajoutez une condition pour afficher cette question uniquement dans certains cas
+                  Créez un groupe pour afficher cette question uniquement dans certains cas
                 </p>
+                <div className="mt-4">
+                  <button
+                    type="button"
+                    onClick={addConditionGroup}
+                    className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Créer un groupe de conditions
+                  </button>
+                </div>
               </div>
             ) : (
               <div>
                 <div className="bg-blue-50 rounded-lg p-4 mb-4 border border-blue-200">
-                  {(() => {
-                    const logic = editedQuestion.conditionLogic === 'any' ? 'any' : 'all';
-                    const logicLabel = logic === 'any' ? 'OU' : 'ET';
-                    const logicDescription = logic === 'any'
-                      ? 'au moins une des conditions ci-dessous est remplie'
-                      : 'toutes les conditions ci-dessous sont remplies';
+                  {conditionGroups.length === 1 ? (
+                    (() => {
+                      const logic = conditionGroups[0].logic === 'any' ? 'any' : 'all';
+                      const logicLabel = logic === 'any' ? 'OU' : 'ET';
+                      const logicDescription = logic === 'any'
+                        ? 'au moins une des conditions ci-dessous est remplie'
+                        : 'toutes les conditions ci-dessous sont remplies';
 
-                    return (
-                      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                      return (
                         <p className="text-sm text-blue-900">
                           <strong>💡 Logique :</strong> Cette question s'affichera si{' '}
                           <strong className="text-blue-700">{logicDescription}</strong>{' '}
-                          (logique {logicLabel})
+                          (logique {logicLabel}).
                         </p>
-                        <div className="flex items-center space-x-2">
-                          <span className="text-xs font-semibold text-blue-800 uppercase tracking-wide">Mode</span>
-                          <select
-                            value={logic}
-                            onChange={(e) => updateConditionLogic(e.target.value)}
-                            className="px-3 py-1.5 text-sm border border-blue-200 rounded-lg bg-white focus:ring-2 focus:ring-blue-400"
-                          >
-                            <option value="all">Toutes les conditions (ET)</option>
-                            <option value="any">Au moins une condition (OU)</option>
-                          </select>
+                      );
+                    })()
+                  ) : (
+                    <div className="space-y-2 text-sm text-blue-900">
+                      <p>
+                        <strong>💡 Logique :</strong> Cette question s'affiche lorsque{' '}
+                        <strong className="text-blue-700">chaque groupe de conditions</strong> ci-dessous est validé (logique globale <strong>ET</strong>).
+                      </p>
+                      <p>
+                        À l'intérieur d'un groupe, choisissez si{' '}
+                        <strong className="text-blue-700">toutes</strong> les conditions doivent être vraies (ET) ou si{' '}
+                        <strong className="text-blue-700">au moins une</strong> suffit (OU).
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-6">
+                  {conditionGroups.map((group, groupIdx) => {
+                    const logic = group.logic === 'any' ? 'any' : 'all';
+                    const conditions = Array.isArray(group.conditions) ? group.conditions : [];
+                    const connectorLabel = logic === 'any' ? 'OU' : 'ET';
+
+                    return (
+                      <div key={groupIdx}>
+                        {groupIdx > 0 && (
+                          <div className="flex justify-center -mb-3" aria-hidden="true">
+                            <span className="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow">
+                              ET
+                            </span>
+                          </div>
+                        )}
+                        <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 border border-green-200">
+                          <div className="flex flex-wrap items-center gap-3 mb-4">
+                            <span className="text-sm font-semibold text-gray-700">
+                              Groupe {groupIdx + 1}
+                            </span>
+                            <div className="flex items-center gap-2 text-xs text-green-800 uppercase tracking-wide">
+                              <span className="font-semibold">Logique interne</span>
+                              <select
+                                value={logic}
+                                onChange={(e) => updateConditionGroupLogic(groupIdx, e.target.value)}
+                                className="px-3 py-1.5 border border-green-200 rounded-lg bg-white text-xs focus:ring-2 focus:ring-green-400"
+                              >
+                                <option value="all">Toutes les conditions (ET)</option>
+                                <option value="any">Au moins une condition (OU)</option>
+                              </select>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => deleteConditionGroup(groupIdx)}
+                              className="ml-auto p-2 text-red-600 hover:bg-red-50 rounded transition-all"
+                              aria-label={`Supprimer le groupe ${groupIdx + 1}`}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+
+                          {conditions.length === 0 ? (
+                            <div className="bg-white border border-dashed border-green-200 rounded-lg p-4 text-sm text-green-700">
+                              <p>Ajoutez une condition pour définir ce groupe.</p>
+                              <button
+                                type="button"
+                                onClick={() => addConditionToGroup(groupIdx)}
+                                className="mt-3 inline-flex items-center px-3 py-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-all text-sm font-medium"
+                              >
+                                <Plus className="w-4 h-4 mr-1" />
+                                Ajouter une condition
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="space-y-3">
+                              {conditions.map((condition, idx) => (
+                                <div key={idx} className="bg-white rounded-lg border border-green-200 p-4 shadow-sm">
+                                  <div className="flex items-center space-x-3 mb-3">
+                                    {idx > 0 && (
+                                      <span className="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-bold">
+                                        {connectorLabel}
+                                      </span>
+                                    )}
+                                    <span className="text-sm font-semibold text-gray-700">
+                                      Condition {idx + 1}
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() => deleteConditionFromGroup(groupIdx, idx)}
+                                      className="ml-auto p-1 text-red-600 hover:bg-red-50 rounded transition-all"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </button>
+                                  </div>
+
+                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                    <div>
+                                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                                        Si la question
+                                      </label>
+                                      <select
+                                        value={condition.question}
+                                        onChange={(e) => updateConditionInGroup(groupIdx, idx, 'question', e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500"
+                                      >
+                                        <option value="">Sélectionner...</option>
+                                        {availableQuestions.map(q => (
+                                          <option key={q.id} value={q.id}>
+                                            {q.id} - {q.question.substring(0, 30)}...
+                                          </option>
+                                        ))}
+                                      </select>
+                                    </div>
+
+                                    <div>
+                                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                                        Opérateur
+                                      </label>
+                                      <select
+                                        value={condition.operator}
+                                        onChange={(e) => updateConditionInGroup(groupIdx, idx, 'operator', e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500"
+                                      >
+                                        <option value="equals">Est égal à (=)</option>
+                                        <option value="not_equals">Est différent de (≠)</option>
+                                        <option value="contains">Contient</option>
+                                      </select>
+                                    </div>
+
+                                    <div>
+                                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                                        Valeur
+                                      </label>
+                                      {(() => {
+                                        if (!condition.question) {
+                                          return (
+                                            <input
+                                              type="text"
+                                              value={condition.value}
+                                              onChange={(e) => updateConditionInGroup(groupIdx, idx, 'value', e.target.value)}
+                                              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500"
+                                              placeholder="Valeur..."
+                                            />
+                                          );
+                                        }
+
+                                        const selectedQuestion = allQuestions.find(q => q.id === condition.question);
+                                        const selectedType = selectedQuestion?.type || 'choice';
+                                        const usesOptions = ['choice', 'multi_choice'].includes(selectedType);
+
+                                        if (usesOptions) {
+                                          return (
+                                            <select
+                                              value={condition.value}
+                                              onChange={(e) => updateConditionInGroup(groupIdx, idx, 'value', e.target.value)}
+                                              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500"
+                                            >
+                                              <option value="">Sélectionner...</option>
+                                              {(selectedQuestion?.options || []).map((opt, i) => (
+                                                <option key={i} value={opt}>{opt}</option>
+                                              ))}
+                                            </select>
+                                          );
+                                        }
+
+                                        const inputType = selectedType === 'number' ? 'number' : 'text';
+                                        const placeholder =
+                                          selectedType === 'date'
+                                            ? 'AAAA-MM-JJ'
+                                            : selectedType === 'url'
+                                              ? 'https://...'
+                                              : 'Valeur...';
+
+                                        return (
+                                          <input
+                                            type={inputType}
+                                            value={condition.value}
+                                            onChange={(e) => updateConditionInGroup(groupIdx, idx, 'value', e.target.value)}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500"
+                                            placeholder={placeholder}
+                                          />
+                                        );
+                                      })()}
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+
+                              <div className="flex justify-end">
+                                <button
+                                  type="button"
+                                  onClick={() => addConditionToGroup(groupIdx)}
+                                  className="inline-flex items-center px-3 py-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-all text-sm font-medium"
+                                >
+                                  <Plus className="w-4 h-4 mr-1" />
+                                  Ajouter une condition
+                                </button>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     );
-                  })()}
-                </div>
-
-                <div className="space-y-3">
-                  {editedQuestion.conditions.map((condition, idx) => (
-                    <div key={idx} className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 border border-green-200">
-                      <div className="flex items-center space-x-3 mb-3">
-                        {idx > 0 && (
-                          <span className="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-bold">
-                            {editedQuestion.conditionLogic === 'any' ? 'OU' : 'ET'}
-                          </span>
-                        )}
-                        <span className="text-sm font-semibold text-gray-700">
-                          Condition {idx + 1}
-                        </span>
-                        <button
-                          onClick={() => deleteCondition(idx)}
-                          className="ml-auto p-1 text-red-600 hover:bg-red-50 rounded transition-all"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <div>
-                          <label className="block text-xs font-medium text-gray-600 mb-1">
-                            Si la question
-                          </label>
-                          <select
-                            value={condition.question}
-                            onChange={(e) => updateCondition(idx, 'question', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500"
-                          >
-                            <option value="">Sélectionner...</option>
-                            {availableQuestions.map(q => (
-                              <option key={q.id} value={q.id}>
-                                {q.id} - {q.question.substring(0, 30)}...
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div>
-                          <label className="block text-xs font-medium text-gray-600 mb-1">
-                            Opérateur
-                          </label>
-                          <select
-                            value={condition.operator}
-                            onChange={(e) => updateCondition(idx, 'operator', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500"
-                          >
-                            <option value="equals">Est égal à (=)</option>
-                            <option value="not_equals">Est différent de (≠)</option>
-                            <option value="contains">Contient</option>
-                          </select>
-                        </div>
-
-                        <div>
-                          <label className="block text-xs font-medium text-gray-600 mb-1">
-                            Valeur
-                          </label>
-                          {(() => {
-                            if (!condition.question) {
-                              return (
-                                <input
-                                  type="text"
-                                  value={condition.value}
-                                  onChange={(e) => updateCondition(idx, 'value', e.target.value)}
-                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500"
-                                  placeholder="Valeur..."
-                                />
-                              );
-                            }
-
-                            const selectedQuestion = questions.find(q => q.id === condition.question);
-                            const selectedType = selectedQuestion?.type || 'choice';
-                            const usesOptions = ['choice', 'multi_choice'].includes(selectedType);
-
-                            if (usesOptions) {
-                              return (
-                                <select
-                                  value={condition.value}
-                                  onChange={(e) => updateCondition(idx, 'value', e.target.value)}
-                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500"
-                                >
-                                  <option value="">Sélectionner...</option>
-                                  {(selectedQuestion?.options || []).map((opt, i) => (
-                                    <option key={i} value={opt}>{opt}</option>
-                                  ))}
-                                </select>
-                              );
-                            }
-
-                            const inputType = selectedType === 'number' ? 'number' : 'text';
-                            const placeholder =
-                              selectedType === 'date'
-                                ? 'AAAA-MM-JJ'
-                                : selectedType === 'url'
-                                  ? 'https://...'
-                                  : 'Valeur...';
-
-                            return (
-                              <input
-                                type={inputType}
-                                value={condition.value}
-                                onChange={(e) => updateCondition(idx, 'value', e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500"
-                                placeholder={placeholder}
-                              />
-                            );
-                          })()}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                  })}
                 </div>
               </div>
             )}

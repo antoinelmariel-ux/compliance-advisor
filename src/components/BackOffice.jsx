@@ -4,6 +4,7 @@ import { QuestionEditor } from './QuestionEditor.jsx';
 import { RuleEditor } from './RuleEditor.jsx';
 import { renderTextWithLinks } from '../utils/linkify.js';
 import { normalizeTimingRequirement } from '../utils/rules.js';
+import { normalizeConditionGroups } from '../utils/conditionGroups.js';
 
 export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, setTeams }) => {
   const [activeTab, setActiveTab] = useState('questions');
@@ -37,6 +38,7 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
       required: true,
       conditions: [],
       conditionLogic: 'all',
+      conditionGroups: [],
       guidance: {
         objective: '',
         details: '',
@@ -268,33 +270,82 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
                           })()}
                         </div>
 
-                        {q.conditions && q.conditions.length > 0 ? (
-                          <div className="mt-3 bg-green-50 rounded-lg p-3 border border-green-200">
-                            <p className="text-xs font-semibold text-green-800 mb-1">
-                              🎯 Conditions d'affichage ({q.conditionLogic === 'any' ? 'logique OU' : 'logique ET'})
-                            </p>
-                            <div className="space-y-1">
-                              {q.conditions.map((cond, condIdx) => {
-                                const refQuestion = questions.find(rq => rq.id === cond.question);
-                                const connectorLabel = q.conditionLogic === 'any' ? 'OU' : 'ET';
-                                return (
-                                  <div key={condIdx} className="text-xs text-green-700">
-                                    {condIdx > 0 && <strong>{connectorLabel} </strong>}
-                                    <span className="font-mono bg-white px-2 py-0.5 rounded">
-                                      {refQuestion?.id || cond.question}{' '}
-                                      {cond.operator === 'equals' ? '=' : cond.operator === 'not_equals' ? '≠' : 'contient'}{' '}
-                                      "{cond.value}"
-                                    </span>
-                                  </div>
-                                );
-                              })}
+                        {(() => {
+                          const conditionGroups = normalizeConditionGroups(q);
+                          const totalConditions = conditionGroups.reduce(
+                            (sum, group) => sum + (Array.isArray(group.conditions) ? group.conditions.length : 0),
+                            0
+                          );
+
+                          if (totalConditions === 0) {
+                            return (
+                              <div className="mt-3 text-xs text-gray-500 italic">
+                                Cette question s'affiche toujours
+                              </div>
+                            );
+                          }
+
+                          return (
+                            <div className="mt-3 bg-green-50 rounded-lg p-3 border border-green-200">
+                              <p className="text-xs font-semibold text-green-800 mb-2">
+                                🎯 Conditions d'affichage
+                                {conditionGroups.length > 1 && (
+                                  <span className="ml-2 text-[10px] font-normal text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
+                                    Groupes combinés (ET)
+                                  </span>
+                                )}
+                              </p>
+                              <div className="space-y-3">
+                                {conditionGroups.map((group, groupIdx) => {
+                                  const logic = group.logic === 'any' ? 'any' : 'all';
+                                  const conditions = Array.isArray(group.conditions) ? group.conditions : [];
+                                  const connectorLabel = logic === 'any' ? 'OU' : 'ET';
+
+                                  if (conditions.length === 0) {
+                                    return null;
+                                  }
+
+                                  return (
+                                    <div key={groupIdx} className="bg-white/70 border border-green-200 rounded-lg p-2">
+                                      <div className="flex items-center gap-2 mb-2">
+                                        <span className="text-[11px] font-semibold text-green-800 uppercase tracking-wide">
+                                          Groupe {groupIdx + 1}
+                                        </span>
+                                        <span className="text-[10px] text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
+                                          {logic === 'any' ? 'Logique OU' : 'Logique ET'}
+                                        </span>
+                                        {groupIdx > 0 && (
+                                          <span className="ml-auto text-[10px] font-semibold text-green-700 uppercase tracking-wide">
+                                            ET avec précédent
+                                          </span>
+                                        )}
+                                      </div>
+                                      <div className="space-y-1">
+                                        {conditions.map((cond, condIdx) => {
+                                          const refQuestion = questions.find(rq => rq.id === cond.question);
+                                          return (
+                                            <div key={condIdx} className="text-[11px] text-green-800">
+                                              {condIdx > 0 && <strong className="mr-1">{connectorLabel}</strong>}
+                                              <span className="font-mono bg-white px-2 py-0.5 rounded border border-green-100">
+                                                {refQuestion?.id || cond.question}{' '}
+                                                {cond.operator === 'equals'
+                                                  ? '='
+                                                  : cond.operator === 'not_equals'
+                                                    ? '≠'
+                                                    : 'contient'}{' '}
+                                                "{cond.value}"
+                                              </span>
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
                             </div>
-                          </div>
-                        ) : (
-                          <div className="mt-3 text-xs text-gray-500 italic">
-                            Cette question s'affiche toujours
-                          </div>
-                        )}
+                          );
+                        })()}
 
                         {(() => {
                           const guidance = q.guidance || {};
