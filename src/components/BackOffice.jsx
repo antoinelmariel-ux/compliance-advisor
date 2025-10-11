@@ -199,6 +199,24 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
   const [editingRule, setEditingRule] = useState(null);
   const [editingQuestion, setEditingQuestion] = useState(null);
 
+  const getNextId = (items, prefix) => {
+    const ids = new Set(items.map((item) => item.id));
+    const maxNumericSuffix = items
+      .map((item) => item.id)
+      .filter((id) => typeof id === 'string' && id.startsWith(prefix))
+      .map((id) => Number.parseInt(id.slice(prefix.length), 10))
+      .filter((value) => Number.isFinite(value))
+      .reduce((max, value) => Math.max(max, value), 0);
+
+    let counter = maxNumericSuffix + 1;
+    let candidate = `${prefix}${counter}`;
+    while (ids.has(candidate)) {
+      counter += 1;
+      candidate = `${prefix}${counter}`;
+    }
+    return candidate;
+  };
+
   const tabDefinitions = [
     {
       id: 'questions',
@@ -219,7 +237,7 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
 
   const addQuestion = () => {
     const newQuestion = {
-      id: `q${questions.length + 1}`,
+      id: getNextId(questions, 'q'),
       type: 'choice',
       question: 'Nouvelle question',
       options: ['Option 1', 'Option 2'],
@@ -257,7 +275,7 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
 
   const addRule = () => {
     const newRule = {
-      id: `rule${rules.length + 1}`,
+      id: getNextId(rules, 'rule'),
       name: 'Nouvelle règle',
       conditions: [],
       conditionGroups: [],
@@ -294,7 +312,7 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
 
   const addTeam = () => {
     const newTeam = {
-      id: `team${teams.length + 1}`,
+      id: getNextId(teams, 'team'),
       name: 'Nouvelle équipe',
       contact: 'email@company.com',
       expertise: "Domaine d'expertise"
