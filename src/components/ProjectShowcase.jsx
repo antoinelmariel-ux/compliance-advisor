@@ -3,7 +3,6 @@ import {
   Sparkles,
   Target,
   Rocket,
-  Compass,
   Users,
   Calendar,
   AlertTriangle,
@@ -102,6 +101,59 @@ const extractNextMilestones = (timelineDetails, limit = 3) => {
     }));
 };
 
+const SPOTLIGHT_LABELS = {
+  projectSummary: 'Pitch express',
+  projectObjective: 'Objectif phare',
+  impacts: 'Impact attendu',
+  strategicGoals: 'Alignement stratégique',
+  targetAudience: 'Cibles clés',
+  differentiators: 'Facteur différenciant'
+};
+
+const formatSpotlightTitle = (question) => {
+  if (!question) {
+    return 'Point clé';
+  }
+
+  if (SPOTLIGHT_LABELS[question.id]) {
+    return SPOTLIGHT_LABELS[question.id];
+  }
+
+  const rawLabel = (question.question || '').replace(/\?+$/, '').trim();
+
+  if (!rawLabel) {
+    return 'Point clé';
+  }
+
+  if (rawLabel.length <= 48) {
+    return rawLabel;
+  }
+
+  return `${rawLabel.slice(0, 45).trim()}…`;
+};
+
+const extractTagline = (answers) => {
+  if (!answers) {
+    return '';
+  }
+
+  const raw = [answers.projectSummary, answers.projectObjective, answers.projectName]
+    .find(value => typeof value === 'string' && value.trim().length > 0);
+
+  if (!raw) {
+    return '';
+  }
+
+  const cleaned = raw.trim().replace(/\s+/g, ' ');
+  const sentenceMatch = cleaned.match(/([^.!?]+[.!?])/);
+
+  if (sentenceMatch) {
+    return sentenceMatch[0].trim();
+  }
+
+  return cleaned.length > 140 ? `${cleaned.slice(0, 137)}…` : cleaned;
+};
+
 export const ProjectShowcase = ({
   projectName,
   onClose,
@@ -116,6 +168,7 @@ export const ProjectShowcase = ({
   const risks = Array.isArray(analysis?.risks) ? analysis.risks : [];
   const normalizedTeams = Array.isArray(relevantTeams) ? relevantTeams : [];
   const teamCount = normalizedTeams.length;
+  const tagline = extractTagline(answers);
 
   const spotlightAnswers = useMemo(
     () => pickSpotlightAnswers(questions, answers, 3),
@@ -173,90 +226,108 @@ export const ProjectShowcase = ({
           />
 
           <div className="relative px-6 pt-8 pb-6 sm:px-12 sm:pt-12 sm:pb-10">
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <p className="inline-flex items-center text-xs font-semibold uppercase tracking-widest text-indigo-500">
-                  <Sparkles className="mr-2" />
-                  Vitrine du projet
-                </p>
-                <h2 className="mt-4 text-4xl sm:text-5xl font-black text-gray-900">
-                  {safeProjectName}
-                </h2>
-                <p className="mt-4 max-w-2xl text-base sm:text-lg text-gray-600">
-                  Une vision immersive et engageante de votre initiative compliance. Présentez les éléments clés,
-                  mobilisez les équipes et inspirez vos parties prenantes avec une expérience contemporaine.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={onClose}
-                className="mt-6 inline-flex items-center justify-center self-end rounded-full border border-gray-200 bg-white bg-opacity-80 p-3 text-gray-500 transition hover:border-gray-300 hover:text-gray-900 sm:mt-0"
-                aria-label="Fermer la vitrine du projet"
-              >
-                <Close className="text-base" />
-              </button>
-            </div>
-
-            <div className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-3">
-              <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-500 to-blue-500 p-0.5">
-                <div className="h-full w-full rounded-3xl bg-white bg-opacity-90 p-6">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-indigo-600">Niveau de maturité</span>
-                    <Compass className="text-lg" />
+            <div className="flex flex-col gap-8 rounded-3xl bg-gradient-to-br from-indigo-600/10 via-white to-blue-100/40 p-8 sm:p-10">
+              <div className="flex flex-col-reverse gap-6 md:flex-row md:items-center md:justify-between">
+                <div className="max-w-3xl">
+                  <p className="inline-flex items-center rounded-full bg-indigo-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-indigo-600">
+                    <Sparkles className="mr-2" />
+                    Pitch de lancement
+                  </p>
+                  <h2 className="mt-4 text-4xl sm:text-5xl font-black text-gray-900">
+                    {safeProjectName}
+                  </h2>
+                  {tagline && (
+                    <p className="mt-3 text-lg font-medium text-indigo-600">
+                      {renderTextWithLinks(tagline)}
+                    </p>
+                  )}
+                  <p className="mt-4 max-w-2xl text-base sm:text-lg text-gray-600">
+                    Propulsez votre initiative compliance comme un produit phare : clarifiez la vision, mettez en avant la proposition de valeur et embarquez les sponsors en un clin d'œil.
+                  </p>
+                  <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                    <a
+                      href="#"
+                      className="inline-flex items-center justify-center rounded-full bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:-translate-y-1 hover:bg-indigo-500"
+                    >
+                      Télécharger le one-pager
+                    </a>
+                    <a
+                      href="#"
+                      className="inline-flex items-center justify-center rounded-full border border-indigo-600 px-6 py-3 text-sm font-semibold text-indigo-600 transition hover:-translate-y-1 hover:bg-indigo-50"
+                    >
+                      Organiser la session pitch
+                    </a>
                   </div>
-                  <p className="mt-6 text-3xl font-bold text-gray-900">{complexity}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="inline-flex items-center justify-center self-end rounded-full border border-gray-200 bg-white bg-opacity-80 p-3 text-gray-500 transition hover:border-gray-300 hover:text-gray-900"
+                  aria-label="Fermer la vitrine du projet"
+                >
+                  <Close className="text-base" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div className="rounded-2xl border border-indigo-100 bg-white/80 p-5 text-sm text-gray-600">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-indigo-500">Positionnement</p>
+                  <p className="mt-2 text-2xl font-bold text-gray-900">{complexity}</p>
+                  <p className="mt-2 text-sm text-gray-500">Cadrez l'ambition et les exigences de conformité associées.</p>
+                </div>
+                <div className="rounded-2xl border border-indigo-100 bg-white/80 p-5 text-sm text-gray-600">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-indigo-500">Squad mobilisée</p>
+                  <p className="mt-2 text-2xl font-bold text-gray-900">{teamCount}</p>
                   <p className="mt-2 text-sm text-gray-500">
-                    Positionnez le projet et anticipez les exigences de conformité clés.
+                    {teamCount > 0
+                      ? 'Équipe pluridisciplinaire prête à accélérer la mise en œuvre.'
+                      : 'Identifiez vos relais clés pour sécuriser la livraison.'}
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-indigo-100 bg-white/80 p-5 text-sm text-gray-600">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-indigo-500">Risques monitorés</p>
+                  <p className="mt-2 text-2xl font-bold text-gray-900">{risks.length}</p>
+                  <p className="mt-2 text-sm text-gray-500">
+                    {risks.length > 0
+                      ? 'Plan de remédiation priorisé pour sécuriser la trajectoire.'
+                      : 'Pas de blocant identifié à ce stade : restez en alerte.'}
                   </p>
                 </div>
               </div>
-
-              <div className="relative overflow-hidden rounded-3xl border border-gray-200 bg-white bg-opacity-90 p-6 shadow-xl">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-500">Équipes impliquées</span>
-                  <Users className="text-lg" />
-                </div>
-                <p className="mt-6 text-3xl font-bold text-gray-900">{teamCount}</p>
-                <div className="mt-3 space-y-1">
-                  {teamCount > 0 ? (
-                    normalizedTeams.map(team => (
-                      <p key={team.id} className="flex items-center text-sm text-gray-600">
-                        <CheckCircle className="mr-2 text-indigo-500" />
-                        {team.name}
-                      </p>
-                    ))
-                  ) : (
-                    <p className="text-sm text-gray-500">Constituez une squad dédiée pour accélérer.</p>
-                  )}
-                </div>
-              </div>
-
-              <div className="relative overflow-hidden rounded-3xl border border-gray-200 bg-gradient-to-br from-white to-blue-50 p-6">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-500">Risques identifiés</span>
-                  <AlertTriangle className="text-lg" />
-                </div>
-                <p className="mt-6 text-3xl font-bold text-gray-900">{risks.length}</p>
-                <p className="mt-2 text-sm text-gray-500">
-                  {risks.length > 0
-                    ? 'Priorisez les leviers de remédiation pour sécuriser la mise en conformité.'
-                    : 'Aucun risque majeur détecté – restez vigilant sur les prochaines étapes.'}
-                </p>
-              </div>
             </div>
+
+            {teamCount > 0 && (
+              <div className="mt-8 rounded-3xl border border-gray-200 bg-white/80 p-6 shadow-xl">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold uppercase tracking-widest text-gray-500">Dream team</span>
+                  <Users className="text-lg text-indigo-500" />
+                </div>
+                <p className="mt-4 text-sm text-gray-600">
+                  Un collectif mobilisé pour transformer l'essai :
+                </p>
+                <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {normalizedTeams.map(team => (
+                    <p key={team.id} className="flex items-center text-sm text-gray-700">
+                      <CheckCircle className="mr-2 text-indigo-500" />
+                      {team.name}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {spotlightAnswers.length > 0 && (
               <section className="mt-12">
-                <h3 className="text-sm font-semibold uppercase tracking-widest text-gray-500">Essence du projet</h3>
+                <h3 className="text-sm font-semibold uppercase tracking-widest text-gray-500">Promesse produit</h3>
                 <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
                   {spotlightAnswers.map(({ question, answer }) => (
                     <div
                       key={question.id}
                       className="flex h-full flex-col rounded-3xl border border-gray-200 bg-white bg-opacity-90 p-6 shadow-xl"
                     >
-                      <div className="flex items-center text-sm font-medium text-indigo-500">
+                      <div className="flex items-center text-sm font-semibold uppercase tracking-widest text-indigo-500">
                         <Target className="mr-2" />
-                        {question.question}
+                        {formatSpotlightTitle(question)}
                       </div>
                       <div className="mt-4 text-sm leading-relaxed text-gray-600 whitespace-pre-line">
                         {renderTextWithLinks(formatAnswer(question, answer))}
@@ -310,7 +381,7 @@ export const ProjectShowcase = ({
               <section className="mt-12 rounded-3xl border border-yellow-200 bg-yellow-50 px-6 py-8 sm:px-10">
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                   <div>
-                    <p className="text-sm font-semibold uppercase tracking-widest text-yellow-600">Point de vigilance</p>
+                    <p className="text-sm font-semibold uppercase tracking-widest text-yellow-600">À sécuriser en priorité</p>
                     <h3 className="mt-2 text-2xl font-bold text-yellow-900">{primaryRisk.title}</h3>
                     <p className="mt-3 max-w-2xl text-sm leading-relaxed text-yellow-800">
                       {primaryRisk.description}
