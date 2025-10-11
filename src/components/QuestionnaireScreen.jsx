@@ -250,34 +250,25 @@ export const QuestionnaireScreen = ({
                   <label
                     key={idx}
                     htmlFor={optionId}
-                    className={`w-full p-4 text-left rounded-xl border-2 transition-all duration-200 cursor-pointer hv-focus-ring ${
+                    className={`w-full p-4 flex items-center justify-between rounded-xl border-2 transition-all duration-200 cursor-pointer hv-focus-ring ${
                       isSelected
                         ? 'border-indigo-600 bg-indigo-50 text-indigo-900'
                         : 'border-gray-200 hover:border-indigo-300 hover:bg-gray-50'
                     }`}
                   >
-                    <span className="flex items-center">
-                      <span
-                        className={`w-5 h-5 rounded-full border-2 mr-3 flex items-center justify-center ${
-                          isSelected
-                            ? 'border-indigo-600 bg-indigo-600 text-white'
-                            : 'border-gray-300'
-                        }`}
-                        aria-hidden="true"
-                      >
-                        {isSelected && <CheckCircle className="w-4 h-4" />}
-                      </span>
-                      <span className="font-medium">{option}</span>
-                    </span>
-                    <input
-                      type="radio"
-                      id={optionId}
-                      name={currentQuestion.id}
-                      value={option}
-                      checked={isSelected}
-                      onChange={() => onAnswer(currentQuestion.id, option)}
-                      className="sr-only"
-                    />
+                    <div className="flex items-center">
+                      <input
+                        type="radio"
+                        id={optionId}
+                        name={currentQuestion.id}
+                        value={option}
+                        checked={isSelected}
+                        onChange={() => onAnswer(currentQuestion.id, option)}
+                        className="w-5 h-5 text-indigo-600 border-gray-300 focus:ring-indigo-500 hv-focus-ring"
+                      />
+                      <span className="ml-3 font-medium">{option}</span>
+                    </div>
+                    {isSelected && <CheckCircle className="w-5 h-5 text-indigo-600" />}
                   </label>
                 );
               })}
