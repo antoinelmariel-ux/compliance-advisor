@@ -5,6 +5,7 @@ import { RuleEditor } from './RuleEditor.jsx';
 import { renderTextWithLinks } from '../utils/linkify.js';
 import { normalizeTimingRequirement } from '../utils/rules.js';
 import { normalizeConditionGroups } from '../utils/conditionGroups.js';
+import { sanitizeRuleCondition } from '../utils/ruleConditions.js';
 
 export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, setTeams }) => {
   const [activeTab, setActiveTab] = useState('questions');
@@ -70,6 +71,7 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
       id: `rule${rules.length + 1}`,
       name: 'Nouvelle règle',
       conditions: [],
+      conditionGroups: [],
       conditionLogic: 'all',
       teams: [],
       questions: {},
@@ -442,7 +444,11 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
               </div>
 
               <div className="space-y-4">
-                {rules.map(ruleItem => (
+                {rules.map(ruleItem => {
+                  const ruleConditionGroups = normalizeConditionGroups(ruleItem, sanitizeRuleCondition);
+                  const hasRuleConditions = ruleConditionGroups.some(group => group.conditions && group.conditions.length > 0);
+
+                  return (
                   <div
                     key={ruleItem.id}
                     className="bg-gray-50 rounded-lg p-6 border border-gray-200 hv-surface"
@@ -485,179 +491,216 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-700">
                       <div>
                         <h4 className="font-semibold text-gray-800 mb-2">
-                          Conditions ({ruleItem.conditionLogic === 'any' ? 'logique OU' : 'logique ET'})
+                          Conditions
                         </h4>
-                        <ul className="space-y-1">
-                          {ruleItem.conditions.map((condition, idx) => {
-                            const conditionType = condition.type || 'question';
-                            const connectorLabel = ruleItem.conditionLogic === 'any' ? 'OU' : 'ET';
+                        {!hasRuleConditions ? (
+                          <p className="text-gray-500 italic">
+                            Aucune condition spécifique : la règle est toujours active.
+                          </p>
+                        ) : (
+                          <div className="space-y-3">
+                            {ruleConditionGroups.map((group, groupIdx) => {
+                              const logic = group.logic === 'any' ? 'any' : 'all';
+                              const conditions = Array.isArray(group.conditions) ? group.conditions : [];
+                              const connectorLabel = logic === 'any' ? 'OU' : 'ET';
 
-                            if (conditionType === 'timing') {
-                              const startQuestion = questions.find(q => q.id === condition.startQuestion);
-                              const endQuestion = questions.find(q => q.id === condition.endQuestion);
-                              const startLabel = startQuestion ? startQuestion.question : condition.startQuestion || 'Date départ ?';
-                              const endLabel = endQuestion ? endQuestion.question : condition.endQuestion || 'Date arrivée ?';
-                              const constraints = [];
-
-                              if (typeof condition.minimumWeeks === 'number') {
-                                constraints.push(`≥ ${condition.minimumWeeks} sem.`);
+                              if (conditions.length === 0) {
+                                return null;
                               }
-
-                              if (typeof condition.maximumWeeks === 'number') {
-                                constraints.push(`≤ ${condition.maximumWeeks} sem.`);
-                              }
-
-                              if (typeof condition.minimumDays === 'number') {
-                                constraints.push(`≥ ${condition.minimumDays} j.`);
-                              }
-
-                              if (typeof condition.maximumDays === 'number') {
-                                constraints.push(`≤ ${condition.maximumDays} j.`);
-                              }
-
-                              const profiles = Array.isArray(condition.complianceProfiles)
-                                ? condition.complianceProfiles
-                                : [];
 
                               return (
-                                <li key={idx} className="flex items-start">
-                                  <span className="text-indigo-500 mr-2">•</span>
-                                  <div>
-                                    {idx > 0 && (
-                                      <span className="inline-flex items-center px-2 py-0.5 mb-2 text-[11px] font-semibold uppercase tracking-wide rounded-full bg-indigo-100 text-indigo-700">
-                                        {connectorLabel}
-                                      </span>
-                                    )}
-                                    <div className="font-medium text-gray-800">
-                                      Fenêtre entre « {startLabel} » et « {endLabel} »
+                                <div key={groupIdx} className="bg-white border border-indigo-100 rounded-lg p-3">
+                                  {ruleConditionGroups.length > 1 && (
+                                    <div className="text-[11px] uppercase tracking-wide text-indigo-600 font-semibold mb-2">
+                                      Groupe {groupIdx + 1} • Logique interne {logic === 'any' ? 'OU' : 'ET'}
                                     </div>
+                                  )}
+                                  <ul className="space-y-2">
+                                    {conditions.map((condition, idx) => {
+                                      const conditionType = condition.type || 'question';
 
-                                    {constraints.length > 0 && (
-                                      <div className="text-xs text-gray-600 mt-1">
-                                        Contraintes générales : {constraints.join(' / ')}
-                                      </div>
-                                    )}
+                                      if (conditionType === 'timing') {
+                                        const startQuestion = questions.find(q => q.id === condition.startQuestion);
+                                        const endQuestion = questions.find(q => q.id === condition.endQuestion);
+                                        const startLabel = startQuestion ? startQuestion.question : condition.startQuestion || 'Date départ ?';
+                                        const endLabel = endQuestion ? endQuestion.question : condition.endQuestion || 'Date arrivée ?';
+                                        const constraints = [];
 
-                                    {profiles.length > 0 ? (
-                                      <div className="mt-3 space-y-2">
-                                        {profiles.map((profile, profileIdx) => {
-                                          const requirementEntries = Object.entries(profile.requirements || {});
-                                          const profileKey = profile.id || `${idx}-${profileIdx}`;
+                                        if (typeof condition.minimumWeeks === 'number') {
+                                          constraints.push(`≥ ${condition.minimumWeeks} sem.`);
+                                        }
 
-                                          return (
-                                            <div
-                                              key={profileKey}
-                                              className="bg-white border border-indigo-100 rounded-lg p-3 text-xs text-gray-700"
-                                            >
-                                              <div className="flex justify-between items-center mb-1">
-                                                <span className="font-semibold text-gray-800">
-                                                  {profile.label || 'Scénario personnalisé'}
+                                        if (typeof condition.maximumWeeks === 'number') {
+                                          constraints.push(`≤ ${condition.maximumWeeks} sem.`);
+                                        }
+
+                                        if (typeof condition.minimumDays === 'number') {
+                                          constraints.push(`≥ ${condition.minimumDays} j.`);
+                                        }
+
+                                        if (typeof condition.maximumDays === 'number') {
+                                          constraints.push(`≤ ${condition.maximumDays} j.`);
+                                        }
+
+                                        const profiles = Array.isArray(condition.complianceProfiles)
+                                          ? condition.complianceProfiles
+                                          : [];
+
+                                        return (
+                                          <li key={idx} className="flex items-start">
+                                            <span className="text-indigo-500 mr-2">•</span>
+                                            <div>
+                                              {idx > 0 && (
+                                                <span className="inline-flex items-center px-2 py-0.5 mb-2 text-[11px] font-semibold uppercase tracking-wide rounded-full bg-indigo-100 text-indigo-700">
+                                                  {connectorLabel}
                                                 </span>
-                                                <span className="text-indigo-600 font-mono">
-                                                  {profile.conditions && profile.conditions.length > 0
-                                                    ? `${profile.conditions.length} condition(s) • ${profile.conditionLogic === 'any' ? 'OU' : 'ET'}`
-                                                    : 'Par défaut'}
-                                                </span>
+                                              )}
+                                              <div className="font-medium text-gray-800">
+                                                Fenêtre entre « {startLabel} » et « {endLabel} »
                                               </div>
 
-                                              {profile.description && (
-                                                <p className="text-[11px] text-gray-500 mb-2">
-                                                  {profile.description}
-                                                </p>
+                                              {constraints.length > 0 && (
+                                                <div className="text-xs text-gray-600 mt-1">
+                                                  Contraintes générales : {constraints.join(' / ')}
+                                                </div>
                                               )}
 
-                                              <div className="flex flex-wrap gap-2 mb-2">
-                                                {requirementEntries.length > 0 ? (
-                                                  requirementEntries.map(([teamId, value]) => {
-                                                    const normalized = normalizeTimingRequirement(value);
-                                                    const team = teams.find(t => t.id === teamId);
-                                                    const labelParts = [];
-
-                                                    if (normalized.minimumWeeks !== undefined) {
-                                                      labelParts.push(`≥ ${normalized.minimumWeeks} sem.`);
-                                                    }
-
-                                                    if (normalized.minimumDays !== undefined) {
-                                                      labelParts.push(`≥ ${normalized.minimumDays} j.`);
-                                                    }
-
-                                                    const requirementText = labelParts.length > 0
-                                                      ? labelParts.join(' / ')
-                                                      : 'Configuration personnalisée';
+                                              {profiles.length > 0 ? (
+                                                <div className="mt-3 space-y-2">
+                                                  {profiles.map((profile, profileIdx) => {
+                                                    const requirementEntries = Object.entries(profile.requirements || {});
+                                                    const profileKey = profile.id || `${groupIdx}-${idx}-${profileIdx}`;
 
                                                     return (
-                                                      <span
-                                                        key={teamId}
-                                                        className="bg-indigo-50 text-indigo-700 px-2 py-1 rounded border border-indigo-100 font-semibold"
+                                                      <div
+                                                        key={profileKey}
+                                                        className="bg-white border border-indigo-100 rounded-lg p-3 text-xs text-gray-700"
                                                       >
-                                                        {(team?.name || teamId)} : {requirementText}
-                                                      </span>
-                                                    );
-                                                  })
-                                                ) : (
-                                                  <span className="text-gray-500 italic">
-                                                    Aucun délai spécifique défini pour ce scénario.
-                                                  </span>
-                                                )}
-                                              </div>
+                                                        <div className="flex justify-between items-center mb-1">
+                                                          <span className="font-semibold text-gray-800">
+                                                            {profile.label || 'Scénario personnalisé'}
+                                                          </span>
+                                                          <span className="text-indigo-600 font-mono">
+                                                            {profile.conditions && profile.conditions.length > 0
+                                                              ? `${profile.conditions.length} condition(s) • ${profile.conditionLogic === 'any' ? 'OU' : 'ET'}`
+                                                              : 'Par défaut'}
+                                                          </span>
+                                                        </div>
 
-                                              {profile.conditions && profile.conditions.length > 0 && (
-                                                <div className="text-[11px] text-gray-500 space-y-1">
-                                                  {profile.conditions.map((cond, condIdx) => {
-                                                    const refQuestion = questions.find(q => q.id === cond.question);
-                                                    const operatorLabel = cond.operator === 'equals'
-                                                      ? '='
-                                                      : cond.operator === 'not_equals'
-                                                        ? '≠'
-                                                        : 'contient';
+                                                        {profile.description && (
+                                                          <p className="text-[11px] text-gray-500 mb-2">
+                                                            {profile.description}
+                                                          </p>
+                                                        )}
 
-                                                    return (
-                                                      <div key={condIdx}>
-                                                        {condIdx === 0
-                                                          ? 'Si '
-                                                          : profile.conditionLogic === 'any'
-                                                            ? 'ou '
-                                                            : 'et '}
-                                                        <span className="font-mono bg-gray-100 px-1 py-0.5 rounded">
-                                                          {refQuestion?.id || cond.question}
-                                                        </span>{' '}
-                                                        {operatorLabel} « {cond.value} »
+                                                        <div className="flex flex-wrap gap-2 mb-2">
+                                                          {requirementEntries.length > 0 ? (
+                                                            requirementEntries.map(([teamId, value]) => {
+                                                              const normalized = normalizeTimingRequirement(value);
+                                                              const team = teams.find(t => t.id === teamId);
+                                                              const labelParts = [];
+
+                                                              if (normalized.minimumWeeks !== undefined) {
+                                                                labelParts.push(`≥ ${normalized.minimumWeeks} sem.`);
+                                                              }
+
+                                                              if (normalized.minimumDays !== undefined) {
+                                                                labelParts.push(`≥ ${normalized.minimumDays} j.`);
+                                                              }
+
+                                                              const requirementText = labelParts.length > 0
+                                                                ? labelParts.join(' / ')
+                                                                : 'Configuration personnalisée';
+
+                                                              return (
+                                                                <span
+                                                                  key={teamId}
+                                                                  className="bg-indigo-50 text-indigo-700 px-2 py-1 rounded border border-indigo-100 font-semibold"
+                                                                >
+                                                                  {(team?.name || teamId)} : {requirementText}
+                                                                </span>
+                                                              );
+                                                            })
+                                                          ) : (
+                                                            <span className="text-gray-500 italic">
+                                                              Aucun délai spécifique défini pour ce scénario.
+                                                            </span>
+                                                          )}
+                                                        </div>
+
+                                                        {profile.conditions && profile.conditions.length > 0 && (
+                                                          <div className="text-[11px] text-gray-500 space-y-1">
+                                                            {profile.conditions.map((cond, condIdx) => {
+                                                              const refQuestion = questions.find(q => q.id === cond.question);
+                                                              const operatorLabel = cond.operator === 'equals'
+                                                                ? '='
+                                                                : cond.operator === 'not_equals'
+                                                                  ? '≠'
+                                                                  : 'contient';
+
+                                                              return (
+                                                                <div key={condIdx}>
+                                                                  {condIdx === 0
+                                                                    ? 'Si '
+                                                                    : profile.conditionLogic === 'any'
+                                                                      ? 'ou '
+                                                                      : 'et '}
+                                                                  <span className="font-mono bg-gray-100 px-1 py-0.5 rounded">
+                                                                    {refQuestion?.id || cond.question}
+                                                                  </span>{' '}
+                                                                  {operatorLabel} « {cond.value} »
+                                                                </div>
+                                                              );
+                                                            })}
+                                                          </div>
+                                                        )}
                                                       </div>
                                                     );
                                                   })}
                                                 </div>
+                                              ) : (
+                                                <div className="text-xs text-gray-500 italic mt-2">
+                                                  Aucun scénario de délai spécifique n'a été configuré.
+                                                </div>
                                               )}
                                             </div>
-                                          );
-                                        })}
-                                      </div>
-                                    ) : (
-                                      <div className="text-xs text-gray-500 italic mt-2">
-                                        Aucun scénario de délai spécifique n'a été configuré.
-                                      </div>
-                                    )}
-                                  </div>
-                                </li>
+                                          </li>
+                                        );
+                                      }
+
+                                      const questionRef = questions.find(q => q.id === condition.question);
+                                      const operatorLabel = condition.operator === 'equals'
+                                        ? '='
+                                        : condition.operator === 'not_equals'
+                                          ? '≠'
+                                          : condition.operator === 'contains'
+                                            ? 'contient'
+                                            : condition.operator || '=';
+
+                                      return (
+                                        <li key={idx} className="flex items-start">
+                                          <span className="text-indigo-500 mr-2">•</span>
+                                          <span>
+                                            {idx > 0 && (
+                                              <span className="inline-flex items-center px-2 py-0.5 mr-2 text-[11px] font-semibold uppercase tracking-wide rounded-full bg-indigo-100 text-indigo-700">
+                                                {connectorLabel}
+                                              </span>
+                                            )}
+                                            <span className="font-mono bg-gray-100 px-1 py-0.5 rounded">
+                                              {questionRef?.id || condition.question || 'Question ?'}
+                                            </span>{' '}
+                                            {operatorLabel} « {condition.value} »
+                                          </span>
+                                        </li>
+                                      );
+                                    })}
+                                  </ul>
+                                </div>
                               );
-                            }
-
-                            return (
-                              <li key={idx} className="flex items-start">
-                                <span className="text-indigo-500 mr-2">•</span>
-                                <span>
-                                  {idx > 0 && (
-                                    <span className="inline-flex items-center px-2 py-0.5 mr-2 text-[11px] font-semibold uppercase tracking-wide rounded-full bg-indigo-100 text-indigo-700">
-                                      {connectorLabel}
-                                    </span>
-                                  )}
-                                  {condition.question} {condition.operator === 'equals' ? '=' : condition.operator === 'not_equals' ? '≠' : 'contient'} "{condition.value}"
-                                </span>
-                              </li>
-                            );
-                          })}
-                        </ul>
+                            })}
+                          </div>
+                        )}
                       </div>
-
                       <div>
                         <h4 className="font-semibold text-gray-800 mb-2">Équipes</h4>
                         <div className="flex flex-wrap gap-2">

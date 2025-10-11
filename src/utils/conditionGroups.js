@@ -6,10 +6,10 @@ export const sanitizeCondition = (condition = {}) => {
   };
 };
 
-export const sanitizeConditionGroup = (group = {}) => {
+export const sanitizeConditionGroup = (group = {}, conditionSanitizer = sanitizeCondition) => {
   const logic = group.logic === 'any' ? 'any' : 'all';
   const conditions = Array.isArray(group.conditions)
-    ? group.conditions.map(sanitizeCondition)
+    ? group.conditions.map(conditionSanitizer)
     : [];
 
   return {
@@ -18,11 +18,11 @@ export const sanitizeConditionGroup = (group = {}) => {
   };
 };
 
-export const normalizeConditionGroups = (entity = {}) => {
+export const normalizeConditionGroups = (entity = {}, conditionSanitizer = sanitizeCondition) => {
   const rawGroups = Array.isArray(entity.conditionGroups) ? entity.conditionGroups : null;
 
   if (rawGroups && rawGroups.length > 0) {
-    return rawGroups.map(sanitizeConditionGroup);
+    return rawGroups.map(group => sanitizeConditionGroup(group, conditionSanitizer));
   }
 
   const fallbackConditions = Array.isArray(entity.conditions) ? entity.conditions : [];
@@ -34,13 +34,13 @@ export const normalizeConditionGroups = (entity = {}) => {
     sanitizeConditionGroup({
       logic: entity.conditionLogic === 'any' ? 'any' : 'all',
       conditions: fallbackConditions
-    })
+    }, conditionSanitizer)
   ];
 };
 
-export const applyConditionGroups = (entity = {}, groups = []) => {
+export const applyConditionGroups = (entity = {}, groups = [], conditionSanitizer = sanitizeCondition) => {
   const sanitizedGroups = Array.isArray(groups)
-    ? groups.map(sanitizeConditionGroup)
+    ? groups.map(group => sanitizeConditionGroup(group, conditionSanitizer))
     : [];
 
   const hasSingleGroup = sanitizedGroups.length === 1;
@@ -55,6 +55,6 @@ export const applyConditionGroups = (entity = {}, groups = []) => {
   };
 };
 
-export const hasAnyConditions = (entity = {}) => {
-  return normalizeConditionGroups(entity).some(group => group.conditions.length > 0);
+export const hasAnyConditions = (entity = {}, conditionSanitizer = sanitizeCondition) => {
+  return normalizeConditionGroups(entity, conditionSanitizer).some(group => group.conditions.length > 0);
 };
