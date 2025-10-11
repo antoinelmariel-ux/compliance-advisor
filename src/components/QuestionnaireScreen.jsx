@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from '../react.js';
 import { Info, Calendar, CheckCircle, ChevronLeft, ChevronRight, AlertTriangle } from './icons.js';
 import { formatAnswer } from '../utils/questions.js';
+import { normalizeConditionGroups } from '../utils/conditionGroups.js';
 import { renderTextWithLinks } from '../utils/linkify.js';
 
 export const QuestionnaireScreen = ({
@@ -46,25 +47,35 @@ export const QuestionnaireScreen = ({
     contains: 'contient'
   };
 
-  const conditionLogic = currentQuestion.conditionLogic === 'any' ? 'any' : 'all';
-  const conditionSummaries = (currentQuestion.conditions || []).map(condition => {
-    const referenceQuestion = questionBank.find(q => q.id === condition.question);
-    const label = referenceQuestion?.question || `Question ${condition.question}`;
-    const formattedAnswer = formatAnswer(referenceQuestion, answers[condition.question]);
+  const conditionGroups = normalizeConditionGroups(currentQuestion);
+  const conditionSummaries = conditionGroups.map((group, groupIdx) => {
+    const logic = group.logic === 'any' ? 'any' : 'all';
+    const conditions = (group.conditions || []).map(condition => {
+      const referenceQuestion = questionBank.find(q => q.id === condition.question);
+      const label = referenceQuestion?.question || `Question ${condition.question}`;
+      const formattedAnswer = formatAnswer(referenceQuestion, answers[condition.question]);
+
+      return {
+        label,
+        operator: operatorLabels[condition.operator] || condition.operator,
+        value: condition.value,
+        answer: formattedAnswer
+      };
+    });
 
     return {
-      label,
-      operator: operatorLabels[condition.operator] || condition.operator,
-      value: condition.value,
-      answer: formattedAnswer
+      logic,
+      conditions,
+      groupIdx
     };
   });
+  const hasConditions = conditionSummaries.some(summary => summary.conditions.length > 0);
 
   const hasGuidanceContent = Boolean(
     (typeof guidance.objective === 'string' && guidance.objective.trim() !== '') ||
       (typeof guidance.details === 'string' && guidance.details.trim() !== '') ||
       guidanceTips.length > 0 ||
-      conditionSummaries.length > 0
+      hasConditions
   );
 
   return (
@@ -152,40 +163,81 @@ export const QuestionnaireScreen = ({
                       <p className="text-gray-700 leading-relaxed">{renderTextWithLinks(guidance.details)}</p>
                     )}
 
-                    {conditionSummaries.length > 0 && (
+                    {hasConditions && (
                       <div>
                         <h4 className="text-xs font-semibold uppercase tracking-wide text-indigo-700">Pourquoi cette question apparaît</h4>
-                        <p className="text-xs text-indigo-600 mt-1">
-                          Elle s'affiche lorsque {conditionLogic === 'any'
-                            ? "au moins une des conditions suivantes est remplie"
-                            : 'toutes les conditions suivantes sont remplies'}.
-                        </p>
-                        <ul className="mt-2 space-y-2">
-                          {conditionSummaries.map((item, idx) => (
-                            <li
-                              key={`${item.label}-${idx}`}
-                              className="bg-white border border-indigo-100 rounded-xl p-3 hv-surface"
-                            >
-                              <p className="text-sm font-medium text-gray-800">
-                                •{' '}
-                                {idx > 0 && (
-                                  <span className="inline-flex items-center px-2 py-0.5 mr-2 text-[11px] font-semibold uppercase tracking-wide rounded-full bg-indigo-100 text-indigo-700">
-                                    {conditionLogic === 'any' ? 'OU' : 'ET'}
-                                  </span>
-                                )}
-                                {item.label} {item.operator} "{item.value}"
+                        {conditionSummaries.length === 1 ? (
+                          (() => {
+                            const logic = conditionSummaries[0].logic === 'any' ? 'any' : 'all';
+                            return (
+                              <p className="text-xs text-indigo-600 mt-1">
+                                Elle s'affiche lorsque {logic === 'any'
+                                  ? "au moins une des conditions suivantes est remplie"
+                                  : 'toutes les conditions suivantes sont remplies'}.
                               </p>
-                              {item.answer && (
-                                <p className="text-xs text-gray-500 mt-1">
-                                  Votre réponse :{' '}
-                                  <span className="font-medium text-gray-700">
-                                    {renderTextWithLinks(item.answer)}
+                            );
+                          })()
+                        ) : (
+                          <div className="text-xs text-indigo-600 mt-1 space-y-1">
+                            <p>
+                              Cette question apparaît lorsque{' '}
+                              <strong className="text-indigo-700">chaque groupe de conditions</strong> ci-dessous est vérifié.
+                            </p>
+                            <p>
+                              À l'intérieur de chaque groupe, suivez la logique indiquée (ET ou OU) pour les conditions listées.
+                            </p>
+                          </div>
+                        )}
+                        <div className="mt-3 space-y-3">
+                          {conditionSummaries.map((groupSummary, idx) => {
+                            const logicLabel = groupSummary.logic === 'any' ? 'OU' : 'ET';
+                            const connectorLabel = groupSummary.logic === 'any' ? 'OU' : 'ET';
+
+                            if (groupSummary.conditions.length === 0) {
+                              return null;
+                            }
+
+                            return (
+                              <div key={`condition-group-${idx}`} className="bg-white border border-indigo-100 rounded-xl p-3 hv-surface">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <span className="text-xs font-semibold text-indigo-700 uppercase tracking-wide">
+                                    Groupe {idx + 1}
                                   </span>
-                                </p>
-                              )}
-                            </li>
-                          ))}
-                        </ul>
+                                  <span className="text-[11px] text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
+                                    Logique {logicLabel}
+                                  </span>
+                                  {idx > 0 && (
+                                    <span className="ml-auto text-[11px] font-semibold text-indigo-600 uppercase tracking-wide">
+                                      ET avec précédent
+                                    </span>
+                                  )}
+                                </div>
+                                <ul className="space-y-2">
+                                  {groupSummary.conditions.map((item, conditionIdx) => (
+                                    <li key={`${item.label}-${conditionIdx}`} className="text-sm text-gray-700">
+                                      <p className="font-medium text-gray-800">
+                                        {conditionIdx > 0 && (
+                                          <span className="inline-flex items-center px-2 py-0.5 mr-2 text-[11px] font-semibold uppercase tracking-wide rounded-full bg-indigo-100 text-indigo-700">
+                                            {connectorLabel}
+                                          </span>
+                                        )}
+                                        {item.label} {item.operator} "{item.value}"
+                                      </p>
+                                      {item.answer && (
+                                        <p className="text-xs text-gray-500 mt-1">
+                                          Votre réponse :{' '}
+                                          <span className="font-medium text-gray-700">
+                                            {renderTextWithLinks(item.answer)}
+                                          </span>
+                                        </p>
+                                      )}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
                     )}
 

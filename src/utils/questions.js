@@ -1,3 +1,5 @@
+import { normalizeConditionGroups } from './conditionGroups.js';
+
 const normalizeAnswerForComparison = (answer) => {
   if (Array.isArray(answer)) {
     return answer;
@@ -48,17 +50,26 @@ const evaluateQuestionCondition = (condition, answers) => {
 };
 
 export const shouldShowQuestion = (question, answers) => {
-  if (!question.conditions || question.conditions.length === 0) {
+  const conditionGroups = normalizeConditionGroups(question);
+
+  if (conditionGroups.length === 0) {
     return true;
   }
 
-  const logic = question.conditionLogic === 'any' ? 'any' : 'all';
+  return conditionGroups.every(group => {
+    const groupConditions = Array.isArray(group.conditions) ? group.conditions : [];
+    if (groupConditions.length === 0) {
+      return true;
+    }
 
-  if (logic === 'any') {
-    return question.conditions.some(condition => evaluateQuestionCondition(condition, answers));
-  }
+    const logic = group.logic === 'any' ? 'any' : 'all';
 
-  return question.conditions.every(condition => evaluateQuestionCondition(condition, answers));
+    if (logic === 'any') {
+      return groupConditions.some(condition => evaluateQuestionCondition(condition, answers));
+    }
+
+    return groupConditions.every(condition => evaluateQuestionCondition(condition, answers));
+  });
 };
 
 export const formatAnswer = (question, answer) => {
