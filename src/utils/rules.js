@@ -38,9 +38,15 @@ const matchesCondition = (condition, answers) => {
   }
 };
 
-const matchesConditionGroup = (conditions, answers) => {
+const matchesConditionGroup = (conditions, answers, logic = 'all') => {
   if (!conditions || conditions.length === 0) {
     return true;
+  }
+
+  const normalizedLogic = logic === 'any' ? 'any' : 'all';
+
+  if (normalizedLogic === 'any') {
+    return conditions.some(condition => matchesCondition(condition, answers));
   }
 
   return conditions.every(condition => matchesCondition(condition, answers));
@@ -130,7 +136,9 @@ const getActiveTimelineProfiles = (condition, answers) => {
     return [];
   }
 
-  const matching = profiles.filter(profile => matchesConditionGroup(profile.conditions, answers));
+  const matching = profiles.filter(profile =>
+    matchesConditionGroup(profile.conditions, answers, profile.conditionLogic)
+  );
 
   if (matching.length > 0) {
     return matching;
@@ -141,8 +149,11 @@ const getActiveTimelineProfiles = (condition, answers) => {
 
 export const evaluateRule = (rule, answers) => {
   const timingContexts = [];
+  const conditions = Array.isArray(rule.conditions) ? rule.conditions : [];
+  const conditionLogic = rule.conditionLogic === 'any' ? 'any' : 'all';
+  const results = [];
 
-  const triggered = rule.conditions.every(condition => {
+  conditions.forEach(condition => {
     const conditionType = condition.type || 'question';
 
     if (conditionType === 'timing') {
@@ -157,7 +168,8 @@ export const evaluateRule = (rule, answers) => {
           startQuestion: condition.startQuestion,
           endQuestion: condition.endQuestion
         });
-        return false;
+        results.push(false);
+        return;
       }
 
       const activeProfiles = getActiveTimelineProfiles(condition, answers);
@@ -212,11 +224,22 @@ export const evaluateRule = (rule, answers) => {
         endQuestion: condition.endQuestion
       });
 
-      return satisfied;
+      results.push(satisfied);
+      return;
     }
 
-    return matchesCondition(condition, answers);
+    results.push(matchesCondition(condition, answers));
   });
+
+  let triggered;
+
+  if (conditions.length === 0) {
+    triggered = true;
+  } else if (conditionLogic === 'any') {
+    triggered = results.some(Boolean);
+  } else {
+    triggered = results.every(Boolean);
+  }
 
   return { triggered, timingContexts };
 };

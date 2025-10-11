@@ -16,41 +16,49 @@ const normalizeAnswerForComparison = (answer) => {
   return answer;
 };
 
+const evaluateQuestionCondition = (condition, answers) => {
+  const rawAnswer = answers[condition.question];
+  if (Array.isArray(rawAnswer) && rawAnswer.length === 0) return false;
+  if (rawAnswer === null || rawAnswer === undefined || rawAnswer === '') return false;
+
+  const answer = normalizeAnswerForComparison(rawAnswer);
+
+  switch (condition.operator) {
+    case 'equals':
+      if (Array.isArray(answer)) {
+        return answer.includes(condition.value);
+      }
+      return answer === condition.value;
+    case 'not_equals':
+      if (Array.isArray(answer)) {
+        return !answer.includes(condition.value);
+      }
+      return answer !== condition.value;
+    case 'contains':
+      if (Array.isArray(answer)) {
+        return answer.includes(condition.value);
+      }
+      if (typeof answer === 'string') {
+        return answer.includes(condition.value);
+      }
+      return false;
+    default:
+      return false;
+  }
+};
+
 export const shouldShowQuestion = (question, answers) => {
   if (!question.conditions || question.conditions.length === 0) {
     return true;
   }
 
-  return question.conditions.every(condition => {
-    const rawAnswer = answers[condition.question];
-    if (Array.isArray(rawAnswer) && rawAnswer.length === 0) return false;
-    if (rawAnswer === null || rawAnswer === undefined || rawAnswer === '') return false;
+  const logic = question.conditionLogic === 'any' ? 'any' : 'all';
 
-    const answer = normalizeAnswerForComparison(rawAnswer);
+  if (logic === 'any') {
+    return question.conditions.some(condition => evaluateQuestionCondition(condition, answers));
+  }
 
-    switch (condition.operator) {
-      case 'equals':
-        if (Array.isArray(answer)) {
-          return answer.includes(condition.value);
-        }
-        return answer === condition.value;
-      case 'not_equals':
-        if (Array.isArray(answer)) {
-          return !answer.includes(condition.value);
-        }
-        return answer !== condition.value;
-      case 'contains':
-        if (Array.isArray(answer)) {
-          return answer.includes(condition.value);
-        }
-        if (typeof answer === 'string') {
-          return answer.includes(condition.value);
-        }
-        return false;
-      default:
-        return false;
-    }
-  });
+  return question.conditions.every(condition => evaluateQuestionCondition(condition, answers));
 };
 
 export const formatAnswer = (question, answer) => {

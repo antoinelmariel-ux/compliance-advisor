@@ -11,6 +11,7 @@ export const initialQuestions =  [
     ],
     required: true,
     conditions: [],
+    conditionLogic: 'all',
     guidance: {
       objective: 'Identifier l\'exposition du projet pour adapter le parcours compliance.',
       details: 'Selon le public ciblé, différentes règles de communication, de consentement et de sécurité s\'appliquent. Cette information permet d\'activer les bons contrôles dès le départ.',
@@ -32,6 +33,7 @@ export const initialQuestions =  [
     ],
     required: true,
     conditions: [],
+    conditionLogic: 'all',
     guidance: {
       objective: 'Confirmer la présence d\'un canal digital nécessitant des validations techniques et réglementaires.',
       details: 'Les supports digitaux déclenchent l\'intervention des équipes IT, Juridique et BPP pour vérifier sécurité, mentions légales et conformité marketing.',
@@ -54,6 +56,7 @@ export const initialQuestions =  [
     conditions: [
       { question: 'q2', operator: 'not_equals', value: 'Non' }
     ],
+    conditionLogic: 'all',
     guidance: {
       objective: 'Qualifier la nature des données personnelles manipulées.',
       details: 'Les données de santé impliquent une analyse d\'impact renforcée (DPIA), un hébergement certifié HDS et des clauses contractuelles spécifiques.',
@@ -74,6 +77,7 @@ export const initialQuestions =  [
     ],
     required: true,
     conditions: [],
+    conditionLogic: 'all',
     guidance: {
       objective: 'Anticiper l\'implication de prestataires externes et les contrôles associés.',
       details: 'Les partenariats imposent une revue juridique des contrats, la vérification des assurances et parfois un audit qualité des fournisseurs.',
@@ -90,6 +94,7 @@ export const initialQuestions =  [
     options: [],
     required: true,
     conditions: [],
+    conditionLogic: 'all',
     guidance: {
       objective: 'Caler le point de départ du calendrier compliance.',
       details: 'Cette date sert de référence pour estimer le temps disponible afin de mobiliser les experts et réaliser les validations obligatoires.',
@@ -106,6 +111,7 @@ export const initialQuestions =  [
     options: [],
     required: true,
     conditions: [],
+    conditionLogic: 'all',
     guidance: {
       objective: 'Projeter la fenêtre de lancement afin de vérifier la faisabilité du planning.',
       details: 'Le moteur calcule l\'écart entre soumission et lancement et le compare aux délais minimaux recommandés pour chaque équipe compliance.',
@@ -122,6 +128,7 @@ export const initialQuestions =  [
     options: [],
     required: true,
     conditions: [],
+    conditionLogic: 'all',
     guidance: {
       objective: 'Identifier l\'interlocuteur principal pour les échanges compliance.',
       details: 'Cette information permet aux équipes expertes de contacter la bonne personne pour clarifier les éléments du dossier.',
@@ -138,6 +145,7 @@ export const initialQuestions =  [
     options: [],
     required: false,
     conditions: [],
+    conditionLogic: 'all',
     guidance: {
       objective: 'Offrir une vision synthétique du projet pour faciliter la lecture des réponses.',
       details: 'Utilisez ce bloc pour résumer le contexte, les objectifs principaux et les points d\'attention connus à date.',

@@ -19,6 +19,7 @@ export const QuestionEditor = ({ question, onSave, onCancel, allQuestions }) => 
     type: question.type || 'choice',
     options: question.options || [],
     conditions: question.conditions || [],
+    conditionLogic: question.conditionLogic === 'any' ? 'any' : 'all',
     guidance: ensureGuidance(question.guidance)
   });
   const [draggedOptionIndex, setDraggedOptionIndex] = useState(null);
@@ -139,6 +140,13 @@ export const QuestionEditor = ({ question, onSave, onCancel, allQuestions }) => 
       ...editedQuestion,
       conditions: [...editedQuestion.conditions, { question: '', operator: 'equals', value: '' }]
     });
+  };
+
+  const updateConditionLogic = (logic) => {
+    setEditedQuestion(prev => ({
+      ...prev,
+      conditionLogic: logic === 'any' ? 'any' : 'all'
+    }));
   };
 
   const updateCondition = (index, field, value) => {
@@ -458,10 +466,34 @@ export const QuestionEditor = ({ question, onSave, onCancel, allQuestions }) => 
             ) : (
               <div>
                 <div className="bg-blue-50 rounded-lg p-4 mb-4 border border-blue-200">
-                  <p className="text-sm text-blue-900">
-                    <strong>💡 Logique :</strong> Cette question s'affichera si{' '}
-                    <strong className="text-blue-700">toutes</strong> les conditions ci-dessous sont remplies (logique ET)
-                  </p>
+                  {(() => {
+                    const logic = editedQuestion.conditionLogic === 'any' ? 'any' : 'all';
+                    const logicLabel = logic === 'any' ? 'OU' : 'ET';
+                    const logicDescription = logic === 'any'
+                      ? 'au moins une des conditions ci-dessous est remplie'
+                      : 'toutes les conditions ci-dessous sont remplies';
+
+                    return (
+                      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                        <p className="text-sm text-blue-900">
+                          <strong>💡 Logique :</strong> Cette question s'affichera si{' '}
+                          <strong className="text-blue-700">{logicDescription}</strong>{' '}
+                          (logique {logicLabel})
+                        </p>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-xs font-semibold text-blue-800 uppercase tracking-wide">Mode</span>
+                          <select
+                            value={logic}
+                            onChange={(e) => updateConditionLogic(e.target.value)}
+                            className="px-3 py-1.5 text-sm border border-blue-200 rounded-lg bg-white focus:ring-2 focus:ring-blue-400"
+                          >
+                            <option value="all">Toutes les conditions (ET)</option>
+                            <option value="any">Au moins une condition (OU)</option>
+                          </select>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 <div className="space-y-3">
@@ -470,7 +502,7 @@ export const QuestionEditor = ({ question, onSave, onCancel, allQuestions }) => 
                       <div className="flex items-center space-x-3 mb-3">
                         {idx > 0 && (
                           <span className="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-bold">
-                            ET
+                            {editedQuestion.conditionLogic === 'any' ? 'OU' : 'ET'}
                           </span>
                         )}
                         <span className="text-sm font-semibold text-gray-700">
