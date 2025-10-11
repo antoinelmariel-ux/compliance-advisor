@@ -298,7 +298,7 @@ export const ProjectShowcase = ({
       />
 
       <div className="relative w-full max-w-6xl px-4 py-10 sm:px-8">
-        <div className="relative overflow-hidden rounded-3xl border border-white/40 bg-white/95 shadow-2xl">
+        <div className="relative overflow-hidden rounded-3xl border border-white/40 bg-white shadow-2xl">
           <div
             className="absolute -top-40 -right-24 h-72 w-72 rounded-full bg-indigo-200/70"
             style={{ filter: 'blur(90px)' }}
@@ -333,7 +333,7 @@ export const ProjectShowcase = ({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="ml-auto inline-flex items-center justify-center rounded-full border border-gray-200 bg-white/80 p-3 text-gray-500 transition hover:border-gray-300 hover:text-gray-900"
+                  className="ml-auto inline-flex items-center justify-center rounded-full border border-gray-200 bg-white p-3 text-gray-500 transition hover:border-gray-300 hover:text-gray-900"
                   aria-label="Fermer la vitrine du projet"
                 >
                   <Close className="text-base" />
@@ -345,7 +345,7 @@ export const ProjectShowcase = ({
                   {heroHighlights.map(highlight => (
                     <div
                       key={highlight.id}
-                      className="rounded-2xl border border-indigo-100 bg-white/90 p-5 text-sm text-gray-600 shadow-sm"
+                      className="rounded-2xl border border-indigo-100 bg-white p-5 text-sm text-gray-600 shadow-sm"
                     >
                       <p className="text-xs font-semibold uppercase tracking-widest text-indigo-500">{highlight.label}</p>
                       <p className="mt-2 text-2xl font-bold text-gray-900">{highlight.value}</p>
@@ -356,7 +356,7 @@ export const ProjectShowcase = ({
               )}
             </header>
 
-            <section className="mt-12 rounded-3xl border border-gray-200 bg-white/90 p-8 shadow-xl sm:p-10">
+            <section className="mt-12 rounded-3xl border border-gray-200 bg-white p-8 shadow-xl sm:p-10">
               <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
                 <div className="max-w-3xl">
                   <p className="text-xs font-semibold uppercase tracking-widest text-gray-500">Le problème</p>
@@ -378,7 +378,7 @@ export const ProjectShowcase = ({
             </section>
 
             <section className="mt-12 rounded-3xl bg-gradient-to-br from-indigo-600 to-blue-500 p-0.5">
-              <div className="h-full w-full rounded-[22px] bg-white/95 px-8 py-10 sm:px-12">
+              <div className="h-full w-full rounded-[22px] bg-white px-8 py-10 sm:px-12">
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-widest text-indigo-500">La solution</p>
@@ -388,7 +388,7 @@ export const ProjectShowcase = ({
                 </div>
                 <div className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-2">
                   {hasText(solutionDescription) && (
-                    <div className="rounded-2xl border border-indigo-100 bg-white/80 p-6">
+                    <div className="rounded-2xl border border-indigo-100 bg-white p-6">
                       <p className="text-sm font-semibold uppercase tracking-widest text-indigo-500">Expérience proposée</p>
                       <p className="mt-3 text-sm leading-relaxed text-gray-600">
                         {renderTextWithLinks(solutionDescription)}
@@ -396,13 +396,13 @@ export const ProjectShowcase = ({
                     </div>
                   )}
                   {solutionBenefits.length > 0 && (
-                    <div className="rounded-2xl border border-indigo-100 bg-white/80 p-6">
+                    <div className="rounded-2xl border border-indigo-100 bg-white p-6">
                       <p className="text-sm font-semibold uppercase tracking-widest text-indigo-500">Bénéfices clés</p>
                       {renderList(solutionBenefits)}
                     </div>
                   )}
                   {hasText(solutionExperience) && (
-                    <div className="rounded-2xl border border-indigo-100 bg-white/80 p-6">
+                    <div className="rounded-2xl border border-indigo-100 bg-white p-6">
                       <p className="text-sm font-semibold uppercase tracking-widest text-indigo-500">Preuve immersive</p>
                       <p className="mt-3 text-sm leading-relaxed text-gray-600">
                         {renderTextWithLinks(solutionExperience)}
@@ -410,7 +410,7 @@ export const ProjectShowcase = ({
                     </div>
                   )}
                   {hasText(solutionComparison) && (
-                    <div className="rounded-2xl border border-indigo-100 bg-white/80 p-6">
+                    <div className="rounded-2xl border border-indigo-100 bg-white p-6">
                       <p className="text-sm font-semibold uppercase tracking-widest text-indigo-500">Pourquoi c'est différent</p>
                       <p className="mt-3 text-sm leading-relaxed text-gray-600">
                         {renderTextWithLinks(solutionComparison)}
@@ -433,7 +433,7 @@ export const ProjectShowcase = ({
                   )}
                 </div>
                 {hasText(innovationProcess) && (
-                  <div className="rounded-2xl border border-white/60 bg-white/80 p-6 text-sm leading-relaxed text-gray-600">
+                  <div className="rounded-2xl border border-white/60 bg-white p-6 text-sm leading-relaxed text-gray-600">
                     <Compass className="mb-3 text-xl text-indigo-500" />
                     {renderTextWithLinks(innovationProcess)}
                   </div>
@@ -441,21 +441,21 @@ export const ProjectShowcase = ({
               </div>
             </section>
 
-            <section className="mt-12 rounded-3xl border border-gray-200 bg-white/90 p-8 shadow-xl sm:p-10">
+            <section className="mt-12 rounded-3xl border border-gray-200 bg-white p-8 shadow-xl sm:p-10">
               <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
                 <div className="max-w-3xl">
                   <p className="text-xs font-semibold uppercase tracking-widest text-gray-500">Potentiel & impact</p>
                   <h3 className="mt-2 text-3xl font-bold text-gray-900">Les preuves qui donnent envie d'y croire</h3>
                   <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
                     {hasText(marketSize) && (
-                      <div className="rounded-2xl border border-gray-200 bg-white/80 p-5">
+                      <div className="rounded-2xl border border-gray-200 bg-white p-5">
                         <p className="text-xs font-semibold uppercase tracking-widest text-gray-500">Taille d'opportunité</p>
                         <p className="mt-2 text-xl font-bold text-gray-900">{marketSize}</p>
                         <p className="mt-2 text-xs text-gray-500">Projection marché ou segment prioritaire.</p>
                       </div>
                     )}
                     {timelineSummary && (
-                      <div className="rounded-2xl border border-gray-200 bg-white/80 p-5">
+                      <div className="rounded-2xl border border-gray-200 bg-white p-5">
                         <p className="text-xs font-semibold uppercase tracking-widest text-gray-500">Préparation au lancement</p>
                         <p className="mt-2 text-xl font-bold text-gray-900">{`${timelineSummary.weeks} sem.`}</p>
                         <p className="mt-2 text-xs text-gray-500">
@@ -463,7 +463,7 @@ export const ProjectShowcase = ({
                         </p>
                       </div>
                     )}
-                    <div className="rounded-2xl border border-gray-200 bg-white/80 p-5">
+                    <div className="rounded-2xl border border-gray-200 bg-white p-5">
                       <p className="text-xs font-semibold uppercase tracking-widest text-gray-500">Complexité estimée</p>
                       <p className="mt-2 text-xl font-bold text-gray-900">{complexity}</p>
                       <p className="mt-2 text-xs text-gray-500">Basée sur les points de vigilance identifiés.</p>
@@ -493,7 +493,7 @@ export const ProjectShowcase = ({
               </div>
             </section>
 
-            <section className="mt-12 rounded-3xl border border-gray-200 bg-white/90 p-8 shadow-xl sm:p-10">
+            <section className="mt-12 rounded-3xl border border-gray-200 bg-white p-8 shadow-xl sm:p-10">
               <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
                 <div className="max-w-3xl">
                   <p className="text-xs font-semibold uppercase tracking-widest text-gray-500">L'équipe</p>
@@ -564,7 +564,7 @@ export const ProjectShowcase = ({
                 {timelineSummary?.profiles?.length > 0 && (
                   <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
                     {timelineSummary.profiles.map(profile => (
-                      <div key={profile.id} className="rounded-2xl border border-white/60 bg-white/80 p-5">
+                      <div key={profile.id} className="rounded-2xl border border-white/60 bg-white p-5">
                         <p className="text-sm font-semibold text-gray-900">{profile.label}</p>
                         {profile.description && (
                           <p className="mt-2 text-xs text-gray-600">{profile.description}</p>
