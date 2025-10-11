@@ -27,5 +27,10 @@ export const Trash2 = createIcon('🗑️');
 export const Eye = createIcon('👁️');
 export const GripVertical = createIcon('⋮⋮');
 export const Send = createIcon('✉️');
+export const Sparkles = createIcon('✨');
+export const Target = createIcon('🎯');
+export const Rocket = createIcon('🚀');
+export const Compass = createIcon('🧭');
+export const Close = createIcon('✕');
 
 export { createIcon };

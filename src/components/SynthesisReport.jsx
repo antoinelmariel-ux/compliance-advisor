@@ -1,7 +1,8 @@
-import React from '../react.js';
-import { FileText, Calendar, Users, AlertTriangle, Send } from './icons.js';
+import React, { useState } from '../react.js';
+import { FileText, Calendar, Users, AlertTriangle, Send, Sparkles } from './icons.js';
 import { formatAnswer } from '../utils/questions.js';
 import { renderTextWithLinks } from '../utils/linkify.js';
+import { ProjectShowcase } from './ProjectShowcase.jsx';
 
 const formatNumber = (value, options = {}) => {
   return Number(value).toLocaleString('fr-FR', options);
@@ -448,7 +449,8 @@ const buildMailtoLink = ({ projectName, relevantTeams, emailHtml }) => {
 };
 
 export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart, onBack }) => {
-  const relevantTeams = teams.filter(team => analysis.teams.includes(team.id));
+  const [isShowcaseOpen, setIsShowcaseOpen] = useState(false);
+  const relevantTeams = teams.filter(team => (analysis?.teams || []).includes(team.id));
 
   const priorityColors = {
     Critique: 'bg-red-100 text-red-800 border-red-300',
@@ -476,6 +478,14 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
     Object.keys(timelineByTeam).length > 0 || Boolean(firstTimelineDetail);
 
   const projectName = extractProjectName(answers, questions);
+
+  const handleOpenShowcase = () => {
+    setIsShowcaseOpen(true);
+  };
+
+  const handleCloseShowcase = () => {
+    setIsShowcaseOpen(false);
+  };
 
   const handleSubmitByEmail = () => {
     const emailHtml = buildEmailHtml({
@@ -517,6 +527,14 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
               >
                 <Send className="w-4 h-4 mr-2" />
                 Soumettre par e-mail
+              </button>
+              <button
+                type="button"
+                onClick={handleOpenShowcase}
+                className="px-4 py-2 bg-white border border-indigo-200 text-indigo-600 hover:bg-indigo-50 rounded-lg font-medium transition-all flex items-center hv-button hv-focus-ring"
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                Vitrine du projet
               </button>
               <button
                 type="button"
@@ -721,6 +739,17 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
           </section>
         </div>
       </div>
+      {isShowcaseOpen && (
+        <ProjectShowcase
+          projectName={projectName}
+          onClose={handleCloseShowcase}
+          analysis={analysis}
+          relevantTeams={relevantTeams}
+          questions={questions}
+          answers={answers}
+          timelineDetails={timelineDetails}
+        />
+      )}
     </div>
   );
 };
