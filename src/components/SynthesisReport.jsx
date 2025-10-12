@@ -1,8 +1,104 @@
-import React, { useState } from '../react.js';
+import React, { useState, useCallback, useEffect, useRef } from '../react.js';
+import { ReactDOM } from '../react.js';
 import { FileText, Calendar, Users, AlertTriangle, Send, Sparkles } from './icons.js';
 import { formatAnswer } from '../utils/questions.js';
 import { renderTextWithLinks } from '../utils/linkify.js';
 import { ProjectShowcase } from './ProjectShowcase.jsx';
+
+const escapeHtml = (value) => {
+  if (typeof value !== 'string') {
+    return '';
+  }
+
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+};
+
+const HIGH_VISIBILITY_STYLE_BLOCK = `
+body.high-visibility {
+  background-color: #0b0c0c;
+  color: #ffffff;
+}
+
+.hv-modal-panel {
+  max-height: calc(100vh - 2rem);
+}
+
+@media (min-width: 640px) {
+  .hv-modal-panel {
+    max-height: calc(100vh - 4rem);
+  }
+}
+
+body.high-visibility #root {
+  color: inherit;
+}
+
+body.high-visibility .hv-background {
+  background: transparent !important;
+}
+
+body.high-visibility .hv-surface {
+  background-color: #111827 !important;
+  color: #ffffff !important;
+  border-color: #facc15 !important;
+  box-shadow: none !important;
+}
+
+body.high-visibility .hv-border {
+  border-color: #facc15 !important;
+}
+
+body.high-visibility .hv-progress {
+  background-color: #1f2937 !important;
+}
+
+body.high-visibility .hv-progress-indicator {
+  background-color: #facc15 !important;
+}
+
+body.high-visibility .hv-badge {
+  border-color: #facc15 !important;
+  color: #facc15 !important;
+  background: transparent !important;
+}
+
+body.high-visibility .hv-text-muted {
+  color: #f4f4f5 !important;
+}
+
+body.high-visibility .hv-button,
+body.high-visibility .hv-focus-ring {
+  outline-color: #facc15;
+}
+
+body.high-visibility .hv-button {
+  background-color: #0b0c0c !important;
+  color: #ffffff !important;
+  border: 2px solid #facc15 !important;
+}
+
+body.high-visibility .hv-button-primary {
+  background-color: #facc15 !important;
+  color: #0b0c0c !important;
+  border-color: #facc15 !important;
+}
+
+body.high-visibility .hv-link {
+  color: #facc15 !important;
+  text-decoration: underline;
+}
+
+body.high-visibility .hv-focus-ring:focus,
+body.high-visibility .hv-focus-ring:focus-visible {
+  outline: 3px solid #facc15 !important;
+  outline-offset: 3px;
+}
+`;
 
 const formatNumber = (value, options = {}) => {
   return Number(value).toLocaleString('fr-FR', options);
@@ -452,7 +548,8 @@ const buildMailtoLink = ({ projectName, relevantTeams, emailHtml }) => {
 };
 
 export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart, onBack }) => {
-  const [isShowcaseOpen, setIsShowcaseOpen] = useState(false);
+  const [isShowcaseFallbackOpen, setIsShowcaseFallbackOpen] = useState(false);
+  const showcaseWindowRef = useRef(null);
   const relevantTeams = teams.filter(team => (analysis?.teams || []).includes(team.id));
 
   const priorityColors = {
@@ -482,13 +579,156 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
 
   const projectName = extractProjectName(answers, questions);
 
-  const handleOpenShowcase = () => {
-    setIsShowcaseOpen(true);
-  };
+  const closeShowcaseWindow = useCallback(() => {
+    const current = showcaseWindowRef.current;
+    if (!current) {
+      return;
+    }
 
-  const handleCloseShowcase = () => {
-    setIsShowcaseOpen(false);
-  };
+    try {
+      if (typeof current.cleanup === 'function') {
+        current.cleanup();
+      }
+    } catch (cleanupError) {
+      if (typeof console !== 'undefined' && typeof console.warn === 'function') {
+        console.warn('[SynthesisReport] Impossible de nettoyer la fenêtre vitrine :', cleanupError);
+      }
+    }
+
+    if (current.reactRoot && typeof current.reactRoot.unmount === 'function') {
+      current.reactRoot.unmount();
+    } else if (
+      current.useLegacyRender &&
+      current.mountNode &&
+      ReactDOM &&
+      typeof ReactDOM.unmountComponentAtNode === 'function'
+    ) {
+      ReactDOM.unmountComponentAtNode(current.mountNode);
+    }
+
+    if (current.window && !current.window.closed) {
+      current.window.close();
+    }
+
+    showcaseWindowRef.current = null;
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      closeShowcaseWindow();
+    };
+  }, [closeShowcaseWindow]);
+
+  const handleOpenShowcase = useCallback(() => {
+    closeShowcaseWindow();
+    setIsShowcaseFallbackOpen(false);
+
+    if (typeof window === 'undefined' || !ReactDOM) {
+      setIsShowcaseFallbackOpen(true);
+      return;
+    }
+
+    const showcaseWindow = window.open('', '_blank', 'noopener,noreferrer');
+    if (!showcaseWindow) {
+      setIsShowcaseFallbackOpen(true);
+      return;
+    }
+
+    const trimmedProjectName = typeof projectName === 'string' ? projectName.trim() : '';
+    const baseTitle = trimmedProjectName.length > 0 ? trimmedProjectName : 'Projet compliance';
+    const documentTitle = `${baseTitle} – Vitrine du projet`;
+    const htmlTitle = escapeHtml(documentTitle);
+
+    try {
+      showcaseWindow.document.write(`<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>${htmlTitle}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" />
+    <style>${HIGH_VISIBILITY_STYLE_BLOCK}</style>
+  </head>
+  <body class="bg-gray-100">
+    <div id="showcase-root"></div>
+  </body>
+</html>`);
+      showcaseWindow.document.close();
+    } catch (error) {
+      showcaseWindow.close();
+      setIsShowcaseFallbackOpen(true);
+      return;
+    }
+
+    if (typeof document !== 'undefined' && document.body?.classList?.contains('high-visibility')) {
+      showcaseWindow.document.body.classList.add('high-visibility');
+    }
+
+    const mountNode = showcaseWindow.document.getElementById('showcase-root');
+    if (!mountNode) {
+      showcaseWindow.close();
+      setIsShowcaseFallbackOpen(true);
+      return;
+    }
+
+    const showcaseElement = (
+      <ProjectShowcase
+        projectName={projectName}
+        onClose={closeShowcaseWindow}
+        analysis={analysis}
+        relevantTeams={relevantTeams}
+        questions={questions}
+        answers={answers}
+        timelineDetails={timelineDetails}
+        renderInStandalone
+      />
+    );
+
+    let reactRoot = null;
+    let useLegacyRender = false;
+
+    try {
+      if (ReactDOM && typeof ReactDOM.createRoot === 'function') {
+        reactRoot = ReactDOM.createRoot(mountNode);
+        reactRoot.render(showcaseElement);
+      } else if (ReactDOM && typeof ReactDOM.render === 'function') {
+        useLegacyRender = true;
+        ReactDOM.render(showcaseElement, mountNode);
+      } else {
+        throw new Error('Aucune méthode de rendu ReactDOM disponible.');
+      }
+    } catch (error) {
+      if (typeof console !== 'undefined' && typeof console.error === 'function') {
+        console.error("[SynthesisReport] Échec de l'affichage de la vitrine :", error);
+      }
+      showcaseWindow.close();
+      setIsShowcaseFallbackOpen(true);
+      return;
+    }
+
+    const handleBeforeUnload = () => {
+      showcaseWindowRef.current = null;
+    };
+
+    showcaseWindow.addEventListener('beforeunload', handleBeforeUnload);
+
+    showcaseWindowRef.current = {
+      window: showcaseWindow,
+      reactRoot,
+      mountNode,
+      useLegacyRender,
+      cleanup: () => {
+        showcaseWindow.removeEventListener('beforeunload', handleBeforeUnload);
+      }
+    };
+
+    showcaseWindow.focus();
+  }, [analysis, answers, closeShowcaseWindow, projectName, questions, relevantTeams, timelineDetails]);
+
+  const handleCloseShowcase = useCallback(() => {
+    setIsShowcaseFallbackOpen(false);
+    closeShowcaseWindow();
+  }, [closeShowcaseWindow]);
 
   const handleSubmitByEmail = () => {
     const emailHtml = buildEmailHtml({
@@ -742,7 +982,7 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
           </section>
         </div>
       </div>
-      {isShowcaseOpen && (
+      {isShowcaseFallbackOpen && (
         <ProjectShowcase
           projectName={projectName}
           onClose={handleCloseShowcase}
