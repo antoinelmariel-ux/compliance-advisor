@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from '../react.js';
-import { Info, Calendar, CheckCircle, ChevronLeft, ChevronRight, AlertTriangle } from './icons.js';
+import { Info, Calendar, CheckCircle, ChevronLeft, ChevronRight, AlertTriangle, Save } from './icons.js';
 import { formatAnswer } from '../utils/questions.js';
 import { normalizeConditionGroups } from '../utils/conditionGroups.js';
 import { renderTextWithLinks } from '../utils/linkify.js';
@@ -18,6 +18,7 @@ export const QuestionnaireScreen = ({
   onNext,
   onBack,
   allQuestions,
+  onSaveDraft,
   validationError
 }) => {
   const currentQuestion = questions[currentIndex];
@@ -500,8 +501,10 @@ export const QuestionnaireScreen = ({
           {renderQuestionInput()}
 
           <div
-            className={`flex flex-col-reverse gap-3 sm:flex-row ${
-              currentIndex === 0 ? 'sm:justify-end' : 'sm:justify-between'
+            className={`flex flex-col-reverse gap-3 sm:flex-row sm:items-center ${
+              currentIndex === 0 && !onSaveDraft
+                ? 'sm:justify-end'
+                : 'sm:justify-between'
             }`}
           >
             {currentIndex > 0 && (
@@ -512,6 +515,17 @@ export const QuestionnaireScreen = ({
               >
                 <ChevronLeft className="w-5 h-5 mr-2" />
                 Précédent
+              </button>
+            )}
+
+            {onSaveDraft && (
+              <button
+                type="button"
+                onClick={onSaveDraft}
+                className="flex items-center justify-center px-6 py-3 rounded-lg font-medium bg-amber-500 text-white hover:bg-amber-600 transition-all hv-button w-full sm:w-auto text-sm sm:text-base"
+              >
+                <Save className="w-5 h-5 mr-2" />
+                Enregistrer et quitter
               </button>
             )}
 
