@@ -671,6 +671,16 @@ export const SynthesisReport = ({
     const documentTitle = `${baseTitle} – Vitrine du projet`;
     const htmlTitle = escapeHtml(documentTitle);
 
+    let showcaseStylesheetUrl = './src/styles/project-showcase.css';
+    try {
+      showcaseStylesheetUrl = new URL('./src/styles/project-showcase.css', window.location.href).toString();
+    } catch (urlError) {
+      if (typeof console !== 'undefined' && typeof console.warn === 'function') {
+        console.warn('[SynthesisReport] Impossible de résoudre le style vitrine :', urlError);
+      }
+    }
+    const escapedStylesheetUrl = escapeHtml(showcaseStylesheetUrl);
+
     try {
       showcaseWindow.document.write(`<!DOCTYPE html>
 <html lang="fr">
@@ -679,6 +689,7 @@ export const SynthesisReport = ({
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>${htmlTitle}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" />
+    <link rel="stylesheet" href="${escapedStylesheetUrl}" />
     <style>${HIGH_VISIBILITY_STYLE_BLOCK}</style>
   </head>
   <body class="bg-gray-100">

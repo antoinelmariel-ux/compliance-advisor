@@ -554,6 +554,7 @@ export const ProjectShowcase = ({
 
   const showcaseCard = (
     <div
+      data-showcase-card
       className="relative overflow-hidden rounded-[42px] border border-white/10 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100"
       style={{ boxShadow: neoPanelShadow }}
       onMouseMove={handleParallaxMove}
@@ -1055,7 +1056,10 @@ export const ProjectShowcase = ({
 
   if (renderInStandalone) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 py-12 px-4 sm:px-8">
+      <div
+        data-showcase-scope
+        className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 py-12 px-4 sm:px-8"
+      >
         <div className="mx-auto w-full max-w-6xl">{showcaseCard}</div>
       </div>
     );
@@ -1063,6 +1067,7 @@ export const ProjectShowcase = ({
 
   return (
     <div
+      data-showcase-scope
       className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-950/80 backdrop-blur pt-10 pb-16 sm:items-center sm:pt-0"
       role="dialog"
       aria-modal="true"
