@@ -1,4 +1,4 @@
-import React from '../react.js';
+import React, { useEffect, useState } from '../react.js';
 import { AlertTriangle, CheckCircle, ChevronRight } from './icons.js';
 
 export const MandatoryQuestionsSummary = ({
@@ -9,6 +9,13 @@ export const MandatoryQuestionsSummary = ({
   onProceedToSynthesis
 }) => {
   const hasPending = pendingQuestions.length > 0;
+  const [showIncompleteAlert, setShowIncompleteAlert] = useState(false);
+
+  useEffect(() => {
+    if (!hasPending) {
+      setShowIncompleteAlert(false);
+    }
+  }, [hasPending]);
 
   const handleNavigate = (questionId) => {
     if (typeof onNavigateToQuestion === 'function') {
@@ -23,10 +30,21 @@ export const MandatoryQuestionsSummary = ({
   };
 
   const handleProceed = () => {
+    if (hasPending) {
+      setShowIncompleteAlert(true);
+      return;
+    }
+
+    setShowIncompleteAlert(false);
+
     if (typeof onProceedToSynthesis === 'function') {
       onProceedToSynthesis();
     }
   };
+
+  const proceedButtonClassName = `w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition-all hv-button hv-button-primary ${
+    hasPending ? 'opacity-60 cursor-not-allowed focus:outline-none focus:ring-0' : ''
+  }`;
 
   return (
     <div className="py-10 px-4 sm:px-8">
@@ -99,6 +117,18 @@ export const MandatoryQuestionsSummary = ({
             </div>
           )}
 
+          {showIncompleteAlert && hasPending && (
+            <div className="border border-amber-200 rounded-xl bg-amber-50 p-4 text-amber-800 flex items-start gap-3" role="alert" aria-live="assertive">
+              <AlertTriangle className="w-5 h-5 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold">Complétez les réponses obligatoires</p>
+                <p className="text-sm">
+                  Vous devez répondre à toutes les questions obligatoires avant de pouvoir accéder à la synthèse du projet.
+                </p>
+              </div>
+            </div>
+          )}
+
           <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
             <button
               type="button"
@@ -110,8 +140,8 @@ export const MandatoryQuestionsSummary = ({
             <button
               type="button"
               onClick={handleProceed}
-              disabled={hasPending}
-              className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed transition-all hv-button hv-button-primary"
+              aria-disabled={hasPending}
+              className={proceedButtonClassName}
             >
               Accéder à la synthèse
               <ChevronRight className="w-5 h-5 ml-2" />
