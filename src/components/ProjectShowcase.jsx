@@ -324,11 +324,11 @@ const renderList = (items) => {
   }
 
   return (
-    <ul className="mt-4 space-y-2 text-sm leading-relaxed text-gray-600">
+    <ul className="mt-4 space-y-2 text-sm leading-relaxed text-slate-200/90">
       {items.map((item, index) => (
-        <li key={`${item}-${index}`} className="flex items-start gap-2">
-          <CheckCircle className="mt-0.5 text-xs text-indigo-500" />
-          <span>{renderTextWithLinks(item)}</span>
+        <li key={`${item}-${index}`} className="flex items-start gap-3">
+          <CheckCircle className="mt-0.5 h-4 w-4 text-sky-300" />
+          <span className="flex-1">{renderTextWithLinks(item)}</span>
         </li>
       ))}
     </ul>
@@ -460,6 +460,51 @@ export const ProjectShowcase = ({
   const runway = useMemo(() => computeRunway(answers), [answers]);
   const timelineSummary = useMemo(() => computeTimelineSummary(timelineDetails), [timelineDetails]);
   const primaryRisk = useMemo(() => getPrimaryRisk(analysis), [analysis]);
+  const [parallaxOffset, setParallaxOffset] = useState({ x: 0, y: 0 });
+
+  const handleParallaxMove = useCallback((event) => {
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const offsetX = (event.clientX - bounds.left) / bounds.width - 0.5;
+    const offsetY = (event.clientY - bounds.top) / bounds.height - 0.5;
+
+    setParallaxOffset({
+      x: Math.max(-0.5, Math.min(0.5, offsetX)),
+      y: Math.max(-0.5, Math.min(0.5, offsetY))
+    });
+  }, []);
+
+  const handleParallaxLeave = useCallback(() => {
+    setParallaxOffset({ x: 0, y: 0 });
+  }, []);
+
+  const heroTitleStyle = useMemo(
+    () => ({
+      backgroundImage: 'linear-gradient(120deg, #a855f7, #6366f1, #0ea5e9)',
+      backgroundSize: '200% 200%',
+      backgroundPosition: `${50 + parallaxOffset.x * 30}% ${50 + parallaxOffset.y * 30}%`,
+      WebkitBackgroundClip: 'text',
+      color: 'transparent',
+      textShadow: '0 25px 60px rgba(79, 70, 229, 0.45)',
+      transform: `translate3d(${parallaxOffset.x * 10}px, ${parallaxOffset.y * 16}px, 0)`,
+      transition: 'background-position 0.25s ease, transform 0.25s ease'
+    }),
+    [parallaxOffset]
+  );
+
+  const parallaxLayers = useMemo(
+    () => ({
+      far: {
+        transform: `translate3d(${parallaxOffset.x * 12}px, ${parallaxOffset.y * 12}px, 0)`
+      },
+      mid: {
+        transform: `translate3d(${parallaxOffset.x * 20}px, ${parallaxOffset.y * 20}px, 0)`
+      },
+      near: {
+        transform: `translate3d(${parallaxOffset.x * 32}px, ${parallaxOffset.y * 32}px, 0)`
+      }
+    }),
+    [parallaxOffset]
+  );
 
   const heroHighlights = useMemo(
     () =>
@@ -503,78 +548,105 @@ export const ProjectShowcase = ({
     };
   }, [onClose, renderInStandalone]);
 
-  const showcaseCard = (
-    <div className="relative overflow-hidden rounded-3xl border border-white/40 bg-white shadow-2xl">
-          <div
-            className="absolute -top-40 -right-24 h-72 w-72 rounded-full bg-indigo-200/70"
-            style={{ filter: 'blur(90px)' }}
-            aria-hidden="true"
-          />
-          <div
-            className="absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-blue-200/70"
-            style={{ filter: 'blur(80px)' }}
-            aria-hidden="true"
-          />
+  const neoPanelShadow = '35px 35px 80px rgba(2, 6, 23, 0.65), -25px -25px 70px rgba(148, 163, 184, 0.12)';
+  const neoCardShadow = '18px 18px 45px rgba(15, 23, 42, 0.55), -18px -18px 45px rgba(148, 163, 184, 0.12)';
+  const neoInsetShadow = 'inset 8px 8px 16px rgba(15, 23, 42, 0.45), inset -8px -8px 16px rgba(148, 163, 184, 0.15)';
 
-          <div className="relative px-6 pt-8 pb-12 sm:px-12 sm:pt-12 sm:pb-16">
-            <header className="rounded-3xl bg-gradient-to-br from-indigo-600/10 via-white to-blue-100/50 p-8 sm:p-10">
-              <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
-                <div className="max-w-3xl">
-                  <p className="inline-flex items-center rounded-full bg-indigo-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-indigo-600">
-                    <Sparkles className="mr-2" />
-                    One-page marketing
-                  </p>
-                  <h2 className="mt-4 text-4xl font-black text-gray-900 sm:text-5xl">{safeProjectName}</h2>
-                  {hasText(slogan) && (
-                    <p className="mt-3 text-xl font-semibold text-indigo-600">
-                      {renderTextWithLinks(slogan)}
-                    </p>
-                  )}
-                  {hasText(valueProposition) && (
-                    <p className="mt-4 text-base leading-relaxed text-gray-600 sm:text-lg">
-                      {renderTextWithLinks(valueProposition)}
-                    </p>
-                  )}
-                </div>
-                <div className="flex flex-wrap items-center gap-2 self-start md:self-auto">
-                  {canEdit && (
-                    isEditing ? (
-                      <>
-                        <button
-                          type="button"
-                          onClick={handleCancelEditing}
-                          className="inline-flex items-center justify-center rounded-full border border-gray-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-gray-600 transition hover:border-gray-300 hover:text-gray-900"
-                        >
-                          Annuler l'édition
-                        </button>
-                        <button
-                          type="submit"
-                          form={formId}
-                          className="inline-flex items-center justify-center rounded-full border border-indigo-200 bg-indigo-600 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition hover:bg-indigo-700"
-                        >
-                          <CheckCircle className="mr-2 text-xs" />
-                          Enregistrer
-                        </button>
-                      </>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={handleStartEditing}
-                        className="inline-flex items-center justify-center rounded-full border border-indigo-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-indigo-600 transition hover:bg-indigo-50"
-                      >
-                        <Edit className="mr-2 text-xs" />
-                        Modifier le contenu
-                      </button>
-                    )
-                  )}
+  const showcaseCard = (
+    <div
+      className="relative overflow-hidden rounded-[42px] border border-white/10 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100"
+      style={{ boxShadow: neoPanelShadow }}
+      onMouseMove={handleParallaxMove}
+      onMouseLeave={handleParallaxLeave}
+    >
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div
+          className="absolute -top-48 -left-32 h-80 w-80 rounded-full bg-indigo-500/20 blur-3xl transition-transform duration-300 ease-out"
+          style={parallaxLayers.far}
+          aria-hidden="true"
+        />
+        <div
+          className="absolute -bottom-40 -right-24 h-96 w-96 rounded-full bg-sky-500/25 blur-[120px] transition-transform duration-500 ease-out"
+          style={parallaxLayers.mid}
+          aria-hidden="true"
+        />
+        <div
+          className="absolute top-1/2 left-1/2 h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/10 bg-white/5 backdrop-blur-xl transition-transform duration-300 ease-out"
+          style={parallaxLayers.near}
+          aria-hidden="true"
+        />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.12),_transparent_60%)]" aria-hidden="true" />
+      </div>
+
+      <div className="relative px-6 pt-10 pb-16 sm:px-14 sm:pt-16 sm:pb-20">
+        <header
+          className="rounded-[32px] border border-white/10 bg-white/5 p-8 sm:p-12 backdrop-blur-xl"
+          style={{ boxShadow: '20px 20px 60px rgba(2, 6, 23, 0.45), -18px -18px 50px rgba(148, 163, 184, 0.12)' }}
+        >
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+            <div className="max-w-3xl">
+              <p className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-5 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.5em] text-indigo-200">
+                <Sparkles className="mr-2 h-4 w-4" />
+                Project hero page
+              </p>
+              <h2
+                className="mt-6 text-5xl font-black leading-tight sm:text-6xl sm:leading-[1.05]"
+                style={heroTitleStyle}
+              >
+                {safeProjectName}
+              </h2>
+              {hasText(slogan) && (
+                <p className="mt-5 text-2xl font-semibold text-indigo-200 sm:text-3xl" style={{ textShadow: '0 12px 40px rgba(79, 70, 229, 0.4)' }}>
+                  {renderTextWithLinks(slogan)}
+                </p>
+              )}
+              {hasText(valueProposition) && (
+                <p className="mt-6 max-w-2xl text-base leading-relaxed text-slate-200/80 sm:text-lg">
+                  {renderTextWithLinks(valueProposition)}
+                </p>
+              )}
+            </div>
+            <div className="flex flex-wrap items-center gap-3 self-start lg:self-auto">
+              {canEdit && (
+                isEditing ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={handleCancelEditing}
+                      className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/10 px-5 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-slate-200 transition hover:bg-white/20"
+                    >
+                      Annuler l'édition
+                    </button>
+                    <button
+                      type="submit"
+                      form={formId}
+                      className="inline-flex items-center justify-center rounded-full border border-indigo-400/60 bg-gradient-to-r from-indigo-500 via-sky-500 to-cyan-400 px-5 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-white shadow-lg shadow-indigo-500/30 transition hover:brightness-110"
+                    >
+                      <CheckCircle className="mr-2 h-4 w-4" />
+                      Enregistrer
+                    </button>
+                  </>
+                ) : (
                   <button
                     type="button"
-                    onClick={onClose}
-                    className="inline-flex items-center justify-center rounded-full border border-gray-200 bg-white p-3 text-gray-500 transition hover:border-gray-300 hover:text-gray-900"
-                    aria-label="Fermer la vitrine du projet"
+                    onClick={handleStartEditing}
+                    className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/10 px-5 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200 transition hover:bg-white/20"
                   >
-                    <Close className="text-base" />
+                    <Edit className="mr-2 h-4 w-4" />
+                    Modifier le contenu
                   </button>
+                )
+              )}
+              <button
+                type="button"
+                onClick={onClose}
+                className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/10 p-3 text-slate-200 transition hover:bg-white/20"
+                aria-label="Fermer la vitrine du projet"
+              >
+                <Close className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
                 </div>
               </div>
 
@@ -582,14 +654,15 @@ export const ProjectShowcase = ({
                 <form
                   id={formId}
                   onSubmit={handleSubmitEdit}
-                  className="mt-8 space-y-6 rounded-2xl border border-indigo-100 bg-white/80 p-6 backdrop-blur"
+                  className="mt-10 space-y-6 rounded-[28px] border border-white/15 bg-slate-900/60 p-6 sm:p-8 text-slate-100 backdrop-blur-xl"
+                  style={{ boxShadow: neoCardShadow }}
                 >
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                      <p className="text-xs font-semibold uppercase tracking-widest text-indigo-500">Mode édition actif</p>
-                      <h3 className="mt-1 text-lg font-semibold text-gray-900">Ajustez les informations présentées dans la vitrine</h3>
+                      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200">Mode édition actif</p>
+                      <h3 className="mt-1 text-lg font-semibold text-white">Ajustez les informations présentées dans la vitrine</h3>
                     </div>
-                    <p className="text-xs text-gray-600 sm:max-w-xs">
+                    <p className="text-xs text-slate-300/80 sm:max-w-xs">
                       Chaque modification sera appliquée aux réponses du questionnaire correspondant.
                     </p>
                   </div>
@@ -614,7 +687,7 @@ export const ProjectShowcase = ({
                         <div key={fieldId} className={`${isLong || isMulti ? 'sm:col-span-2' : ''}`}>
                           <label
                             htmlFor={`showcase-edit-${fieldId}`}
-                            className="block text-xs font-semibold uppercase tracking-widest text-gray-600"
+                            className="block text-[0.65rem] font-semibold uppercase tracking-[0.4em] text-indigo-200/80"
                           >
                             {label}
                           </label>
@@ -624,7 +697,8 @@ export const ProjectShowcase = ({
                               type="date"
                               value={value}
                               onChange={event => handleFieldChange(fieldId, event.target.value)}
-                              className="mt-2 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                              className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-400/40"
+                              style={{ boxShadow: neoInsetShadow }}
                             />
                           ) : isLong || isMulti ? (
                             <textarea
@@ -632,7 +706,8 @@ export const ProjectShowcase = ({
                               value={value}
                               onChange={event => handleFieldChange(fieldId, event.target.value)}
                               rows={isMulti ? 4 : 5}
-                              className="mt-2 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                              className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-400/40"
+                              style={{ boxShadow: neoInsetShadow }}
                             />
                           ) : (
                             <input
@@ -640,11 +715,12 @@ export const ProjectShowcase = ({
                               type="text"
                               value={value}
                               onChange={event => handleFieldChange(fieldId, event.target.value)}
-                              className="mt-2 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                              className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-400/40"
+                              style={{ boxShadow: neoInsetShadow }}
                             />
                           )}
                           {helperText && (
-                            <p className="mt-2 text-xs text-gray-500">{helperText}</p>
+                            <p className="mt-2 text-xs text-slate-400">{helperText}</p>
                           )}
                         </div>
                       );
@@ -655,15 +731,15 @@ export const ProjectShowcase = ({
                     <button
                       type="button"
                       onClick={handleCancelEditing}
-                      className="inline-flex items-center justify-center rounded-full border border-gray-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-gray-600 transition hover:border-gray-300 hover:text-gray-900"
+                      className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/5 px-5 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-slate-200 transition hover:bg-white/10"
                     >
                       Annuler
                     </button>
                     <button
                       type="submit"
-                      className="inline-flex items-center justify-center rounded-full border border-indigo-200 bg-indigo-600 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition hover:bg-indigo-700"
+                      className="inline-flex items-center justify-center rounded-full border border-indigo-400/60 bg-gradient-to-r from-indigo-500 via-sky-500 to-cyan-400 px-5 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-white shadow-lg shadow-indigo-500/30 transition hover:brightness-110"
                     >
-                      <CheckCircle className="mr-2 text-xs" />
+                      <CheckCircle className="mr-2 h-4 w-4" />
                       Enregistrer les modifications
                     </button>
                   </div>
@@ -671,78 +747,104 @@ export const ProjectShowcase = ({
               )}
 
               {heroHighlights.length > 0 && (
-                <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-3">
                   {heroHighlights.map(highlight => (
                     <div
                       key={highlight.id}
-                      className="rounded-2xl border border-indigo-100 bg-white p-5 text-sm text-gray-600 shadow-sm"
+                      className="rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-200 backdrop-blur-xl"
+                      style={{ boxShadow: neoCardShadow }}
                     >
-                      <p className="text-xs font-semibold uppercase tracking-widest text-indigo-500">{highlight.label}</p>
-                      <p className="mt-2 text-2xl font-bold text-gray-900">{highlight.value}</p>
-                      <p className="mt-2 text-xs text-gray-500">{highlight.caption}</p>
+                      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/90">
+                        {highlight.label}
+                      </p>
+                      <p className="mt-3 text-3xl font-bold text-white" style={{ textShadow: '0 18px 45px rgba(79, 70, 229, 0.45)' }}>
+                        {highlight.value}
+                      </p>
+                      <p className="mt-3 text-xs text-slate-300/80">{highlight.caption}</p>
                     </div>
                   ))}
                 </div>
               )}
             </header>
 
-            <section className="mt-12 rounded-3xl border border-gray-200 bg-white p-8 shadow-xl sm:p-10">
-              <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+            <section
+              className="mt-14 rounded-[32px] border border-white/10 bg-white/5 p-8 sm:p-12 text-slate-100 backdrop-blur-xl"
+              style={{ boxShadow: neoCardShadow }}
+            >
+              <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
                 <div className="max-w-3xl">
-                  <p className="text-xs font-semibold uppercase tracking-widest text-gray-500">Le problème</p>
-                  <h3 className="mt-2 text-3xl font-bold text-gray-900">Pourquoi ce projet doit exister</h3>
+                  <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80">Le problème</p>
+                  <h3 className="mt-3 text-3xl font-bold text-white">Pourquoi ce projet doit exister</h3>
                   {hasText(problemInsight) && (
-                    <p className="mt-4 text-base font-semibold text-indigo-600">
+                    <p className="mt-5 text-base font-semibold text-indigo-200 sm:text-lg">
                       {renderTextWithLinks(problemInsight)}
                     </p>
                   )}
                   {renderList(problemPainPoints)}
                 </div>
                 {hasText(problemTestimonial) && (
-                  <aside className="rounded-2xl border border-indigo-100 bg-indigo-50/70 p-6 text-sm leading-relaxed text-indigo-800">
-                    <Target className="mb-3 text-xl text-indigo-500" />
+                  <aside
+                    className="rounded-3xl border border-white/10 bg-gradient-to-br from-indigo-500/20 via-transparent to-sky-500/10 p-6 text-sm leading-relaxed text-slate-200 backdrop-blur-xl"
+                    style={{ boxShadow: neoCardShadow }}
+                  >
+                    <Target className="mb-4 h-8 w-8 text-sky-300" />
                     <p>{renderTextWithLinks(problemTestimonial)}</p>
                   </aside>
                 )}
               </div>
             </section>
 
-            <section className="mt-12 rounded-3xl bg-gradient-to-br from-indigo-600 to-blue-500 p-0.5">
-              <div className="h-full w-full rounded-[22px] bg-white px-8 py-10 sm:px-12">
-                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <section
+              className="mt-14 rounded-[32px] border border-white/10 bg-gradient-to-br from-indigo-500/30 via-transparent to-sky-500/30 p-[1px]"
+              style={{ boxShadow: neoCardShadow }}
+            >
+              <div className="h-full w-full rounded-[30px] bg-slate-950/80 px-8 py-10 text-slate-100 sm:px-12">
+                <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-widest text-indigo-500">La solution</p>
-                    <h3 className="mt-2 text-3xl font-bold text-gray-900">Comment nous changeons la donne</h3>
+                    <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80">La solution</p>
+                    <h3 className="mt-3 text-3xl font-bold text-white">Comment nous changeons la donne</h3>
                   </div>
-                  <Rocket className="text-3xl text-indigo-500" />
+                  <Rocket className="text-4xl text-sky-300" />
                 </div>
-                <div className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-2">
+                <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2">
                   {hasText(solutionDescription) && (
-                    <div className="rounded-2xl border border-indigo-100 bg-white p-6">
-                      <p className="text-sm font-semibold uppercase tracking-widest text-indigo-500">Expérience proposée</p>
-                      <p className="mt-3 text-sm leading-relaxed text-gray-600">
+                    <div
+                      className="rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-200 backdrop-blur-xl"
+                      style={{ boxShadow: neoCardShadow }}
+                    >
+                      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/90">Expérience proposée</p>
+                      <p className="mt-3 text-sm leading-relaxed text-slate-200/90">
                         {renderTextWithLinks(solutionDescription)}
                       </p>
                     </div>
                   )}
                   {solutionBenefits.length > 0 && (
-                    <div className="rounded-2xl border border-indigo-100 bg-white p-6">
-                      <p className="text-sm font-semibold uppercase tracking-widest text-indigo-500">Bénéfices clés</p>
+                    <div
+                      className="rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-200 backdrop-blur-xl"
+                      style={{ boxShadow: neoCardShadow }}
+                    >
+                      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/90">Bénéfices clés</p>
                       {renderList(solutionBenefits)}
                     </div>
                   )}
                   {hasText(solutionExperience) && (
-                    <div className="rounded-2xl border border-indigo-100 bg-white p-6">
-                      <p className="text-sm font-semibold uppercase tracking-widest text-indigo-500">Preuve immersive</p>
-                      <p className="mt-3 text-sm leading-relaxed text-gray-600">
+                    <div
+                      className="rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-200 backdrop-blur-xl"
+                      style={{ boxShadow: neoCardShadow }}
+                    >
+                      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/90">Preuve immersive</p>
+                      <p className="mt-3 text-sm leading-relaxed text-slate-200/90">
                         {renderTextWithLinks(solutionExperience)}
                       </p>
                     </div>
                   )}
                   {hasText(solutionComparison) && (
-                    <div className="rounded-2xl border border-indigo-100 bg-white p-6">
-                      <p className="text-sm font-semibold uppercase tracking-widest text-indigo-500">Pourquoi c'est différent</p>
-                      <p className="mt-3 text-sm leading-relaxed text-gray-600">
+                    <div
+                      className="rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-200 backdrop-blur-xl"
+                      style={{ boxShadow: neoCardShadow }}
+                    >
+                      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/90">Pourquoi c'est différent</p>
+                      <p className="mt-3 text-sm leading-relaxed text-slate-200/90">
                         {renderTextWithLinks(solutionComparison)}
                       </p>
                     </div>
@@ -751,123 +853,160 @@ export const ProjectShowcase = ({
               </div>
             </section>
 
-            <section className="mt-12 rounded-3xl border border-indigo-100 bg-indigo-50/70 p-8 sm:p-10">
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <section
+              className="mt-14 rounded-[32px] border border-white/10 bg-white/5 p-8 sm:p-12 text-slate-100 backdrop-blur-xl"
+              style={{ boxShadow: neoCardShadow }}
+            >
+              <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-widest text-indigo-500">Innovation</p>
-                  <h3 className="mt-2 text-2xl font-bold text-indigo-900">Ce qui rend l'approche unique</h3>
+                  <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80">Innovation</p>
+                  <h3 className="mt-3 text-2xl font-bold text-white">Ce qui rend l'approche unique</h3>
                   {hasText(innovationSecret) && (
-                    <p className="mt-4 text-sm leading-relaxed text-indigo-800">
+                    <p className="mt-4 text-sm leading-relaxed text-slate-200/90">
                       {renderTextWithLinks(innovationSecret)}
                     </p>
                   )}
                 </div>
                 {hasText(innovationProcess) && (
-                  <div className="rounded-2xl border border-white/60 bg-white p-6 text-sm leading-relaxed text-gray-600">
-                    <Compass className="mb-3 text-xl text-indigo-500" />
+                  <div
+                    className="rounded-3xl border border-white/10 bg-white/5 p-6 text-sm leading-relaxed text-slate-200 backdrop-blur-xl"
+                    style={{ boxShadow: neoCardShadow }}
+                  >
+                    <Compass className="mb-4 h-7 w-7 text-sky-300" />
                     {renderTextWithLinks(innovationProcess)}
                   </div>
                 )}
               </div>
             </section>
 
-            <section className="mt-12 rounded-3xl border border-gray-200 bg-white p-8 shadow-xl sm:p-10">
-              <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
-                <div className="max-w-3xl">
-                  <p className="text-xs font-semibold uppercase tracking-widest text-gray-500">Potentiel & impact</p>
-                  <h3 className="mt-2 text-3xl font-bold text-gray-900">Les preuves qui donnent envie d'y croire</h3>
-                  <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-                    {hasText(marketSize) && (
-                      <div className="rounded-2xl border border-gray-200 bg-white p-5">
-                        <p className="text-xs font-semibold uppercase tracking-widest text-gray-500">Taille d'opportunité</p>
-                        <p className="mt-2 text-xl font-bold text-gray-900">{marketSize}</p>
-                        <p className="mt-2 text-xs text-gray-500">Projection marché ou segment prioritaire.</p>
+            <section
+              className="mt-14 rounded-[32px] border border-white/10 bg-white/5 p-8 sm:p-12 text-slate-100 backdrop-blur-xl"
+              style={{ boxShadow: neoCardShadow }}
+            >
+              <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
+                <div className="max-w-3xl space-y-8">
+                  <div>
+                    <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80">Potentiel & impact</p>
+                    <h3 className="mt-3 text-3xl font-bold text-white">Les preuves qui donnent envie d'y croire</h3>
+                    <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                      {hasText(marketSize) && (
+                        <div
+                          className="rounded-3xl border border-white/10 bg-white/5 p-5 text-sm text-slate-200 backdrop-blur-xl"
+                          style={{ boxShadow: neoCardShadow }}
+                        >
+                          <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/70">Taille d'opportunité</p>
+                          <p className="mt-2 text-2xl font-bold text-white">{marketSize}</p>
+                          <p className="mt-2 text-xs text-slate-300/80">Projection marché ou segment prioritaire.</p>
+                        </div>
+                      )}
+                      {timelineSummary && (
+                        <div
+                          className="rounded-3xl border border-white/10 bg-white/5 p-5 text-sm text-slate-200 backdrop-blur-xl"
+                          style={{ boxShadow: neoCardShadow }}
+                        >
+                          <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/70">Préparation au lancement</p>
+                          <p className="mt-2 text-2xl font-bold text-white">{`${timelineSummary.weeks} sem.`}</p>
+                          <p className="mt-2 text-xs text-slate-300/80">
+                            {timelineSummary.satisfied ? 'Runway suffisant pour activer les relais.' : 'Runway à renforcer pour sécuriser la diffusion.'}
+                          </p>
+                        </div>
+                      )}
+                      <div
+                        className="rounded-3xl border border-white/10 bg-white/5 p-5 text-sm text-slate-200 backdrop-blur-xl"
+                        style={{ boxShadow: neoCardShadow }}
+                      >
+                        <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/70">Complexité estimée</p>
+                        <p className="mt-2 text-2xl font-bold text-white">{complexity}</p>
+                        <p className="mt-2 text-xs text-slate-300/80">Basée sur les points de vigilance identifiés.</p>
                       </div>
-                    )}
-                    {timelineSummary && (
-                      <div className="rounded-2xl border border-gray-200 bg-white p-5">
-                        <p className="text-xs font-semibold uppercase tracking-widest text-gray-500">Préparation au lancement</p>
-                        <p className="mt-2 text-xl font-bold text-gray-900">{`${timelineSummary.weeks} sem.`}</p>
-                        <p className="mt-2 text-xs text-gray-500">
-                          {timelineSummary.satisfied ? 'Runway suffisant pour activer les relais.' : 'Runway à renforcer pour sécuriser la diffusion.'}
-                        </p>
-                      </div>
-                    )}
-                    <div className="rounded-2xl border border-gray-200 bg-white p-5">
-                      <p className="text-xs font-semibold uppercase tracking-widest text-gray-500">Complexité estimée</p>
-                      <p className="mt-2 text-xl font-bold text-gray-900">{complexity}</p>
-                      <p className="mt-2 text-xs text-gray-500">Basée sur les points de vigilance identifiés.</p>
                     </div>
                   </div>
                   {tractionSignals.length > 0 && (
-                    <div className="mt-6 rounded-2xl border border-indigo-100 bg-indigo-50/70 p-6">
-                      <p className="text-sm font-semibold uppercase tracking-widest text-indigo-500">Signaux de traction</p>
+                    <div
+                      className="rounded-3xl border border-white/10 bg-gradient-to-br from-sky-500/20 via-transparent to-indigo-500/20 p-6 text-slate-100 backdrop-blur-xl"
+                      style={{ boxShadow: neoCardShadow }}
+                    >
+                      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200">Signaux de traction</p>
                       {renderList(tractionSignals)}
                     </div>
                   )}
                   {hasText(visionStatement) && (
-                    <p className="mt-6 text-base italic text-gray-600">
-                      “{renderTextWithLinks(visionStatement)}”
-                    </p>
+                    <div
+                      className="rounded-3xl border border-white/10 bg-white/5 p-6 text-slate-200 backdrop-blur-xl"
+                      style={{ boxShadow: neoCardShadow }}
+                    >
+                      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80">Vision</p>
+                      <p className="mt-3 text-base leading-relaxed text-slate-200/90">{renderTextWithLinks(visionStatement)}</p>
+                    </div>
                   )}
                 </div>
                 {primaryRisk && (
-                  <aside className="rounded-2xl border border-yellow-200 bg-yellow-50 p-6 text-sm leading-relaxed text-yellow-900">
-                    <AlertTriangle className="mb-3 text-xl text-yellow-500" />
-                    <p className="text-xs font-semibold uppercase tracking-widest text-yellow-600">Point de vigilance</p>
-                    <h4 className="mt-2 text-lg font-semibold text-yellow-900">{primaryRisk.title || 'Vigilance prioritaire'}</h4>
-                    <p className="mt-3 text-yellow-800">{renderTextWithLinks(primaryRisk.description)}</p>
-                    <p className="mt-3 text-xs font-semibold uppercase tracking-widest text-yellow-600">Priorité : {primaryRisk.priority}</p>
+                  <aside
+                    className="max-w-sm rounded-3xl border border-amber-400/30 bg-gradient-to-br from-amber-500/20 via-amber-500/10 to-amber-300/10 p-6 text-sm leading-relaxed text-amber-100 backdrop-blur-xl"
+                    style={{ boxShadow: neoCardShadow }}
+                  >
+                    <AlertTriangle className="mb-4 h-8 w-8 text-amber-300" />
+                    <p className="text-[0.65rem] font-semibold uppercase tracking-[0.4em] text-amber-200/90">Point de vigilance</p>
+                    <h4 className="mt-3 text-xl font-semibold text-white">{primaryRisk.title || 'Vigilance prioritaire'}</h4>
+                    <p className="mt-4 text-sm text-amber-100/90">{renderTextWithLinks(primaryRisk.description)}</p>
+                    <p className="mt-4 text-[0.65rem] font-semibold uppercase tracking-[0.4em] text-amber-200/90">Priorité : {primaryRisk.priority}</p>
                   </aside>
                 )}
               </div>
             </section>
 
-            <section className="mt-12 rounded-3xl border border-gray-200 bg-white p-8 shadow-xl sm:p-10">
-              <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
-                <div className="max-w-3xl">
-                  <p className="text-xs font-semibold uppercase tracking-widest text-gray-500">L'équipe</p>
-                  <h3 className="mt-2 text-3xl font-bold text-gray-900">Les talents derrière la vision</h3>
-                  <div className="mt-6 space-y-4 text-sm text-gray-600">
-                    {hasText(teamLead) && (
-                      <p>
-                        <strong className="text-gray-900">Lead du projet :</strong>{' '}
-                        {renderTextWithLinks(teamLead)}
-                      </p>
-                    )}
-                    {teamCoreMembers.length > 0 && (
-                      <div>
-                        <p className="text-sm font-semibold text-gray-900">Collectif moteur</p>
-                        {renderList(teamCoreMembers)}
-                      </div>
-                    )}
-                    {teamValues.length > 0 && (
-                      <div>
-                        <p className="text-sm font-semibold text-gray-900">Nos valeurs de collaboration</p>
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          {teamValues.map((value, index) => (
-                            <span
-                              key={`${value}-${index}`}
-                              className="inline-flex items-center rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-600"
-                            >
-                              {value}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+            <section
+              className="mt-14 rounded-[32px] border border-white/10 bg-white/5 p-8 sm:p-12 text-slate-100 backdrop-blur-xl"
+              style={{ boxShadow: neoCardShadow }}
+            >
+              <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
+                <div className="max-w-3xl space-y-6 text-sm text-slate-200/90">
+                  <div>
+                    <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80">L'équipe</p>
+                    <h3 className="mt-3 text-3xl font-bold text-white">Les talents derrière la vision</h3>
                   </div>
+                  {hasText(teamLead) && (
+                    <p>
+                      <span className="font-semibold text-white">Lead du projet :</span>{' '}
+                      {renderTextWithLinks(teamLead)}
+                    </p>
+                  )}
+                  {teamCoreMembers.length > 0 && (
+                    <div>
+                      <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-200/90">Collectif moteur</p>
+                      {renderList(teamCoreMembers)}
+                    </div>
+                  )}
+                  {teamValues.length > 0 && (
+                    <div>
+                      <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-200/90">Nos valeurs de collaboration</p>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {teamValues.map((value, index) => (
+                          <span
+                            key={`${value}-${index}`}
+                            className="inline-flex items-center rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-semibold text-indigo-100 backdrop-blur"
+                            style={{ boxShadow: neoCardShadow }}
+                          >
+                            {value}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
                 {normalizedTeams.length > 0 && (
-                  <aside className="rounded-2xl border border-indigo-100 bg-indigo-50/70 p-6 text-sm text-indigo-900">
-                    <p className="text-xs font-semibold uppercase tracking-widest text-indigo-500">Alliés activés</p>
+                  <aside
+                    className="max-w-sm rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-100 backdrop-blur-xl"
+                    style={{ boxShadow: neoCardShadow }}
+                  >
+                    <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80">Alliés activés</p>
                     <div className="mt-4 space-y-3">
                       {normalizedTeams.map(team => (
-                        <div key={team.id} className="flex items-start gap-2">
-                          <Users className="mt-0.5 text-base text-indigo-500" />
+                        <div key={team.id} className="flex items-start gap-3">
+                          <Users className="mt-1 h-4 w-4 text-sky-300" />
                           <div>
-                            <p className="text-sm font-semibold text-indigo-900">{team.name}</p>
-                            <p className="text-xs text-indigo-700">{team.expertise}</p>
+                            <p className="text-sm font-semibold text-white">{team.name}</p>
+                            <p className="text-xs text-slate-300/80">{team.expertise}</p>
                           </div>
                         </div>
                       ))}
@@ -878,26 +1017,33 @@ export const ProjectShowcase = ({
             </section>
 
             {(runway || timelineSummary) && (
-              <section className="mt-12 rounded-3xl border border-indigo-100 bg-indigo-50/70 p-8 sm:p-10">
-                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-widest text-indigo-500">Prochaines étapes</p>
-                    <h3 className="mt-2 text-2xl font-bold text-indigo-900">Orchestrer la narration jusqu'au lancement</h3>
+              <section
+                className="mt-14 rounded-[32px] border border-white/10 bg-gradient-to-br from-indigo-500/25 via-transparent to-sky-500/25 p-8 sm:p-12 text-slate-100 backdrop-blur-xl"
+                style={{ boxShadow: neoCardShadow }}
+              >
+                <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+                  <div className="space-y-3">
+                    <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80">Prochaines étapes</p>
+                    <h3 className="text-2xl font-bold text-white">Orchestrer la narration jusqu'au lancement</h3>
                     {runway && (
-                      <p className="mt-3 text-sm text-indigo-800">
-                        Runway prévu de <strong>{runway.weeksLabel}</strong> ({runway.daysLabel}) entre le {runway.startLabel} et le {runway.endLabel}.
+                      <p className="text-sm text-slate-200/90">
+                        Runway prévu de <span className="font-semibold text-white">{runway.weeksLabel}</span> ({runway.daysLabel}) entre le {runway.startLabel} et le {runway.endLabel}.
                       </p>
                     )}
                   </div>
-                  <Calendar className="text-3xl text-indigo-500" />
+                  <Calendar className="text-4xl text-sky-300" />
                 </div>
                 {timelineSummary?.profiles?.length > 0 && (
-                  <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
                     {timelineSummary.profiles.map(profile => (
-                      <div key={profile.id} className="rounded-2xl border border-white/60 bg-white p-5">
-                        <p className="text-sm font-semibold text-gray-900">{profile.label}</p>
+                      <div
+                        key={profile.id}
+                        className="rounded-3xl border border-white/10 bg-white/5 p-5 text-sm text-slate-200 backdrop-blur-xl"
+                        style={{ boxShadow: neoCardShadow }}
+                      >
+                        <p className="text-sm font-semibold text-white">{profile.label}</p>
                         {profile.description && (
-                          <p className="mt-2 text-xs text-gray-600">{profile.description}</p>
+                          <p className="mt-2 text-xs text-slate-300/80">{profile.description}</p>
                         )}
                       </div>
                     ))}
@@ -913,7 +1059,7 @@ export const ProjectShowcase = ({
 
   if (renderInStandalone) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-100 py-12 px-4 sm:px-8">
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 py-12 px-4 sm:px-8">
         <div className="mx-auto w-full max-w-6xl">{showcaseCard}</div>
       </div>
     );
@@ -921,7 +1067,7 @@ export const ProjectShowcase = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-gray-900/70 pt-10 pb-16 sm:items-center sm:pt-0"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-950/80 backdrop-blur pt-10 pb-16 sm:items-center sm:pt-0"
       role="dialog"
       aria-modal="true"
       aria-label="Vitrine marketing du projet"
