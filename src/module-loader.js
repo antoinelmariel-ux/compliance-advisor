@@ -36,7 +36,10 @@
     const source = fetchSourceSync(url);
 
     const transformed = global.Babel.transform(source, {
-      presets: ['env', 'react'],
+      presets: [
+        ['env', { modules: 'commonjs' }],
+        'react'
+      ],
       sourceType: 'module'
     }).code;
 
