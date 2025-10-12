@@ -547,7 +547,7 @@ const buildMailtoLink = ({ projectName, relevantTeams, emailHtml }) => {
   return `${prefix}?${paramString}`;
 };
 
-export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart, onBack }) => {
+export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart, onBack, onUpdateAnswers }) => {
   const [isShowcaseFallbackOpen, setIsShowcaseFallbackOpen] = useState(false);
   const showcaseWindowRef = useRef(null);
   const relevantTeams = teams.filter(team => (analysis?.teams || []).includes(team.id));
@@ -680,6 +680,7 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
         questions={questions}
         answers={answers}
         timelineDetails={timelineDetails}
+        onUpdateAnswers={onUpdateAnswers}
         renderInStandalone
       />
     );
@@ -723,7 +724,7 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
     };
 
     showcaseWindow.focus();
-  }, [analysis, answers, closeShowcaseWindow, projectName, questions, relevantTeams, timelineDetails]);
+  }, [analysis, answers, closeShowcaseWindow, onUpdateAnswers, projectName, questions, relevantTeams, timelineDetails]);
 
   const handleCloseShowcase = useCallback(() => {
     setIsShowcaseFallbackOpen(false);
@@ -991,6 +992,7 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
           questions={questions}
           answers={answers}
           timelineDetails={timelineDetails}
+          onUpdateAnswers={onUpdateAnswers}
         />
       )}
     </div>

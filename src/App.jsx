@@ -136,6 +136,84 @@ export const App = () => {
     });
   }, [questions]);
 
+  const handleUpdateAnswers = useCallback((updates) => {
+    if (!updates || typeof updates !== 'object') {
+      return;
+    }
+
+    const entries = Object.entries(updates);
+    if (entries.length === 0) {
+      return;
+    }
+
+    let sanitizedResult = null;
+
+    setAnswers(prevAnswers => {
+      const nextAnswers = { ...prevAnswers };
+
+      entries.forEach(([questionId, value]) => {
+        if (!questionId) {
+          return;
+        }
+
+        if (Array.isArray(value)) {
+          const filtered = value
+            .map(item => (typeof item === 'string' ? item.trim() : item))
+            .filter(item => {
+              if (typeof item === 'string') {
+                return item.length > 0;
+              }
+              return item !== null && item !== undefined;
+            });
+
+          if (filtered.length > 0) {
+            nextAnswers[questionId] = filtered;
+          } else {
+            delete nextAnswers[questionId];
+          }
+
+          return;
+        }
+
+        if (value === null || value === undefined) {
+          delete nextAnswers[questionId];
+          return;
+        }
+
+        if (typeof value === 'string') {
+          const trimmed = value.trim();
+          if (trimmed.length > 0) {
+            nextAnswers[questionId] = value;
+          } else {
+            delete nextAnswers[questionId];
+          }
+          return;
+        }
+
+        nextAnswers[questionId] = value;
+      });
+
+      const questionsToRemove = questions
+        .filter(q => !shouldShowQuestion(q, nextAnswers))
+        .map(q => q.id);
+
+      if (questionsToRemove.length > 0) {
+        questionsToRemove.forEach(qId => {
+          delete nextAnswers[qId];
+        });
+      }
+
+      sanitizedResult = nextAnswers;
+      return nextAnswers;
+    });
+
+    if (sanitizedResult) {
+      setAnalysis(analyzeAnswers(sanitizedResult, rules));
+    }
+
+    setValidationError(null);
+  }, [questions, rules]);
+
   const handleNext = useCallback(() => {
     const currentQuestion = activeQuestions[currentQuestionIndex];
     if (currentQuestion?.required) {
@@ -277,6 +355,7 @@ export const App = () => {
               questions={activeQuestions}
               onRestart={handleRestart}
               onBack={handleBackToQuestionnaire}
+              onUpdateAnswers={handleUpdateAnswers}
             />
           )
         ) : (

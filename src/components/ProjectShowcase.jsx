@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from '../react.js';
+import React, { useCallback, useEffect, useMemo, useState } from '../react.js';
 import {
   Sparkles,
   Target,
@@ -8,6 +8,7 @@ import {
   AlertTriangle,
   Close,
   CheckCircle,
+  Edit,
   Compass
 } from './icons.js';
 import { formatAnswer } from '../utils/questions.js';
@@ -39,6 +40,103 @@ const getRawAnswer = (answers, id) => {
 };
 
 const hasText = (value) => typeof value === 'string' && value.trim().length > 0;
+
+const SHOWCASE_FIELD_CONFIG = [
+  { id: 'projectName', fallbackLabel: 'Nom du projet', fallbackType: 'text' },
+  { id: 'projectSlogan', fallbackLabel: 'Slogan ou promesse', fallbackType: 'text' },
+  { id: 'valueProposition', fallbackLabel: 'Proposition de valeur', fallbackType: 'long_text' },
+  { id: 'targetAudience', fallbackLabel: 'Audiences principales', fallbackType: 'multi_choice' },
+  { id: 'marketSize', fallbackLabel: 'Taille de marché', fallbackType: 'text' },
+  { id: 'problemInsight', fallbackLabel: 'Insight problème', fallbackType: 'text' },
+  { id: 'problemPainPoints', fallbackLabel: 'Pain points', fallbackType: 'long_text' },
+  { id: 'problemTestimonial', fallbackLabel: 'Témoignage', fallbackType: 'long_text' },
+  { id: 'solutionDescription', fallbackLabel: 'Description de la solution', fallbackType: 'long_text' },
+  { id: 'solutionBenefits', fallbackLabel: 'Bénéfices clés', fallbackType: 'long_text' },
+  { id: 'solutionExperience', fallbackLabel: "Preuve immersive", fallbackType: 'text' },
+  { id: 'solutionComparison', fallbackLabel: 'Différenciation', fallbackType: 'long_text' },
+  { id: 'innovationSecret', fallbackLabel: 'Secret sauce', fallbackType: 'long_text' },
+  { id: 'innovationProcess', fallbackLabel: 'Processus innovation', fallbackType: 'long_text' },
+  { id: 'tractionSignals', fallbackLabel: 'Signaux de traction', fallbackType: 'long_text' },
+  { id: 'visionStatement', fallbackLabel: 'Vision', fallbackType: 'long_text' },
+  { id: 'teamLead', fallbackLabel: 'Lead du projet', fallbackType: 'text' },
+  { id: 'teamCoreMembers', fallbackLabel: 'Membres clés', fallbackType: 'long_text' },
+  { id: 'teamValues', fallbackLabel: 'Valeurs d\'équipe', fallbackType: 'long_text' },
+  { id: 'campaignKickoffDate', fallbackLabel: 'Date de démarrage campagne', fallbackType: 'date' },
+  { id: 'launchDate', fallbackLabel: 'Date de lancement', fallbackType: 'date' }
+];
+
+const formatValueForDraft = (type, rawValue) => {
+  if (rawValue === null || rawValue === undefined) {
+    return '';
+  }
+
+  if (type === 'multi_choice') {
+    if (Array.isArray(rawValue)) {
+      return rawValue.join('\n');
+    }
+    return String(rawValue);
+  }
+
+  if (type === 'date') {
+    const parsed = rawValue instanceof Date ? rawValue : new Date(rawValue);
+    if (Number.isNaN(parsed.getTime())) {
+      return String(rawValue);
+    }
+    return parsed.toISOString().slice(0, 10);
+  }
+
+  return String(rawValue);
+};
+
+const formatValueForUpdate = (type, draftValue) => {
+  if (type === 'multi_choice') {
+    if (typeof draftValue !== 'string') {
+      return [];
+    }
+
+    return draftValue
+      .split(/\r?\n|·|•|;|,/)
+      .map(entry => entry.replace(/^[-•\s]+/, '').trim())
+      .filter(entry => entry.length > 0);
+  }
+
+  if (type === 'date') {
+    if (typeof draftValue !== 'string') {
+      return null;
+    }
+    const trimmed = draftValue.trim();
+    return trimmed.length > 0 ? trimmed : null;
+  }
+
+  if (typeof draftValue !== 'string') {
+    return '';
+  }
+
+  return draftValue;
+};
+
+const buildDraftValues = (fields, answers, fallbackProjectName) => {
+  const draft = {};
+
+  fields.forEach(field => {
+    const question = field.question;
+    const fieldType = question?.type || field.fallbackType || 'text';
+    const rawValue = getRawAnswer(answers, field.id);
+    if (rawValue === undefined || rawValue === null) {
+      draft[field.id] = '';
+    } else {
+      draft[field.id] = formatValueForDraft(fieldType, rawValue);
+    }
+  });
+
+  if (typeof fallbackProjectName === 'string' && fallbackProjectName.trim().length > 0) {
+    if (!hasText(draft.projectName)) {
+      draft.projectName = fallbackProjectName.trim();
+    }
+  }
+
+  return draft;
+};
 
 const parseListAnswer = (value) => {
   if (!value) {
@@ -245,11 +343,90 @@ export const ProjectShowcase = ({
   questions,
   answers,
   timelineDetails,
-  renderInStandalone = false
+  renderInStandalone = false,
+  onUpdateAnswers
 }) => {
-  const safeProjectName = hasText(projectName) ? projectName.trim() : 'Votre projet';
+  const rawProjectName = typeof projectName === 'string' ? projectName.trim() : '';
+  const safeProjectName = rawProjectName.length > 0 ? rawProjectName : 'Votre projet';
   const normalizedTeams = Array.isArray(relevantTeams) ? relevantTeams : [];
   const complexity = analysis?.complexity || 'Modérée';
+
+  const editableFields = useMemo(
+    () =>
+      SHOWCASE_FIELD_CONFIG.map(config => ({
+        ...config,
+        question: findQuestionById(questions, config.id)
+      })),
+    [questions]
+  );
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [draftValues, setDraftValues] = useState(() =>
+    buildDraftValues(editableFields, answers, rawProjectName)
+  );
+
+  useEffect(() => {
+    if (isEditing) {
+      return;
+    }
+    setDraftValues(buildDraftValues(editableFields, answers, rawProjectName));
+  }, [answers, editableFields, isEditing, rawProjectName]);
+
+  const canEdit = typeof onUpdateAnswers === 'function';
+  const formId = 'project-showcase-edit-form';
+
+  const handleStartEditing = useCallback(() => {
+    setDraftValues(buildDraftValues(editableFields, answers, rawProjectName));
+    setIsEditing(true);
+  }, [answers, editableFields, rawProjectName]);
+
+  const handleCancelEditing = useCallback(() => {
+    setDraftValues(buildDraftValues(editableFields, answers, rawProjectName));
+    setIsEditing(false);
+  }, [answers, editableFields, rawProjectName]);
+
+  const handleFieldChange = useCallback((fieldId, value) => {
+    setDraftValues(prev => ({
+      ...prev,
+      [fieldId]: value
+    }));
+  }, []);
+
+  const handleSubmitEdit = useCallback(
+    (event) => {
+      event.preventDefault();
+      if (!canEdit) {
+        setIsEditing(false);
+        return;
+      }
+
+      const updates = {};
+
+      editableFields.forEach(field => {
+        const { id } = field;
+        if (!id) {
+          return;
+        }
+
+        const type = field.question?.type || field.fallbackType || 'text';
+        const previousValue = formatValueForDraft(type, getRawAnswer(answers, id) ?? '');
+        const nextValue = draftValues[id] ?? '';
+
+        if (previousValue === nextValue) {
+          return;
+        }
+
+        updates[id] = formatValueForUpdate(type, nextValue);
+      });
+
+      if (Object.keys(updates).length > 0) {
+        onUpdateAnswers(updates);
+      }
+
+      setIsEditing(false);
+    },
+    [answers, canEdit, draftValues, editableFields, onUpdateAnswers]
+  );
 
   const missingShowcaseQuestions = useMemo(() => {
     const available = new Set(Array.isArray(questions) ? questions.map(question => question?.id).filter(Boolean) : []);
@@ -359,15 +536,139 @@ export const ProjectShowcase = ({
                     </p>
                   )}
                 </div>
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="ml-auto inline-flex items-center justify-center rounded-full border border-gray-200 bg-white p-3 text-gray-500 transition hover:border-gray-300 hover:text-gray-900"
-                  aria-label="Fermer la vitrine du projet"
-                >
-                  <Close className="text-base" />
-                </button>
+                <div className="flex flex-wrap items-center gap-2 self-start md:self-auto">
+                  {canEdit && (
+                    isEditing ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={handleCancelEditing}
+                          className="inline-flex items-center justify-center rounded-full border border-gray-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-gray-600 transition hover:border-gray-300 hover:text-gray-900"
+                        >
+                          Annuler l'édition
+                        </button>
+                        <button
+                          type="submit"
+                          form={formId}
+                          className="inline-flex items-center justify-center rounded-full border border-indigo-200 bg-indigo-600 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition hover:bg-indigo-700"
+                        >
+                          <CheckCircle className="mr-2 text-xs" />
+                          Enregistrer
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handleStartEditing}
+                        className="inline-flex items-center justify-center rounded-full border border-indigo-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-indigo-600 transition hover:bg-indigo-50"
+                      >
+                        <Edit className="mr-2 text-xs" />
+                        Modifier le contenu
+                      </button>
+                    )
+                  )}
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="inline-flex items-center justify-center rounded-full border border-gray-200 bg-white p-3 text-gray-500 transition hover:border-gray-300 hover:text-gray-900"
+                    aria-label="Fermer la vitrine du projet"
+                  >
+                    <Close className="text-base" />
+                  </button>
+                </div>
               </div>
+
+              {isEditing && canEdit && (
+                <form
+                  id={formId}
+                  onSubmit={handleSubmitEdit}
+                  className="mt-8 space-y-6 rounded-2xl border border-indigo-100 bg-white/80 p-6 backdrop-blur"
+                >
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-widest text-indigo-500">Mode édition actif</p>
+                      <h3 className="mt-1 text-lg font-semibold text-gray-900">Ajustez les informations présentées dans la vitrine</h3>
+                    </div>
+                    <p className="text-xs text-gray-600 sm:max-w-xs">
+                      Chaque modification sera appliquée aux réponses du questionnaire correspondant.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    {editableFields.map(field => {
+                      const fieldId = field.id;
+                      const question = field.question;
+                      const type = question?.type || field.fallbackType || 'text';
+                      const label = question?.question || field.fallbackLabel || fieldId;
+                      const value = draftValues[fieldId] ?? '';
+                      const isLong = type === 'long_text';
+                      const isMulti = type === 'multi_choice';
+                      const isDate = type === 'date';
+                      const helperText = isMulti
+                        ? 'Indiquez une audience par ligne.'
+                        : ['problemPainPoints', 'solutionBenefits', 'tractionSignals', 'teamCoreMembers', 'teamValues'].includes(fieldId)
+                          ? 'Utilisez une ligne par élément pour une meilleure mise en forme.'
+                          : null;
+
+                      return (
+                        <div key={fieldId} className={`${isLong || isMulti ? 'sm:col-span-2' : ''}`}>
+                          <label
+                            htmlFor={`showcase-edit-${fieldId}`}
+                            className="block text-xs font-semibold uppercase tracking-widest text-gray-600"
+                          >
+                            {label}
+                          </label>
+                          {isDate ? (
+                            <input
+                              id={`showcase-edit-${fieldId}`}
+                              type="date"
+                              value={value}
+                              onChange={event => handleFieldChange(fieldId, event.target.value)}
+                              className="mt-2 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                            />
+                          ) : isLong || isMulti ? (
+                            <textarea
+                              id={`showcase-edit-${fieldId}`}
+                              value={value}
+                              onChange={event => handleFieldChange(fieldId, event.target.value)}
+                              rows={isMulti ? 4 : 5}
+                              className="mt-2 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                            />
+                          ) : (
+                            <input
+                              id={`showcase-edit-${fieldId}`}
+                              type="text"
+                              value={value}
+                              onChange={event => handleFieldChange(fieldId, event.target.value)}
+                              className="mt-2 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                            />
+                          )}
+                          {helperText && (
+                            <p className="mt-2 text-xs text-gray-500">{helperText}</p>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+                    <button
+                      type="button"
+                      onClick={handleCancelEditing}
+                      className="inline-flex items-center justify-center rounded-full border border-gray-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-gray-600 transition hover:border-gray-300 hover:text-gray-900"
+                    >
+                      Annuler
+                    </button>
+                    <button
+                      type="submit"
+                      className="inline-flex items-center justify-center rounded-full border border-indigo-200 bg-indigo-600 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition hover:bg-indigo-700"
+                    >
+                      <CheckCircle className="mr-2 text-xs" />
+                      Enregistrer les modifications
+                    </button>
+                  </div>
+                </form>
+              )}
 
               {heroHighlights.length > 0 && (
                 <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
