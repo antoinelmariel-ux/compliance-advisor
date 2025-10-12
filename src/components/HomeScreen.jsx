@@ -197,7 +197,14 @@ export const HomeScreen = ({ projects = [], onStartNewProject, onOpenProject, on
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div>
-                        <h3 className="text-xl font-semibold text-gray-900">{project.projectName || 'Projet sans nom'}</h3>
+                        <h3 className="text-xl font-semibold text-gray-900 flex items-center gap-2 flex-wrap">
+                          <span>{project.projectName || 'Projet sans nom'}</span>
+                          {project.isDemo && (
+                            <span className="inline-flex items-center px-2 py-0.5 text-xs font-semibold text-indigo-600 bg-indigo-50 border border-indigo-200 rounded-full">
+                              Projet démo
+                            </span>
+                          )}
+                        </h3>
                         <p className="text-sm text-gray-500 mt-1">
                           Dernière mise à jour : {formatDate(project.lastUpdated || project.submittedAt)}
                         </p>
