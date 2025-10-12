@@ -4,18 +4,23 @@ Prototype React monopage d'aide à la décision compliance lancé directement de
 
 ## Fonctionnalités principales
 
-### Parcours Chef de Projet
-- **Questionnaire adaptatif** : les questions s'affichent dynamiquement selon les réponses précédentes grâce au moteur de conditions (`equals`, `not_equals`, `contains`).
-- **Progression guidée** : suivi d'avancement, navigation précédent/suivant et validation des réponses obligatoires.
-- **Synthèse automatique** : génération d'un rapport qui récapitule le périmètre du projet, le niveau de complexité compliance et les équipes à mobiliser.
-- **Recommandations ciblées** : affichage des contacts, expertises et questions à préparer pour chaque équipe identifiée.
-- **Gestion des risques** : consolidation des risques issus des règles déclenchées avec niveau de criticité, priorité et mesures de mitigation.
+### Vue Chef de Projet
+- **Onboarding guidé** : un écran d'accueil présente le périmètre couvert (données, localisation, partenaires) et les prérequis à réunir avant de commencer, afin d'accélérer la collecte d'informations auprès des métiers.
+- **Questionnaire adaptatif** : les questions s'affichent dynamiquement selon les réponses précédentes grâce au moteur de conditions (`equals`, `not_equals`, `contains`). Cela permet de ne solliciter que les thèmes pertinents (RGPD, sanctions, éthique, etc.) et d'éviter les redites.
+- **Progression pilotée** : barre d'avancement, navigation précédent/suivant, validation des réponses obligatoires et rappel des sections à compléter pour limiter les oublis lors de la constitution du dossier.
+- **Synthèse automatique** : génération d'un rapport projet instantané qui récapitule le périmètre, le niveau de complexité compliance, les actions à initier et les équipes à mobiliser. Exportable ou partageable depuis l'interface.
+- **Recommandations actionnables** : affichage pour chaque équipe des contacts référents, des expertises couvertes et des questions préparatoires à anticiper avant un passage en comité.
+- **Gestion des risques** : consolidation des risques issus des règles déclenchées avec niveau de criticité, priorité, mesures de mitigation suggérées et to-do pour préparer les jalons réglementaires.
+- **Traçabilité du parcours** : historique des réponses et des sections parcourues pour faciliter la reprise ultérieure d'un dossier et le suivi des mises à jour.
 
-### Back-Office
-- **Éditeur de questions** : ajout/suppression, modification du libellé, des options, du caractère obligatoire et des conditions d'affichage via glisser-déposer.
-- **Éditeur de règles** : configuration des conditions de déclenchement, association des équipes, des questions de relance et des risques.
-- **Gestion des équipes** : mise à jour du nom, du contact et du champ d'expertise de chaque équipe interne.
-- **Aperçu structuré** : consultation rapide des règles, conditions et risques pour faciliter la maintenance du référentiel.
+### Vue Équipe Compliance & Back-Office
+- **Pilotage du référentiel** : visualisation en un coup d'œil des questions, règles et risques actifs pour vérifier la couverture réglementaire et la cohérence des parcours.
+- **Éditeur de questions** : ajout, suppression ou modification du libellé, des options, du caractère obligatoire et des conditions d'affichage via glisser-déposer afin d'orchestrer de nouveaux scénarios.
+- **Éditeur de règles** : configuration des conditions de déclenchement, association des équipes, des questions de relance et des risques, avec aperçu des impacts sur la synthèse projet.
+- **Gestion des équipes** : mise à jour du nom, du contact, du champ d'expertise et de la capacité de prise en charge pour chaque équipe interne afin de refléter l'organisation cible.
+- **Aperçu structuré** : consultation rapide des règles, conditions et risques pour faciliter la maintenance du référentiel et préparer les comités de gouvernance compliance.
+- **Boucle d'amélioration continue** : remontée des cas d'usage fréquemment exclus (grâce aux réponses « autres » ou aux options non couvertes) pour ajuster le référentiel et aligner les exigences réglementaires.
+- **Préparation des audits** : documentation centralisée des justificatifs (questions posées, critères évalués, risques identifiés) facilitant la réponse aux contrôles internes ou externes.
 
 ## Pistes de nouvelles fonctionnalités
 
