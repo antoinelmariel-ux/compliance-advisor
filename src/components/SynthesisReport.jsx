@@ -1,5 +1,4 @@
 import React, { useState, useCallback, useEffect, useRef } from '../react.js';
-import { ReactDOM } from '../react.js';
 import { FileText, Calendar, Users, AlertTriangle, Send, Sparkles, CheckCircle } from './icons.js';
 import { formatAnswer } from '../utils/questions.js';
 import { renderTextWithLinks } from '../utils/linkify.js';
@@ -43,88 +42,6 @@ const sanitizeFileName = (value, fallback = 'projet-compliance') => {
 
   return sanitized.length > 0 ? sanitized : fallback;
 };
-
-const HIGH_VISIBILITY_STYLE_BLOCK = `
-body.high-visibility {
-  background-color: #0b0c0c;
-  color: #ffffff;
-}
-
-.hv-modal-panel {
-  max-height: calc(100vh - 2rem);
-}
-
-@media (min-width: 640px) {
-  .hv-modal-panel {
-    max-height: calc(100vh - 4rem);
-  }
-}
-
-body.high-visibility #root {
-  color: inherit;
-}
-
-body.high-visibility .hv-background {
-  background: transparent !important;
-}
-
-body.high-visibility .hv-surface {
-  background-color: #111827 !important;
-  color: #ffffff !important;
-  border-color: #facc15 !important;
-  box-shadow: none !important;
-}
-
-body.high-visibility .hv-border {
-  border-color: #facc15 !important;
-}
-
-body.high-visibility .hv-progress {
-  background-color: #1f2937 !important;
-}
-
-body.high-visibility .hv-progress-indicator {
-  background-color: #facc15 !important;
-}
-
-body.high-visibility .hv-badge {
-  border-color: #facc15 !important;
-  color: #facc15 !important;
-  background: transparent !important;
-}
-
-body.high-visibility .hv-text-muted {
-  color: #f4f4f5 !important;
-}
-
-body.high-visibility .hv-button,
-body.high-visibility .hv-focus-ring {
-  outline-color: #facc15;
-}
-
-body.high-visibility .hv-button {
-  background-color: #0b0c0c !important;
-  color: #ffffff !important;
-  border: 2px solid #facc15 !important;
-}
-
-body.high-visibility .hv-button-primary {
-  background-color: #facc15 !important;
-  color: #0b0c0c !important;
-  border-color: #facc15 !important;
-}
-
-body.high-visibility .hv-link {
-  color: #facc15 !important;
-  text-decoration: underline;
-}
-
-body.high-visibility .hv-focus-ring:focus,
-body.high-visibility .hv-focus-ring:focus-visible {
-  outline: 3px solid #facc15 !important;
-  outline-offset: 3px;
-}
-`;
 
 const formatNumber = (value, options = {}) => {
   return Number(value).toLocaleString('fr-FR', options);
@@ -581,7 +498,7 @@ export const SynthesisReport = ({
   isExistingProject
 }) => {
   const [isShowcaseFallbackOpen, setIsShowcaseFallbackOpen] = useState(false);
-  const showcaseWindowRef = useRef(null);
+  const showcaseFallbackRef = useRef(null);
   const relevantTeams = teams.filter(team => (analysis?.teams || []).includes(team.id));
 
   const priorityColors = {
@@ -611,168 +528,47 @@ export const SynthesisReport = ({
 
   const projectName = extractProjectName(answers, questions);
 
-  const closeShowcaseWindow = useCallback(() => {
-    const current = showcaseWindowRef.current;
-    if (!current) {
+  const scrollShowcaseIntoView = useCallback(() => {
+    const node = showcaseFallbackRef.current;
+    if (node && typeof node.scrollIntoView === 'function') {
+      node.scrollIntoView({ behavior: 'smooth', block: 'start' });
       return;
     }
 
-    try {
-      if (typeof current.cleanup === 'function') {
-        current.cleanup();
-      }
-    } catch (cleanupError) {
-      if (typeof console !== 'undefined' && typeof console.warn === 'function') {
-        console.warn('[SynthesisReport] Impossible de nettoyer la fenêtre vitrine :', cleanupError);
-      }
+    if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-
-    if (current.reactRoot && typeof current.reactRoot.unmount === 'function') {
-      current.reactRoot.unmount();
-    } else if (
-      current.useLegacyRender &&
-      current.mountNode &&
-      ReactDOM &&
-      typeof ReactDOM.unmountComponentAtNode === 'function'
-    ) {
-      ReactDOM.unmountComponentAtNode(current.mountNode);
-    }
-
-    if (current.window && !current.window.closed) {
-      current.window.close();
-    }
-
-    showcaseWindowRef.current = null;
-  }, []);
+  }, [showcaseFallbackRef]);
 
   useEffect(() => {
-    return () => {
-      closeShowcaseWindow();
-    };
-  }, [closeShowcaseWindow]);
+    if (!isShowcaseFallbackOpen) {
+      return;
+    }
+
+    if (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function') {
+      window.requestAnimationFrame(() => {
+        scrollShowcaseIntoView();
+      });
+    } else {
+      scrollShowcaseIntoView();
+    }
+  }, [isShowcaseFallbackOpen, scrollShowcaseIntoView]);
 
   const handleOpenShowcase = useCallback(() => {
-    closeShowcaseWindow();
-    setIsShowcaseFallbackOpen(false);
+    setIsShowcaseFallbackOpen(true);
 
-    if (typeof window === 'undefined' || !ReactDOM) {
-      setIsShowcaseFallbackOpen(true);
-      return;
+    if (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function') {
+      window.requestAnimationFrame(() => {
+        scrollShowcaseIntoView();
+      });
+    } else {
+      scrollShowcaseIntoView();
     }
-
-    const showcaseWindow = window.open('', '_blank', 'noopener,noreferrer');
-    if (!showcaseWindow) {
-      setIsShowcaseFallbackOpen(true);
-      return;
-    }
-
-    const trimmedProjectName = typeof projectName === 'string' ? projectName.trim() : '';
-    const baseTitle = trimmedProjectName.length > 0 ? trimmedProjectName : 'Projet compliance';
-    const documentTitle = `${baseTitle} – Vitrine du projet`;
-    const htmlTitle = escapeHtml(documentTitle);
-
-    let showcaseStylesheetUrl = './src/styles/project-showcase.css';
-    try {
-      showcaseStylesheetUrl = new URL('./src/styles/project-showcase.css', window.location.href).toString();
-    } catch (urlError) {
-      if (typeof console !== 'undefined' && typeof console.warn === 'function') {
-        console.warn('[SynthesisReport] Impossible de résoudre le style vitrine :', urlError);
-      }
-    }
-    const escapedStylesheetUrl = escapeHtml(showcaseStylesheetUrl);
-
-    try {
-      showcaseWindow.document.write(`<!DOCTYPE html>
-<html lang="fr">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>${htmlTitle}</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" />
-    <link rel="stylesheet" href="${escapedStylesheetUrl}" />
-    <style>${HIGH_VISIBILITY_STYLE_BLOCK}</style>
-  </head>
-  <body class="bg-gray-100">
-    <div id="showcase-root"></div>
-  </body>
-</html>`);
-      showcaseWindow.document.close();
-    } catch (error) {
-      showcaseWindow.close();
-      setIsShowcaseFallbackOpen(true);
-      return;
-    }
-
-    if (typeof document !== 'undefined' && document.body?.classList?.contains('high-visibility')) {
-      showcaseWindow.document.body.classList.add('high-visibility');
-    }
-
-    const mountNode = showcaseWindow.document.getElementById('showcase-root');
-    if (!mountNode) {
-      showcaseWindow.close();
-      setIsShowcaseFallbackOpen(true);
-      return;
-    }
-
-    const showcaseElement = (
-      <ProjectShowcase
-        projectName={projectName}
-        onClose={closeShowcaseWindow}
-        analysis={analysis}
-        relevantTeams={relevantTeams}
-        questions={questions}
-        answers={answers}
-        timelineDetails={timelineDetails}
-        onUpdateAnswers={onUpdateAnswers}
-        renderInStandalone
-      />
-    );
-
-    let reactRoot = null;
-    let useLegacyRender = false;
-
-    try {
-      if (ReactDOM && typeof ReactDOM.createRoot === 'function') {
-        reactRoot = ReactDOM.createRoot(mountNode);
-        reactRoot.render(showcaseElement);
-      } else if (ReactDOM && typeof ReactDOM.render === 'function') {
-        useLegacyRender = true;
-        ReactDOM.render(showcaseElement, mountNode);
-      } else {
-        throw new Error('Aucune méthode de rendu ReactDOM disponible.');
-      }
-    } catch (error) {
-      if (typeof console !== 'undefined' && typeof console.error === 'function') {
-        console.error("[SynthesisReport] Échec de l'affichage de la vitrine :", error);
-      }
-      showcaseWindow.close();
-      setIsShowcaseFallbackOpen(true);
-      return;
-    }
-
-    const handleBeforeUnload = () => {
-      showcaseWindowRef.current = null;
-    };
-
-    showcaseWindow.addEventListener('beforeunload', handleBeforeUnload);
-
-    showcaseWindowRef.current = {
-      window: showcaseWindow,
-      reactRoot,
-      mountNode,
-      useLegacyRender,
-      cleanup: () => {
-        showcaseWindow.removeEventListener('beforeunload', handleBeforeUnload);
-      }
-    };
-
-    showcaseWindow.focus();
-  }, [analysis, answers, closeShowcaseWindow, onUpdateAnswers, projectName, questions, relevantTeams, timelineDetails]);
+  }, [scrollShowcaseIntoView]);
 
   const handleCloseShowcase = useCallback(() => {
     setIsShowcaseFallbackOpen(false);
-    closeShowcaseWindow();
-  }, [closeShowcaseWindow]);
+  }, []);
 
   const handleSaveProject = useCallback(() => {
     if (!onSubmitProject) {
@@ -1146,16 +942,18 @@ export const SynthesisReport = ({
         </div>
       </div>
       {isShowcaseFallbackOpen && (
-        <ProjectShowcase
-          projectName={projectName}
-          onClose={handleCloseShowcase}
-          analysis={analysis}
-          relevantTeams={relevantTeams}
-          questions={questions}
-          answers={answers}
-          timelineDetails={timelineDetails}
-          onUpdateAnswers={onUpdateAnswers}
-        />
+        <div ref={showcaseFallbackRef}>
+          <ProjectShowcase
+            projectName={projectName}
+            onClose={handleCloseShowcase}
+            analysis={analysis}
+            relevantTeams={relevantTeams}
+            questions={questions}
+            answers={answers}
+            timelineDetails={timelineDetails}
+            onUpdateAnswers={onUpdateAnswers}
+          />
+        </div>
       )}
     </div>
   );
