@@ -19,6 +19,31 @@ const escapeHtml = (value) => {
     .replace(/'/g, '&#39;');
 };
 
+const sanitizeFileName = (value, fallback = 'projet-compliance') => {
+  if (typeof value !== 'string') {
+    return fallback;
+  }
+
+  let normalized = value.trim();
+  if (normalized.length === 0) {
+    return fallback;
+  }
+
+  try {
+    normalized = normalized.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  } catch (error) {
+    normalized = normalized.replace(/[^\w\s-]/g, '');
+  }
+
+  const sanitized = normalized
+    .replace(/[^a-zA-Z0-9-_]+/g, '-')
+    .replace(/-{2,}/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 60);
+
+  return sanitized.length > 0 ? sanitized : fallback;
+};
+
 const HIGH_VISIBILITY_STYLE_BLOCK = `
 body.high-visibility {
   background-color: #0b0c0c;
@@ -457,6 +482,46 @@ const buildEmailHtml = ({
     </html>`;
 };
 
+const buildProjectExport = ({
+  projectName,
+  answers,
+  analysis,
+  relevantTeams,
+  timelineByTeam,
+  timelineDetails,
+  questions
+}) => {
+  const normalizedAnswers =
+    answers && typeof answers === 'object' ? answers : {};
+
+  const teamsSnapshot = relevantTeams.map(team => ({
+    id: team.id,
+    name: team.name,
+    contact: team.contact || null,
+    priority: getTeamPriority(analysis, team.id)
+  }));
+
+  return {
+    version: 1,
+    generatedAt: new Date().toISOString(),
+    project: {
+      name: projectName || 'Projet sans nom',
+      answers: normalizedAnswers,
+      analysis: analysis || null,
+      relevantTeams: teamsSnapshot,
+      timeline: {
+        byTeam: timelineByTeam,
+        details: timelineDetails
+      },
+      questionnaire: {
+        questionIds: Array.isArray(questions)
+          ? questions.map(question => question.id)
+          : []
+      }
+    }
+  };
+};
+
 const decodeHtmlEntities = (text) =>
   text
     .replace(/&nbsp;/g, ' ')
@@ -499,7 +564,7 @@ const buildPlainTextEmail = (html) => {
   return text.trim();
 };
 
-const buildMailtoLink = ({ projectName, relevantTeams, emailHtml }) => {
+const buildMailtoLink = ({ projectName, relevantTeams, body }) => {
   const recipients = relevantTeams
     .map(team => (team.contact || '').trim())
     .filter(contact => contact.length > 0);
@@ -509,8 +574,7 @@ const buildMailtoLink = ({ projectName, relevantTeams, emailHtml }) => {
   const params = new URLSearchParams();
 
   params.set('subject', subject);
-  const emailText = buildPlainTextEmail(emailHtml);
-  const normalizedBody = emailText.replace(/\r?\n/g, '\r\n');
+  const normalizedBody = (body || '').replace(/\r?\n/g, '\r\n');
   params.set('body', normalizedBody);
 
   const paramString = params.toString();
@@ -726,7 +790,7 @@ export const SynthesisReport = ({
     });
   }, [analysis, answers, onSubmitProject, projectName, relevantTeams, timelineDetails]);
 
-  const handleSubmitByEmail = () => {
+  const handleSubmitByEmail = useCallback(async () => {
     const emailHtml = buildEmailHtml({
       projectName,
       questions,
@@ -736,12 +800,107 @@ export const SynthesisReport = ({
       timelineByTeam,
       timelineDetails
     });
+    const emailText = buildPlainTextEmail(emailHtml);
+    const projectExport = buildProjectExport({
+      projectName,
+      answers,
+      analysis,
+      relevantTeams,
+      timelineByTeam,
+      timelineDetails,
+      questions
+    });
 
-    const mailtoLink = buildMailtoLink({ projectName, relevantTeams, emailHtml });
+    let projectJson = '';
+    try {
+      projectJson = JSON.stringify(projectExport, null, 2);
+    } catch (error) {
+      if (typeof console !== 'undefined' && typeof console.error === 'function') {
+        console.error('[SynthesisReport] Impossible de sérialiser le projet :', error);
+      }
+      projectJson = JSON.stringify(
+        {
+          version: 1,
+          project: {
+            name: projectExport.project.name,
+            answers: {}
+          }
+        },
+        null,
+        2
+      );
+    }
+
+    const fileNameBase = sanitizeFileName(projectName || 'Projet compliance');
+    const fileName = `${fileNameBase}.json`;
+    const subject = projectName || 'Projet compliance';
+
+    if (typeof navigator !== 'undefined' && typeof navigator.share === 'function' && typeof File === 'function') {
+      try {
+        const projectFile = new File([projectJson], fileName, {
+          type: 'application/json'
+        });
+        const canShare =
+          typeof navigator.canShare === 'function'
+            ? navigator.canShare({ files: [projectFile] })
+            : true;
+
+        if (canShare) {
+          await navigator.share({
+            title: subject,
+            text: `${emailText}\n\nFichier du projet : ${fileName}`,
+            files: [projectFile]
+          });
+          return;
+        }
+      } catch (error) {
+        if (error && error.name === 'AbortError') {
+          return;
+        }
+
+        if (typeof console !== 'undefined' && typeof console.warn === 'function') {
+          console.warn('[SynthesisReport] Partage du projet impossible :', error);
+        }
+      }
+    }
+
+    if (typeof document !== 'undefined' && typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function') {
+      try {
+        const blob = new Blob([projectJson], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = fileName;
+        anchor.style.display = 'none';
+        document.body.appendChild(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
+        setTimeout(() => {
+          if (typeof URL.revokeObjectURL === 'function') {
+            URL.revokeObjectURL(url);
+          }
+        }, 0);
+      } catch (error) {
+        if (typeof console !== 'undefined' && typeof console.warn === 'function') {
+          console.warn('[SynthesisReport] Téléchargement du projet impossible :', error);
+        }
+      }
+    }
+
+    const fallbackBody = `${emailText}\n\nFichier du projet : ${fileName}\nLe fichier JSON a été téléchargé automatiquement ; merci de l'ajouter en pièce jointe avant envoi.`;
+    const mailtoLink = buildMailtoLink({ projectName, relevantTeams, body: fallbackBody });
     if (typeof window !== 'undefined') {
       window.location.href = mailtoLink;
     }
-  };
+  }, [
+    analysis,
+    answers,
+    projectName,
+    questions,
+    relevantTeams,
+    timelineByTeam,
+    timelineDetails
+  ]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 px-4 py-6 sm:px-8 sm:py-10 hv-background">
