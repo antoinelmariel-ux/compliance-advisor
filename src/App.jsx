@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from './react.js';
 import { QuestionnaireScreen } from './components/QuestionnaireScreen.jsx';
 import { SynthesisReport } from './components/SynthesisReport.jsx';
+import { HomeScreen } from './components/HomeScreen.jsx';
 import { BackOffice } from './components/BackOffice.jsx';
 import { CheckCircle } from './components/icons.js';
 import { initialQuestions } from './data/questions.js';
@@ -12,10 +13,12 @@ import { analyzeAnswers } from './utils/rules.js';
 
 export const App = () => {
   const [mode, setMode] = useState('user');
-  const [screen, setScreen] = useState('questionnaire');
+  const [screen, setScreen] = useState('home');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [analysis, setAnalysis] = useState(null);
+  const [submittedProjects, setSubmittedProjects] = useState([]);
+  const [activeProjectId, setActiveProjectId] = useState(null);
   const [isHighVisibility, setIsHighVisibility] = useState(false);
   const [validationError, setValidationError] = useState(null);
 
@@ -39,6 +42,8 @@ export const App = () => {
     }
     if (savedState.answers && typeof savedState.answers === 'object') setAnswers(savedState.answers);
     if (typeof savedState.analysis !== 'undefined') setAnalysis(savedState.analysis);
+    if (Array.isArray(savedState.submittedProjects)) setSubmittedProjects(savedState.submittedProjects);
+    if (typeof savedState.activeProjectId === 'string') setActiveProjectId(savedState.activeProjectId);
     if (Array.isArray(savedState.questions)) setQuestions(savedState.questions);
     if (Array.isArray(savedState.rules)) setRules(savedState.rules);
     if (Array.isArray(savedState.teams)) setTeams(savedState.teams);
@@ -73,7 +78,9 @@ export const App = () => {
         questions,
         rules,
         teams,
-        isHighVisibility
+        isHighVisibility,
+        submittedProjects,
+        activeProjectId
       });
       persistTimeoutRef.current = null;
     }, 200);
@@ -84,7 +91,20 @@ export const App = () => {
         persistTimeoutRef.current = null;
       }
     };
-  }, [mode, screen, currentQuestionIndex, answers, analysis, questions, rules, teams, isHighVisibility, isHydrated]);
+  }, [
+    mode,
+    screen,
+    currentQuestionIndex,
+    answers,
+    analysis,
+    questions,
+    rules,
+    teams,
+    isHighVisibility,
+    submittedProjects,
+    activeProjectId,
+    isHydrated
+  ]);
 
   useEffect(() => {
     if (typeof document === 'undefined') return;
@@ -214,6 +234,19 @@ export const App = () => {
     setValidationError(null);
   }, [questions, rules]);
 
+  const resetProjectState = useCallback(() => {
+    setAnswers({});
+    setCurrentQuestionIndex(0);
+    setAnalysis(null);
+    setValidationError(null);
+    setActiveProjectId(null);
+  }, []);
+
+  const handleCreateNewProject = useCallback(() => {
+    resetProjectState();
+    setScreen('questionnaire');
+  }, [resetProjectState]);
+
   const handleNext = useCallback(() => {
     const currentQuestion = activeQuestions[currentQuestionIndex];
     if (currentQuestion?.required) {
@@ -248,12 +281,69 @@ export const App = () => {
   }, [currentQuestionIndex]);
 
   const handleRestart = useCallback(() => {
-    setAnswers({});
-    setCurrentQuestionIndex(0);
+    resetProjectState();
     setScreen('questionnaire');
-    setAnalysis(null);
+  }, [resetProjectState]);
+
+  const handleOpenProject = useCallback((projectId) => {
+    if (!projectId) {
+      return;
+    }
+
+    const project = submittedProjects.find(item => item.id === projectId);
+    if (!project) {
+      return;
+    }
+
+    setAnswers(project.answers || {});
+    setAnalysis(project.analysis || null);
+    setCurrentQuestionIndex(0);
     setValidationError(null);
+    setActiveProjectId(project.id);
+    setScreen('synthesis');
+  }, [submittedProjects]);
+
+  const handleDeleteProject = useCallback((projectId) => {
+    if (!projectId) {
+      return;
+    }
+
+    setSubmittedProjects(prevProjects => prevProjects.filter(project => project.id !== projectId));
+    setActiveProjectId(prev => (prev === projectId ? null : prev));
   }, []);
+
+  const handleSubmitProject = useCallback((payload = {}) => {
+    const projectNameRaw = payload.projectName || '';
+    const sanitizedName =
+      typeof projectNameRaw === 'string' && projectNameRaw.trim().length > 0
+        ? projectNameRaw.trim()
+        : 'Projet sans nom';
+
+    const nextAnswers = payload.answers && typeof payload.answers === 'object' ? payload.answers : answers;
+    const nextAnalysis = payload.analysis && typeof payload.analysis === 'object' ? payload.analysis : analysis;
+
+    if (!nextAnalysis) {
+      return;
+    }
+
+    const projectId = activeProjectId || payload.id || `project-${Date.now()}`;
+
+    const projectEntry = {
+      id: projectId,
+      projectName: sanitizedName,
+      answers: nextAnswers,
+      analysis: nextAnalysis,
+      submittedAt: new Date().toISOString()
+    };
+
+    setSubmittedProjects(prevProjects => {
+      const filtered = prevProjects.filter(project => project.id !== projectId);
+      return [projectEntry, ...filtered];
+    });
+
+    setActiveProjectId(projectId);
+    setScreen('home');
+  }, [activeProjectId, answers, analysis]);
 
   const handleToggleHighVisibility = useCallback(() => {
     setIsHighVisibility(prev => !prev);
@@ -292,6 +382,21 @@ export const App = () => {
               role="group"
               aria-label="Sélection du mode d'affichage"
             >
+              {mode === 'user' && (
+                <button
+                  type="button"
+                  onClick={() => setScreen('home')}
+                  className={`w-full sm:w-auto px-4 py-2 rounded-lg font-medium text-sm sm:text-base transition-all hv-button ${
+                    screen === 'home'
+                      ? 'bg-indigo-600 text-white hv-button-primary'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                  aria-pressed={screen === 'home'}
+                  aria-label="Retourner à l'accueil des projets"
+                >
+                  Accueil projets
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => setMode('user')}
@@ -336,17 +441,24 @@ export const App = () => {
 
       <main id="main-content" tabIndex="-1" className="focus:outline-none hv-background">
         {mode === 'user' ? (
-          screen === 'questionnaire' ? (
-      <QuestionnaireScreen
-        questions={activeQuestions}
-        currentIndex={currentQuestionIndex}
-        answers={answers}
-        onAnswer={handleAnswer}
-        onNext={handleNext}
-        onBack={handleBack}
-        allQuestions={questions}
-        validationError={validationError}
-      />
+          screen === 'home' ? (
+            <HomeScreen
+              submittedProjects={submittedProjects}
+              onStartNewProject={handleCreateNewProject}
+              onOpenProject={handleOpenProject}
+              onDeleteProject={handleDeleteProject}
+            />
+          ) : screen === 'questionnaire' ? (
+            <QuestionnaireScreen
+              questions={activeQuestions}
+              currentIndex={currentQuestionIndex}
+              answers={answers}
+              onAnswer={handleAnswer}
+              onNext={handleNext}
+              onBack={handleBack}
+              allQuestions={questions}
+              validationError={validationError}
+            />
           ) : (
             <SynthesisReport
               answers={answers}
@@ -356,6 +468,8 @@ export const App = () => {
               onRestart={handleRestart}
               onBack={handleBackToQuestionnaire}
               onUpdateAnswers={handleUpdateAnswers}
+              onSubmitProject={handleSubmitProject}
+              isExistingProject={Boolean(activeProjectId)}
             />
           )
         ) : (

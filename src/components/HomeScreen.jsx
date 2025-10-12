@@ -1,0 +1,224 @@
+import React, { useMemo } from '../react.js';
+import { Plus, Target, Rocket, Compass, FileText, Users, Calendar, CheckCircle, Eye, Trash2, AlertTriangle } from './icons.js';
+
+const formatDate = (isoDate) => {
+  if (!isoDate) {
+    return 'Date inconnue';
+  }
+
+  try {
+    return new Date(isoDate).toLocaleString('fr-FR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  } catch (error) {
+    return 'Date inconnue';
+  }
+};
+
+const complexityColors = {
+  Faible: 'text-green-600',
+  Modérée: 'text-yellow-600',
+  Élevée: 'text-red-600'
+};
+
+export const HomeScreen = ({ submittedProjects = [], onStartNewProject, onOpenProject, onDeleteProject }) => {
+  const hasProjects = submittedProjects.length > 0;
+
+  const sortedProjects = useMemo(() => {
+    return [...submittedProjects].sort((a, b) => {
+      const dateA = a.submittedAt ? new Date(a.submittedAt).getTime() : 0;
+      const dateB = b.submittedAt ? new Date(b.submittedAt).getTime() : 0;
+      return dateB - dateA;
+    });
+  }, [submittedProjects]);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50 px-4 py-8 sm:px-8 hv-background">
+      <div className="max-w-6xl mx-auto space-y-12">
+        <header className="bg-white border border-indigo-100 rounded-3xl shadow-xl p-6 sm:p-10 hv-surface" role="banner">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div className="space-y-4">
+              <span className="inline-flex items-center px-3 py-1 text-sm font-semibold text-indigo-700 bg-indigo-100 rounded-full border border-indigo-200">
+                <Target className="w-4 h-4 mr-2" /> Votre copilote compliance
+              </span>
+              <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight">
+                Anticipez les besoins compliance de vos projets en quelques minutes
+              </h1>
+              <p className="text-lg text-gray-600 leading-relaxed max-w-2xl">
+                Compliance Advisor vous guide pas à pas pour qualifier votre initiative, identifier les interlocuteurs à mobiliser et sécuriser vos délais réglementaires.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3" role="group" aria-label="Actions principales">
+                <button
+                  type="button"
+                  onClick={onStartNewProject}
+                  className="inline-flex items-center justify-center px-5 py-3 text-base font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-md transition-all hv-button hv-button-primary"
+                >
+                  <Plus className="w-5 h-5 mr-2" />
+                  Créer un nouveau projet
+                </button>
+                {hasProjects && (
+                  <button
+                    type="button"
+                    onClick={() => onOpenProject(sortedProjects[0]?.id)}
+                    className="inline-flex items-center justify-center px-5 py-3 text-base font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-xl border border-indigo-200 transition-all hv-button hv-focus-ring"
+                  >
+                    <Eye className="w-5 h-5 mr-2" />
+                    Reprendre le dernier projet
+                  </button>
+                )}
+              </div>
+            </div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 text-sm text-gray-600">
+              <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-4 hv-surface" role="listitem">
+                <p className="font-semibold text-gray-800 flex items-center">
+                  <Rocket className="w-5 h-5 mr-2" /> Démarrez simplement
+                </p>
+                <p className="mt-2 leading-relaxed">
+                  Un questionnaire dynamique pour cadrer votre projet et qualifier les impacts compliance.
+                </p>
+              </div>
+              <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 hv-surface" role="listitem">
+                <p className="font-semibold text-gray-800 flex items-center">
+                  <Compass className="w-5 h-5 mr-2" /> Visualisez la feuille de route
+                </p>
+                <p className="mt-2 leading-relaxed">
+                  Une synthèse claire avec le niveau de complexité, les équipes à mobiliser et les délais recommandés.
+                </p>
+              </div>
+              <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-4 hv-surface" role="listitem">
+                <p className="font-semibold text-gray-800 flex items-center">
+                  <Users className="w-5 h-5 mr-2" /> Collaborez efficacement
+                </p>
+                <p className="mt-2 leading-relaxed">
+                  Partagez la synthèse avec les parties prenantes pour sécuriser vos points de passage.
+                </p>
+              </div>
+              <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 hv-surface" role="listitem">
+                <p className="font-semibold text-gray-800 flex items-center">
+                  <Calendar className="w-5 h-5 mr-2" /> Gardez une trace
+                </p>
+                <p className="mt-2 leading-relaxed">
+                  Retrouvez à tout moment les projets déjà soumis et mettez-les à jour si nécessaire.
+                </p>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <section aria-labelledby="projects-heading" className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 id="projects-heading" className="text-2xl font-bold text-gray-900">
+                Vos projets soumis
+              </h2>
+              <p className="text-sm text-gray-600">
+                Accédez aux synthèses précédemment enregistrées et reprenez-les à tout moment.
+              </p>
+            </div>
+            <span className="inline-flex items-center text-sm font-semibold text-indigo-600 bg-indigo-50 border border-indigo-200 rounded-full px-3 py-1">
+              <CheckCircle className="w-4 h-4 mr-2" /> {submittedProjects.length} projet{submittedProjects.length > 1 ? 's' : ''}
+            </span>
+          </div>
+
+          {!hasProjects && (
+            <div className="bg-white border border-dashed border-indigo-200 rounded-3xl p-8 text-center text-gray-600 hv-surface" role="status" aria-live="polite">
+              <p className="text-lg font-medium text-gray-800">Aucun projet enregistré pour le moment.</p>
+              <p className="mt-2">Lancez-vous dès maintenant pour préparer votre première synthèse compliance.</p>
+              <button
+                type="button"
+                onClick={onStartNewProject}
+                className="mt-4 inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-semibold transition-all hv-button hv-button-primary"
+              >
+                <Plus className="w-4 h-4 mr-2" /> Créer un projet
+              </button>
+            </div>
+          )}
+
+          {hasProjects && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6" role="list">
+              {sortedProjects.map(project => {
+                const complexity = project.analysis?.complexity;
+                const teamsCount = project.analysis?.relevantTeams?.length ?? 0;
+                const risksCount = project.analysis?.risks?.length ?? 0;
+
+                return (
+                  <article
+                    key={project.id}
+                    className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all hv-surface"
+                    role="listitem"
+                    aria-label={`Projet ${project.projectName || 'sans nom'}`}
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <h3 className="text-xl font-semibold text-gray-900">{project.projectName || 'Projet sans nom'}</h3>
+                        <p className="text-sm text-gray-500 mt-1">Dernière mise à jour : {formatDate(project.submittedAt)}</p>
+                      </div>
+                      {complexity && (
+                        <span className={`px-3 py-1 text-xs font-semibold rounded-full border hv-badge ${complexityColors[complexity] || 'text-indigo-600'}`}>
+                          {complexity}
+                        </span>
+                      )}
+                    </div>
+
+                    <dl className="mt-4 grid grid-cols-1 gap-3 text-sm text-gray-600">
+                      <div className="flex items-center gap-2">
+                        <FileText className="w-4 h-4" />
+                        <span className="font-medium text-gray-700">{Object.keys(project.answers || {}).length} réponse{Object.keys(project.answers || {}).length > 1 ? 's' : ''}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Users className="w-4 h-4" />
+                        <span>{teamsCount} équipe{teamsCount > 1 ? 's' : ''} recommandée{teamsCount > 1 ? 's' : ''}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <AlertTriangle className="w-4 h-4" />
+                        <span>{risksCount} risque{risksCount > 1 ? 's' : ''} identifié{risksCount > 1 ? 's' : ''}</span>
+                      </div>
+                    </dl>
+
+                    <div className="mt-6 flex flex-wrap gap-3">
+                      <button
+                        type="button"
+                        onClick={() => onOpenProject(project.id)}
+                        className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-all hv-button hv-button-primary"
+                      >
+                        <Eye className="w-4 h-4 mr-2" /> Consulter la synthèse
+                      </button>
+                      <button
+                        type="button"
+                        onClick={onStartNewProject}
+                        className="inline-flex items-center px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-all hv-button hv-focus-ring"
+                      >
+                        <Plus className="w-4 h-4 mr-2" /> Nouveau projet
+                      </button>
+                      {onDeleteProject && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (typeof window !== 'undefined') {
+                              const confirmation = window.confirm('Supprimer ce projet enregistré ?');
+                              if (!confirmation) {
+                                return;
+                              }
+                            }
+                            onDeleteProject(project.id);
+                          }}
+                          className="inline-flex items-center px-4 py-2 bg-red-50 border border-red-200 text-red-600 rounded-lg font-semibold hover:bg-red-100 transition-all hv-button"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" /> Supprimer
+                        </button>
+                      )}
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          )}
+        </section>
+      </div>
+    </div>
+  );
+};
