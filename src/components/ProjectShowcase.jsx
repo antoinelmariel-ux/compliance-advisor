@@ -41,6 +41,29 @@ const getRawAnswer = (answers, id) => {
 
 const hasText = (value) => typeof value === 'string' && value.trim().length > 0;
 
+const SHOWCASE_THEME_STORAGE_KEY = 'compliance-advisor.showcase-theme';
+
+const SHOWCASE_THEMES = [
+  {
+    id: 'aurora',
+    label: 'Aurora néon',
+    shortLabel: 'Aurora',
+    description: 'Jeux de lumières et ambiance futuriste pour un rendu premium.',
+  },
+  {
+    id: 'minimal',
+    label: 'Nordique minimal',
+    shortLabel: 'Minimal',
+    description: 'Palette claire et structurée idéale pour les documents institutionnels.',
+  },
+  {
+    id: 'sunset',
+    label: 'Sunset impact',
+    shortLabel: 'Sunset',
+    description: 'Dégradés chauds et contrastés pour un storytelling percutant.',
+  },
+];
+
 const SHOWCASE_FIELD_CONFIG = [
   { id: 'projectName', fallbackLabel: 'Nom du projet', fallbackType: 'text' },
   { id: 'projectSlogan', fallbackLabel: 'Slogan ou promesse', fallbackType: 'text' },
@@ -362,6 +385,50 @@ export const ProjectShowcase = ({
     [questions]
   );
 
+  const [selectedTheme, setSelectedTheme] = useState(() => {
+    const fallbackTheme = SHOWCASE_THEMES[0]?.id || 'aurora';
+
+    if (typeof window === 'undefined' || typeof window.localStorage === 'undefined') {
+      return fallbackTheme;
+    }
+
+    try {
+      const storedTheme = window.localStorage.getItem(SHOWCASE_THEME_STORAGE_KEY);
+      if (typeof storedTheme === 'string' && SHOWCASE_THEMES.some(theme => theme.id === storedTheme)) {
+        return storedTheme;
+      }
+    } catch (error) {
+      // Ignore storage errors (quota, privacy mode, etc.) and fall back to the default theme.
+    }
+
+    return fallbackTheme;
+  });
+
+  const activeTheme = useMemo(
+    () => SHOWCASE_THEMES.find(theme => theme.id === selectedTheme) || SHOWCASE_THEMES[0],
+    [selectedTheme]
+  );
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.localStorage === 'undefined') {
+      return;
+    }
+
+    try {
+      window.localStorage.setItem(SHOWCASE_THEME_STORAGE_KEY, selectedTheme);
+    } catch (error) {
+      // Silently ignore storage issues.
+    }
+  }, [selectedTheme]);
+
+  const handleThemeChange = useCallback((nextThemeId) => {
+    if (!SHOWCASE_THEMES.some(theme => theme.id === nextThemeId)) {
+      return;
+    }
+
+    setSelectedTheme(nextThemeId);
+  }, []);
+
   const [isEditing, setIsEditing] = useState(false);
   const [draftValues, setDraftValues] = useState(() =>
     buildDraftValues(editableFields, answers, rawProjectName)
@@ -571,32 +638,74 @@ export const ProjectShowcase = ({
   const showcaseCard = (
     <div
       data-showcase-card
+      data-showcase-theme={selectedTheme}
       className="relative w-full overflow-hidden rounded-[42px] border border-white/10 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100"
       style={{ boxShadow: neoPanelShadow }}
       onMouseMove={handleParallaxMove}
       onMouseLeave={handleParallaxLeave}
     >
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden" data-showcase-overlay>
         <div
           className="absolute -top-48 -left-32 h-80 w-80 rounded-full bg-indigo-500/20 blur-3xl transition-transform duration-300 ease-out"
           style={parallaxLayers.far}
           aria-hidden="true"
+          data-showcase-layer="glow-far"
         />
         <div
           className="absolute -bottom-40 -right-24 h-96 w-96 rounded-full bg-sky-500/25 blur-[120px] transition-transform duration-500 ease-out"
           style={parallaxLayers.mid}
           aria-hidden="true"
+          data-showcase-layer="glow-mid"
         />
         <div
           className="absolute top-1/2 left-1/2 h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/10 bg-white/5 backdrop-blur-xl transition-transform duration-300 ease-out"
           style={parallaxLayers.near}
           aria-hidden="true"
+          data-showcase-layer="glow-near"
         />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.12),_transparent_60%)]" aria-hidden="true" />
+        <div
+          className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.12),_transparent_60%)]"
+          aria-hidden="true"
+          data-showcase-layer="glow-overlay"
+        />
       </div>
 
       <div className="relative px-6 pt-10 pb-16 sm:px-14 sm:pt-16 sm:pb-20">
+        <div
+          data-showcase-theme-switcher
+          className="mb-8 flex flex-col gap-4 rounded-[28px] border border-white/10 bg-white/5 p-4 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <div className="max-w-xl text-xs text-slate-200/80">
+            <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80">Style de présentation</p>
+            {activeTheme?.description && (
+              <p className="mt-2 text-[0.7rem] leading-relaxed text-slate-300/80">{activeTheme.description}</p>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {SHOWCASE_THEMES.map(theme => {
+              const isActiveTheme = theme.id === selectedTheme;
+              return (
+                <button
+                  key={theme.id}
+                  type="button"
+                  onClick={() => handleThemeChange(theme.id)}
+                  className={`inline-flex items-center justify-center rounded-full border px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.3em] transition focus:outline-none focus:ring-2 focus:ring-indigo-400/40 ${
+                    isActiveTheme
+                      ? 'border-white/20 bg-white/15 text-white shadow-lg shadow-indigo-500/30'
+                      : 'border-white/10 bg-transparent text-slate-200/80 hover:bg-white/10'
+                  }`}
+                  aria-pressed={isActiveTheme}
+                  title={theme.description}
+                >
+                  {theme.shortLabel}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         <header
+          data-showcase-section="hero"
           className="rounded-[32px] border border-white/10 bg-white/5 p-8 sm:p-12 backdrop-blur-xl"
           style={{ boxShadow: '20px 20px 60px rgba(2, 6, 23, 0.45), -18px -18px 50px rgba(148, 163, 184, 0.12)' }}
         >
@@ -767,6 +876,7 @@ export const ProjectShowcase = ({
                   {heroHighlights.map(highlight => (
                     <div
                       key={highlight.id}
+                      data-showcase-element="hero-highlight"
                       className="rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-200 backdrop-blur-xl"
                       style={{ boxShadow: neoCardShadow }}
                     >
@@ -784,6 +894,7 @@ export const ProjectShowcase = ({
             </header>
 
             <section
+              data-showcase-section="problem"
               className="mt-14 rounded-[32px] border border-white/10 bg-white/5 p-8 sm:p-12 text-slate-100 backdrop-blur-xl"
               style={{ boxShadow: neoCardShadow }}
             >
@@ -800,6 +911,7 @@ export const ProjectShowcase = ({
                 </div>
                 {hasText(problemTestimonial) && (
                   <aside
+                    data-showcase-aside="testimonial"
                     className="rounded-3xl border border-white/10 bg-gradient-to-br from-indigo-500/20 via-transparent to-sky-500/10 p-6 text-sm leading-relaxed text-slate-200 backdrop-blur-xl"
                     style={{ boxShadow: neoCardShadow }}
                   >
@@ -811,6 +923,7 @@ export const ProjectShowcase = ({
             </section>
 
             <section
+              data-showcase-section="solution"
               className="mt-14 rounded-[32px] border border-white/10 bg-gradient-to-br from-indigo-500/30 via-transparent to-sky-500/30 p-[1px]"
               style={{ boxShadow: neoCardShadow }}
             >
@@ -825,6 +938,7 @@ export const ProjectShowcase = ({
                 <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2">
                   {hasText(solutionDescription) && (
                     <div
+                      data-showcase-element="solution-card"
                       className="rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-200 backdrop-blur-xl"
                       style={{ boxShadow: neoCardShadow }}
                     >
@@ -836,6 +950,7 @@ export const ProjectShowcase = ({
                   )}
                   {solutionBenefits.length > 0 && (
                     <div
+                      data-showcase-element="solution-card"
                       className="rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-200 backdrop-blur-xl"
                       style={{ boxShadow: neoCardShadow }}
                     >
@@ -845,6 +960,7 @@ export const ProjectShowcase = ({
                   )}
                   {hasText(solutionExperience) && (
                     <div
+                      data-showcase-element="solution-card"
                       className="rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-200 backdrop-blur-xl"
                       style={{ boxShadow: neoCardShadow }}
                     >
@@ -856,6 +972,7 @@ export const ProjectShowcase = ({
                   )}
                   {hasText(solutionComparison) && (
                     <div
+                      data-showcase-element="solution-card"
                       className="rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-200 backdrop-blur-xl"
                       style={{ boxShadow: neoCardShadow }}
                     >
@@ -870,6 +987,7 @@ export const ProjectShowcase = ({
             </section>
 
             <section
+              data-showcase-section="innovation"
               className="mt-14 rounded-[32px] border border-white/10 bg-white/5 p-8 sm:p-12 text-slate-100 backdrop-blur-xl"
               style={{ boxShadow: neoCardShadow }}
             >
@@ -885,6 +1003,7 @@ export const ProjectShowcase = ({
                 </div>
                 {hasText(innovationProcess) && (
                   <div
+                    data-showcase-element="innovation-card"
                     className="rounded-3xl border border-white/10 bg-white/5 p-6 text-sm leading-relaxed text-slate-200 backdrop-blur-xl"
                     style={{ boxShadow: neoCardShadow }}
                   >
@@ -896,6 +1015,7 @@ export const ProjectShowcase = ({
             </section>
 
             <section
+              data-showcase-section="evidence"
               className="mt-14 rounded-[32px] border border-white/10 bg-white/5 p-8 sm:p-12 text-slate-100 backdrop-blur-xl"
               style={{ boxShadow: neoCardShadow }}
             >
@@ -907,6 +1027,7 @@ export const ProjectShowcase = ({
                     <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
                       {hasText(marketSize) && (
                         <div
+                          data-showcase-element="metric-card"
                           className="rounded-3xl border border-white/10 bg-white/5 p-5 text-sm text-slate-200 backdrop-blur-xl"
                           style={{ boxShadow: neoCardShadow }}
                         >
@@ -917,6 +1038,7 @@ export const ProjectShowcase = ({
                       )}
                       {timelineSummary && (
                         <div
+                          data-showcase-element="metric-card"
                           className="rounded-3xl border border-white/10 bg-white/5 p-5 text-sm text-slate-200 backdrop-blur-xl"
                           style={{ boxShadow: neoCardShadow }}
                         >
@@ -928,6 +1050,7 @@ export const ProjectShowcase = ({
                         </div>
                       )}
                       <div
+                        data-showcase-element="metric-card"
                         className="rounded-3xl border border-white/10 bg-white/5 p-5 text-sm text-slate-200 backdrop-blur-xl"
                         style={{ boxShadow: neoCardShadow }}
                       >
@@ -939,6 +1062,7 @@ export const ProjectShowcase = ({
                   </div>
                   {tractionSignals.length > 0 && (
                     <div
+                      data-showcase-element="traction-card"
                       className="rounded-3xl border border-white/10 bg-gradient-to-br from-sky-500/20 via-transparent to-indigo-500/20 p-6 text-slate-100 backdrop-blur-xl"
                       style={{ boxShadow: neoCardShadow }}
                     >
@@ -948,6 +1072,7 @@ export const ProjectShowcase = ({
                   )}
                   {hasText(visionStatement) && (
                     <div
+                      data-showcase-element="vision-card"
                       className="rounded-3xl border border-white/10 bg-white/5 p-6 text-slate-200 backdrop-blur-xl"
                       style={{ boxShadow: neoCardShadow }}
                     >
@@ -958,6 +1083,7 @@ export const ProjectShowcase = ({
                 </div>
                 {primaryRisk && (
                   <aside
+                    data-showcase-aside="risk"
                     className="max-w-sm rounded-3xl border border-amber-400/30 bg-gradient-to-br from-amber-500/20 via-amber-500/10 to-amber-300/10 p-6 text-sm leading-relaxed text-amber-100 backdrop-blur-xl"
                     style={{ boxShadow: neoCardShadow }}
                   >
@@ -972,6 +1098,7 @@ export const ProjectShowcase = ({
             </section>
 
             <section
+              data-showcase-section="team"
               className="mt-14 rounded-[32px] border border-white/10 bg-white/5 p-8 sm:p-12 text-slate-100 backdrop-blur-xl"
               style={{ boxShadow: neoCardShadow }}
             >
@@ -1012,6 +1139,7 @@ export const ProjectShowcase = ({
                 </div>
                 {normalizedTeams.length > 0 && (
                   <aside
+                    data-showcase-aside="teams"
                     className="max-w-sm rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-100 backdrop-blur-xl"
                     style={{ boxShadow: neoCardShadow }}
                   >
@@ -1034,6 +1162,7 @@ export const ProjectShowcase = ({
 
             {(runway || timelineSummary) && (
               <section
+                data-showcase-section="timeline"
                 className="mt-14 rounded-[32px] border border-white/10 bg-gradient-to-br from-indigo-500/25 via-transparent to-sky-500/25 p-8 sm:p-12 text-slate-100 backdrop-blur-xl"
                 style={{ boxShadow: neoCardShadow }}
               >
@@ -1053,6 +1182,7 @@ export const ProjectShowcase = ({
                   <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
                     {timelineSummary.profiles.map(profile => (
                       <div
+                        data-showcase-element="timeline-profile"
                         key={profile.id}
                         className="rounded-3xl border border-white/10 bg-white/5 p-5 text-sm text-slate-200 backdrop-blur-xl"
                         style={{ boxShadow: neoCardShadow }}
@@ -1075,6 +1205,7 @@ export const ProjectShowcase = ({
     return (
       <div
         data-showcase-scope
+        data-showcase-theme={selectedTheme}
         className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 py-12 px-4 sm:px-8"
       >
         <div className="mx-auto w-full">{showcaseCard}</div>
@@ -1086,6 +1217,7 @@ export const ProjectShowcase = ({
     <div
       ref={renderInStandalone ? undefined : overlayRef}
       data-showcase-scope
+      data-showcase-theme={selectedTheme}
       className="fixed inset-0 z-50 flex flex-col items-center justify-start overflow-y-auto bg-slate-950/80 backdrop-blur pt-10 pb-16 sm:pt-16 sm:pb-20"
       role="dialog"
       aria-modal="true"
