@@ -1068,7 +1068,7 @@ export const ProjectShowcase = ({
   return (
     <div
       data-showcase-scope
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-950/80 backdrop-blur pt-10 pb-16 sm:items-center sm:pt-0"
+      className="fixed inset-0 z-50 flex flex-col items-center justify-start overflow-y-auto bg-slate-950/80 backdrop-blur pt-10 pb-16 sm:justify-center sm:pt-16 sm:pb-20"
       role="dialog"
       aria-modal="true"
       aria-label="Vitrine marketing du projet"
@@ -1080,7 +1080,7 @@ export const ProjectShowcase = ({
         onClick={onClose}
       />
 
-      <div className="relative w-full max-w-6xl px-4 py-10 sm:px-8">{showcaseCard}</div>
+      <div className="relative w-full max-w-6xl px-4 py-10 sm:px-8 sm:py-12">{showcaseCard}</div>
     </div>
   );
 };
