@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from '../react.js';
 import {
-  Sparkles,
   Target,
   Rocket,
   Users,
@@ -711,10 +710,6 @@ export const ProjectShowcase = ({
         >
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
             <div className="max-w-3xl">
-              <p className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-5 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.5em] text-indigo-200">
-                <Sparkles className="mr-2 h-4 w-4" />
-                Project hero page
-              </p>
               <h2
                 className="mt-6 text-5xl font-black leading-tight sm:text-6xl sm:leading-[1.05]"
                 style={heroTitleStyle}
@@ -733,36 +728,6 @@ export const ProjectShowcase = ({
               )}
             </div>
             <div className="flex flex-wrap items-center gap-3 self-start lg:self-auto">
-              {canEdit && (
-                isEditing ? (
-                  <>
-                    <button
-                      type="button"
-                      onClick={handleCancelEditing}
-                      className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/10 px-5 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-slate-200 transition hover:bg-white/20"
-                    >
-                      Annuler l'édition
-                    </button>
-                    <button
-                      type="submit"
-                      form={formId}
-                      className="inline-flex items-center justify-center rounded-full border border-indigo-400/60 bg-gradient-to-r from-indigo-500 via-sky-500 to-cyan-400 px-5 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-white shadow-lg shadow-indigo-500/30 transition hover:brightness-110"
-                    >
-                      <CheckCircle className="mr-2 h-4 w-4" />
-                      Enregistrer
-                    </button>
-                  </>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={handleStartEditing}
-                    className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/10 px-5 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200 transition hover:bg-white/20"
-                  >
-                    <Edit className="mr-2 h-4 w-4" />
-                    Modifier le contenu
-                  </button>
-                )
-              )}
               <button
                 type="button"
                 onClick={onClose}
@@ -1196,7 +1161,40 @@ export const ProjectShowcase = ({
                   </div>
                 )}
               </section>
-          )}
+            )}
+
+            {canEdit && (
+              <div className="mt-16 flex flex-col items-center justify-center gap-3 sm:flex-row sm:justify-end">
+                {isEditing ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={handleCancelEditing}
+                      className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/10 px-5 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-slate-200 transition hover:bg-white/20"
+                    >
+                      Annuler l'édition
+                    </button>
+                    <button
+                      type="submit"
+                      form={formId}
+                      className="inline-flex items-center justify-center rounded-full border border-indigo-400/60 bg-gradient-to-r from-indigo-500 via-sky-500 to-cyan-400 px-5 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-white shadow-lg shadow-indigo-500/30 transition hover:brightness-110"
+                    >
+                      <CheckCircle className="mr-2 h-4 w-4" />
+                      Enregistrer
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleStartEditing}
+                    className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/10 px-5 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200 transition hover:bg-white/20"
+                  >
+                    <Edit className="mr-2 h-4 w-4" />
+                    Modifier le contenu
+                  </button>
+                )}
+              </div>
+            )}
         </div>
       </div>
   );
