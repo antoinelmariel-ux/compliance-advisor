@@ -12,6 +12,7 @@ import { loadPersistedState, persistState } from './utils/storage.js';
 import { shouldShowQuestion } from './utils/questions.js';
 import { analyzeAnswers } from './utils/rules.js';
 import { extractProjectName } from './utils/projects.js';
+import { createDemoProject } from './data/demoProject.js';
 
 const isAnswerProvided = (value) => {
   if (Array.isArray(value)) {
@@ -25,13 +26,90 @@ const isAnswerProvided = (value) => {
   return value !== null && value !== undefined;
 };
 
+const normalizeProjectEntry = (project = {}, fallbackQuestionsLength = initialQuestions.length) => {
+  const answers = typeof project.answers === 'object' && project.answers !== null ? project.answers : {};
+  const computedTotalQuestions =
+    typeof project.totalQuestions === 'number' && project.totalQuestions > 0
+      ? project.totalQuestions
+      : fallbackQuestionsLength > 0
+        ? fallbackQuestionsLength
+        : Object.keys(answers).length;
+
+  const answeredQuestionsCount =
+    typeof project.answeredQuestions === 'number'
+      ? project.answeredQuestions
+      : Object.keys(answers).length;
+
+  let lastQuestionIndex =
+    typeof project.lastQuestionIndex === 'number'
+      ? project.lastQuestionIndex
+      : computedTotalQuestions > 0
+        ? computedTotalQuestions - 1
+        : 0;
+
+  if (computedTotalQuestions > 0) {
+    lastQuestionIndex = Math.min(Math.max(lastQuestionIndex, 0), computedTotalQuestions - 1);
+  }
+
+  const lastUpdated = project.lastUpdated || project.submittedAt || null;
+  const submittedAt = project.submittedAt || project.lastUpdated || null;
+
+  return {
+    status: 'submitted',
+    ...project,
+    status: project.status || 'submitted',
+    lastUpdated,
+    submittedAt,
+    totalQuestions: computedTotalQuestions,
+    answeredQuestions: Math.min(answeredQuestionsCount, computedTotalQuestions || answeredQuestionsCount),
+    lastQuestionIndex
+  };
+};
+
+const normalizeProjectsCollection = (projects, fallbackQuestionsLength = initialQuestions.length) => {
+  if (!Array.isArray(projects)) {
+    return null;
+  }
+
+  return projects.map(project => normalizeProjectEntry(project, fallbackQuestionsLength));
+};
+
+const resolveFallbackQuestionsLength = (savedState, currentQuestionsLength = initialQuestions.length) => {
+  if (savedState && Array.isArray(savedState.questions) && savedState.questions.length > 0) {
+    return savedState.questions.length;
+  }
+
+  return currentQuestionsLength;
+};
+
+const buildInitialProjectsState = () => {
+  const savedState = loadPersistedState();
+
+  if (!savedState) {
+    return [createDemoProject()];
+  }
+
+  const fallbackQuestions = Array.isArray(savedState.questions) ? savedState.questions : initialQuestions;
+  const fallbackRules = Array.isArray(savedState.rules) ? savedState.rules : initialRules;
+  const fallbackQuestionsLength = resolveFallbackQuestionsLength(savedState, fallbackQuestions.length);
+
+  const normalizedProjects = normalizeProjectsCollection(savedState.projects, fallbackQuestionsLength)
+    || normalizeProjectsCollection(savedState.submittedProjects, fallbackQuestionsLength);
+
+  if (normalizedProjects && normalizedProjects.length > 0) {
+    return normalizedProjects;
+  }
+
+  return [createDemoProject({ questions: fallbackQuestions, rules: fallbackRules })];
+};
+
 export const App = () => {
   const [mode, setMode] = useState('user');
   const [screen, setScreen] = useState('home');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [analysis, setAnalysis] = useState(null);
-  const [projects, setProjects] = useState([]);
+  const [projects, setProjects] = useState(buildInitialProjectsState);
   const [activeProjectId, setActiveProjectId] = useState(null);
   const [isHighVisibility, setIsHighVisibility] = useState(false);
   const [validationError, setValidationError] = useState(null);
@@ -49,6 +127,10 @@ export const App = () => {
       return;
     }
 
+    const fallbackQuestions = Array.isArray(savedState.questions) ? savedState.questions : questions;
+    const fallbackRules = Array.isArray(savedState.rules) ? savedState.rules : rules;
+    const fallbackQuestionsLength = resolveFallbackQuestionsLength(savedState, fallbackQuestions.length);
+
     if (savedState.mode) setMode(savedState.mode);
     if (savedState.screen) setScreen(savedState.screen);
     if (typeof savedState.currentQuestionIndex === 'number' && savedState.currentQuestionIndex >= 0) {
@@ -57,31 +139,19 @@ export const App = () => {
     if (savedState.answers && typeof savedState.answers === 'object') setAnswers(savedState.answers);
     if (typeof savedState.analysis !== 'undefined') setAnalysis(savedState.analysis);
     if (Array.isArray(savedState.projects)) {
-      setProjects(savedState.projects.map(project => ({
-        status: 'submitted',
-        ...project,
-        status: project.status || 'submitted',
-        answeredQuestions:
-          typeof project.answeredQuestions === 'number'
-            ? project.answeredQuestions
-            : Object.keys(project.answers || {}).length
-      })));
+      const normalized = normalizeProjectsCollection(savedState.projects, fallbackQuestionsLength);
+      if (normalized && normalized.length > 0) {
+        setProjects(normalized);
+      } else {
+        setProjects([createDemoProject({ questions: fallbackQuestions, rules: fallbackRules })]);
+      }
     } else if (Array.isArray(savedState.submittedProjects)) {
-      setProjects(
-        savedState.submittedProjects.map(project => ({
-          ...project,
-          status: project.status || 'submitted',
-          lastUpdated: project.lastUpdated || project.submittedAt || null,
-          lastQuestionIndex:
-            typeof project.lastQuestionIndex === 'number' ? project.lastQuestionIndex : 0,
-          totalQuestions:
-            typeof project.totalQuestions === 'number' ? project.totalQuestions : questions.length,
-          answeredQuestions:
-            typeof project.answeredQuestions === 'number'
-              ? project.answeredQuestions
-              : Object.keys(project.answers || {}).length
-        }))
-      );
+      const normalized = normalizeProjectsCollection(savedState.submittedProjects, fallbackQuestionsLength);
+      if (normalized && normalized.length > 0) {
+        setProjects(normalized);
+      } else {
+        setProjects([createDemoProject({ questions: fallbackQuestions, rules: fallbackRules })]);
+      }
     }
     if (typeof savedState.activeProjectId === 'string') setActiveProjectId(savedState.activeProjectId);
     if (Array.isArray(savedState.questions)) setQuestions(savedState.questions);
