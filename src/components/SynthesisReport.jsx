@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from '../react.js';
 import { ReactDOM } from '../react.js';
-import { FileText, Calendar, Users, AlertTriangle, Send, Sparkles } from './icons.js';
+import { FileText, Calendar, Users, AlertTriangle, Send, Sparkles, CheckCircle } from './icons.js';
 import { formatAnswer } from '../utils/questions.js';
 import { renderTextWithLinks } from '../utils/linkify.js';
 import { ProjectShowcase } from './ProjectShowcase.jsx';
@@ -547,7 +547,17 @@ const buildMailtoLink = ({ projectName, relevantTeams, emailHtml }) => {
   return `${prefix}?${paramString}`;
 };
 
-export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart, onBack, onUpdateAnswers }) => {
+export const SynthesisReport = ({
+  answers,
+  analysis,
+  teams,
+  questions,
+  onRestart,
+  onBack,
+  onUpdateAnswers,
+  onSubmitProject,
+  isExistingProject
+}) => {
   const [isShowcaseFallbackOpen, setIsShowcaseFallbackOpen] = useState(false);
   const showcaseWindowRef = useRef(null);
   const relevantTeams = teams.filter(team => (analysis?.teams || []).includes(team.id));
@@ -731,6 +741,20 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
     closeShowcaseWindow();
   }, [closeShowcaseWindow]);
 
+  const handleSaveProject = useCallback(() => {
+    if (!onSubmitProject) {
+      return;
+    }
+
+    onSubmitProject({
+      projectName,
+      answers,
+      analysis,
+      relevantTeams,
+      timelineDetails
+    });
+  }, [analysis, answers, onSubmitProject, projectName, relevantTeams, timelineDetails]);
+
   const handleSubmitByEmail = () => {
     const emailHtml = buildEmailHtml({
       projectName,
@@ -762,6 +786,16 @@ export const SynthesisReport = ({ answers, analysis, teams, questions, onRestart
                   className="px-4 py-2 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg font-medium text-gray-700 transition-all hv-button hv-focus-ring w-full sm:w-auto justify-center text-sm sm:text-base"
                 >
                   Retour au questionnaire
+                </button>
+              )}
+              {onSubmitProject && (
+                <button
+                  type="button"
+                  onClick={handleSaveProject}
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium transition-all flex items-center justify-center hv-button hv-button-primary w-full sm:w-auto text-sm sm:text-base"
+                >
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  {isExistingProject ? 'Mettre à jour le projet' : 'Enregistrer le projet'}
                 </button>
               )}
               <button
