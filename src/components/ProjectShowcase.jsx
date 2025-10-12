@@ -1086,7 +1086,7 @@ export const ProjectShowcase = ({
     <div
       ref={renderInStandalone ? undefined : overlayRef}
       data-showcase-scope
-      className="fixed inset-0 z-50 flex flex-col items-center justify-start overflow-y-auto bg-slate-950/80 backdrop-blur pt-10 pb-16 sm:justify-center sm:pt-16 sm:pb-20"
+      className="fixed inset-0 z-50 flex flex-col items-center justify-start overflow-y-auto bg-slate-950/80 backdrop-blur pt-10 pb-16 sm:pt-16 sm:pb-20"
       role="dialog"
       aria-modal="true"
       aria-label="Vitrine marketing du projet"
