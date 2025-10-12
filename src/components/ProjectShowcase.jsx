@@ -571,7 +571,7 @@ export const ProjectShowcase = ({
   const showcaseCard = (
     <div
       data-showcase-card
-      className="relative overflow-hidden rounded-[42px] border border-white/10 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100"
+      className="relative w-full overflow-hidden rounded-[42px] border border-white/10 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100"
       style={{ boxShadow: neoPanelShadow }}
       onMouseMove={handleParallaxMove}
       onMouseLeave={handleParallaxLeave}
@@ -1077,7 +1077,7 @@ export const ProjectShowcase = ({
         data-showcase-scope
         className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 py-12 px-4 sm:px-8"
       >
-        <div className="mx-auto w-full max-w-6xl">{showcaseCard}</div>
+        <div className="mx-auto w-full">{showcaseCard}</div>
       </div>
     );
   }
@@ -1098,7 +1098,7 @@ export const ProjectShowcase = ({
         onClick={onClose}
       />
 
-      <div className="relative w-full max-w-6xl px-4 py-10 sm:px-8 sm:py-12">{showcaseCard}</div>
+      <div className="relative w-full px-4 py-10 sm:px-8 sm:py-12">{showcaseCard}</div>
     </div>
   );
 };
