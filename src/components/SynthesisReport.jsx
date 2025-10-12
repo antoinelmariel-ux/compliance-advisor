@@ -530,9 +530,18 @@ export const SynthesisReport = ({
 
   const scrollShowcaseIntoView = useCallback(() => {
     const node = showcaseFallbackRef.current;
-    if (node && typeof node.scrollIntoView === 'function') {
-      node.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      return;
+
+    if (node) {
+      const overlayNode = node.querySelector('[data-showcase-scope]');
+      if (overlayNode && typeof overlayNode.scrollTo === 'function') {
+        overlayNode.scrollTo({ top: 0 });
+        return;
+      }
+
+      if (typeof node.scrollIntoView === 'function') {
+        node.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
     }
 
     if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') {

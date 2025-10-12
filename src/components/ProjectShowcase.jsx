@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from '../react.js';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from '../react.js';
 import {
   Sparkles,
   Target,
@@ -346,6 +346,8 @@ export const ProjectShowcase = ({
   renderInStandalone = false,
   onUpdateAnswers
 }) => {
+  const overlayRef = useRef(null);
+  const closeButtonRef = useRef(null);
   const rawProjectName = typeof projectName === 'string' ? projectName.trim() : '';
   const safeProjectName = rawProjectName.length > 0 ? rawProjectName : 'Votre projet';
   const normalizedTeams = Array.isArray(relevantTeams) ? relevantTeams : [];
@@ -548,6 +550,20 @@ export const ProjectShowcase = ({
     };
   }, [onClose, renderInStandalone]);
 
+  useEffect(() => {
+    if (renderInStandalone) {
+      return;
+    }
+
+    if (overlayRef.current) {
+      overlayRef.current.scrollTop = 0;
+    }
+
+    if (closeButtonRef.current && typeof closeButtonRef.current.focus === 'function') {
+      closeButtonRef.current.focus();
+    }
+  }, [renderInStandalone]);
+
   const neoPanelShadow = '35px 35px 80px rgba(2, 6, 23, 0.65), -25px -25px 70px rgba(148, 163, 184, 0.12)';
   const neoCardShadow = '18px 18px 45px rgba(15, 23, 42, 0.55), -18px -18px 45px rgba(148, 163, 184, 0.12)';
   const neoInsetShadow = 'inset 8px 8px 16px rgba(15, 23, 42, 0.45), inset -8px -8px 16px rgba(148, 163, 184, 0.15)';
@@ -638,14 +654,15 @@ export const ProjectShowcase = ({
                   </button>
                 )
               )}
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/10 p-3 text-slate-200 transition hover:bg-white/20"
-                  aria-label="Fermer la vitrine du projet"
-                >
-                  <Close className="h-4 w-4" />
-                </button>
+              <button
+                type="button"
+                onClick={onClose}
+                className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/10 p-3 text-slate-200 transition hover:bg-white/20"
+                aria-label="Fermer la vitrine du projet"
+                ref={renderInStandalone ? undefined : closeButtonRef}
+              >
+                <Close className="h-4 w-4" />
+              </button>
               </div>
             </div>
 
@@ -1067,6 +1084,7 @@ export const ProjectShowcase = ({
 
   return (
     <div
+      ref={renderInStandalone ? undefined : overlayRef}
       data-showcase-scope
       className="fixed inset-0 z-50 flex flex-col items-center justify-start overflow-y-auto bg-slate-950/80 backdrop-blur pt-10 pb-16 sm:justify-center sm:pt-16 sm:pb-20"
       role="dialog"
