@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from '../react.js';
-import { Settings, Plus, Edit, Trash2, Eye, Info, GripVertical } from './icons.js';
+import { Settings, Plus, Edit, Trash2, Eye, Info, GripVertical, Download } from './icons.js';
 import { QuestionEditor } from './QuestionEditor.jsx';
 import { RuleEditor } from './RuleEditor.jsx';
 import { renderTextWithLinks } from '../utils/linkify.js';
@@ -322,6 +322,30 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
     return candidate;
   };
 
+  const downloadDataModule = (filename, exportName, data) => {
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      return;
+    }
+
+    const serialized = JSON.stringify(data, null, 2);
+    const moduleContent = `export const ${exportName} = ${serialized};\n`;
+    const blob = new Blob([moduleContent], { type: 'application/javascript;charset=utf-8' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  };
+
+  const handleDownloadDataFiles = () => {
+    downloadDataModule('questions.js', 'initialQuestions', questions);
+    downloadDataModule('rules.js', 'initialRules', rules);
+    downloadDataModule('teams.js', 'initialTeams', teams);
+  };
+
   const tabDefinitions = [
     {
       id: 'questions',
@@ -464,6 +488,16 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
                 <h1 className="text-2xl font-bold text-gray-800 sm:text-3xl">Back-Office Compliance</h1>
                 <p className="text-sm text-gray-500">Configurez vos référentiels et automatisations</p>
               </div>
+            </div>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-2 w-full lg:w-auto">
+              <button
+                type="button"
+                onClick={handleDownloadDataFiles}
+                className="inline-flex items-center justify-center px-4 py-2 bg-white border border-indigo-200 text-indigo-700 rounded-lg shadow-sm hover:bg-indigo-50 hv-button hv-focus-ring text-sm sm:text-base"
+              >
+                <Download className="w-5 h-5 mr-2" />
+                Télécharger les fichiers (questions, règles, équipes)
+              </button>
             </div>
           </header>
 
