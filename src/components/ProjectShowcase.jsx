@@ -244,7 +244,8 @@ export const ProjectShowcase = ({
   relevantTeams,
   questions,
   answers,
-  timelineDetails
+  timelineDetails,
+  renderInStandalone = false
 }) => {
   const safeProjectName = hasText(projectName) ? projectName.trim() : 'Votre projet';
   const normalizedTeams = Array.isArray(relevantTeams) ? relevantTeams : [];
@@ -308,7 +309,7 @@ export const ProjectShowcase = ({
   }, [missingShowcaseQuestions]);
 
   useEffect(() => {
-    if (typeof document === 'undefined') {
+    if (renderInStandalone || typeof document === 'undefined') {
       return undefined;
     }
 
@@ -323,24 +324,10 @@ export const ProjectShowcase = ({
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [onClose]);
+  }, [onClose, renderInStandalone]);
 
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-gray-900/70 pt-10 pb-16 sm:items-center sm:pt-0"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Vitrine marketing du projet"
-    >
-      <button
-        type="button"
-        className="absolute inset-0"
-        aria-label="Fermer la vitrine"
-        onClick={onClose}
-      />
-
-      <div className="relative w-full max-w-6xl px-4 py-10 sm:px-8">
-        <div className="relative overflow-hidden rounded-3xl border border-white/40 bg-white shadow-2xl">
+  const showcaseCard = (
+    <div className="relative overflow-hidden rounded-3xl border border-white/40 bg-white shadow-2xl">
           <div
             className="absolute -top-40 -right-24 h-72 w-72 rounded-full bg-indigo-200/70"
             style={{ filter: 'blur(90px)' }}
@@ -620,6 +607,32 @@ export const ProjectShowcase = ({
           </div>
         </div>
       </div>
+    </div>
+  );
+
+  if (renderInStandalone) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-100 py-12 px-4 sm:px-8">
+        <div className="mx-auto w-full max-w-6xl">{showcaseCard}</div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-gray-900/70 pt-10 pb-16 sm:items-center sm:pt-0"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Vitrine marketing du projet"
+    >
+      <button
+        type="button"
+        className="absolute inset-0"
+        aria-label="Fermer la vitrine"
+        onClick={onClose}
+      />
+
+      <div className="relative w-full max-w-6xl px-4 py-10 sm:px-8">{showcaseCard}</div>
     </div>
   );
 };
