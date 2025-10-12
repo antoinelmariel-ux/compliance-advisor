@@ -14,6 +14,8 @@ import { analyzeAnswers } from './utils/rules.js';
 import { extractProjectName } from './utils/projects.js';
 import { createDemoProject } from './data/demoProject.js';
 
+const APP_VERSION = 'v1.0.0';
+
 const isAnswerProvided = (value) => {
   if (Array.isArray(value)) {
     return value.length > 0;
@@ -761,6 +763,12 @@ export const App = () => {
           />
         )}
       </main>
+
+      <footer className="bg-white border-t border-gray-200 mt-10" aria-label="Pied de page">
+        <p className="text-xs text-gray-400 text-center py-4">
+          Compliance Advisor · Version {APP_VERSION}
+        </p>
+      </footer>
     </div>
   );
 };
