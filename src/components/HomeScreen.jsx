@@ -1,5 +1,19 @@
 import React, { useMemo } from '../react.js';
-import { Plus, Target, Rocket, Compass, FileText, Users, Calendar, CheckCircle, Eye, Trash2, AlertTriangle } from './icons.js';
+import {
+  Plus,
+  Target,
+  Rocket,
+  Compass,
+  FileText,
+  Users,
+  Calendar,
+  CheckCircle,
+  Eye,
+  Trash2,
+  AlertTriangle,
+  Edit,
+  Save
+} from './icons.js';
 
 const formatDate = (isoDate) => {
   if (!isoDate) {
@@ -25,16 +39,42 @@ const complexityColors = {
   Élevée: 'text-red-600'
 };
 
-export const HomeScreen = ({ submittedProjects = [], onStartNewProject, onOpenProject, onDeleteProject }) => {
-  const hasProjects = submittedProjects.length > 0;
+const statusStyles = {
+  draft: {
+    label: 'Brouillon en cours',
+    className: 'bg-amber-50 border-amber-200 text-amber-600'
+  },
+  submitted: {
+    label: 'Synthèse finalisée',
+    className: 'bg-emerald-50 border-emerald-200 text-emerald-600'
+  }
+};
+
+const computeProgress = (project) => {
+  if (!project || typeof project.totalQuestions !== 'number' || project.totalQuestions <= 0) {
+    return null;
+  }
+
+  const answeredCountRaw =
+    typeof project.answeredQuestions === 'number'
+      ? project.answeredQuestions
+      : Math.max((project.lastQuestionIndex ?? 0) + 1, 0);
+
+  const answeredCount = Math.min(answeredCountRaw, project.totalQuestions);
+
+  return Math.round((answeredCount / project.totalQuestions) * 100);
+};
+
+export const HomeScreen = ({ projects = [], onStartNewProject, onOpenProject, onDeleteProject }) => {
+  const hasProjects = projects.length > 0;
 
   const sortedProjects = useMemo(() => {
-    return [...submittedProjects].sort((a, b) => {
-      const dateA = a.submittedAt ? new Date(a.submittedAt).getTime() : 0;
-      const dateB = b.submittedAt ? new Date(b.submittedAt).getTime() : 0;
+    return [...projects].sort((a, b) => {
+      const dateA = a.lastUpdated ? new Date(a.lastUpdated).getTime() : a.submittedAt ? new Date(a.submittedAt).getTime() : 0;
+      const dateB = b.lastUpdated ? new Date(b.lastUpdated).getTime() : b.submittedAt ? new Date(b.submittedAt).getTime() : 0;
       return dateB - dateA;
     });
-  }, [submittedProjects]);
+  }, [projects]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50 px-4 py-8 sm:px-8 hv-background">
@@ -113,14 +153,14 @@ export const HomeScreen = ({ submittedProjects = [], onStartNewProject, onOpenPr
           <div className="flex items-center justify-between">
             <div>
               <h2 id="projects-heading" className="text-2xl font-bold text-gray-900">
-                Vos projets soumis
+                Vos projets enregistrés
               </h2>
               <p className="text-sm text-gray-600">
-                Accédez aux synthèses précédemment enregistrées et reprenez-les à tout moment.
+                Accédez aux brouillons et aux synthèses finalisées pour les reprendre à tout moment.
               </p>
             </div>
             <span className="inline-flex items-center text-sm font-semibold text-indigo-600 bg-indigo-50 border border-indigo-200 rounded-full px-3 py-1">
-              <CheckCircle className="w-4 h-4 mr-2" /> {submittedProjects.length} projet{submittedProjects.length > 1 ? 's' : ''}
+              <CheckCircle className="w-4 h-4 mr-2" /> {projects.length} projet{projects.length > 1 ? 's' : ''}
             </span>
           </div>
 
@@ -144,6 +184,9 @@ export const HomeScreen = ({ submittedProjects = [], onStartNewProject, onOpenPr
                 const complexity = project.analysis?.complexity;
                 const teamsCount = project.analysis?.relevantTeams?.length ?? 0;
                 const risksCount = project.analysis?.risks?.length ?? 0;
+                const projectStatus = statusStyles[project.status] || statusStyles.submitted;
+                const progress = computeProgress(project);
+                const isDraft = project.status === 'draft';
 
                 return (
                   <article
@@ -155,13 +198,22 @@ export const HomeScreen = ({ submittedProjects = [], onStartNewProject, onOpenPr
                     <div className="flex items-start justify-between gap-4">
                       <div>
                         <h3 className="text-xl font-semibold text-gray-900">{project.projectName || 'Projet sans nom'}</h3>
-                        <p className="text-sm text-gray-500 mt-1">Dernière mise à jour : {formatDate(project.submittedAt)}</p>
+                        <p className="text-sm text-gray-500 mt-1">
+                          Dernière mise à jour : {formatDate(project.lastUpdated || project.submittedAt)}
+                        </p>
                       </div>
-                      {complexity && (
-                        <span className={`px-3 py-1 text-xs font-semibold rounded-full border hv-badge ${complexityColors[complexity] || 'text-indigo-600'}`}>
-                          {complexity}
+                      <div className="flex flex-col items-end gap-2">
+                        <span
+                          className={`px-3 py-1 text-xs font-semibold rounded-full border hv-badge ${projectStatus.className}`.trim()}
+                        >
+                          {projectStatus.label}
                         </span>
-                      )}
+                        {complexity && (
+                          <span className={`px-3 py-1 text-xs font-semibold rounded-full border hv-badge ${complexityColors[complexity] || 'text-indigo-600'}`}>
+                            {complexity}
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     <dl className="mt-4 grid grid-cols-1 gap-3 text-sm text-gray-600">
@@ -169,6 +221,12 @@ export const HomeScreen = ({ submittedProjects = [], onStartNewProject, onOpenPr
                         <FileText className="w-4 h-4" />
                         <span className="font-medium text-gray-700">{Object.keys(project.answers || {}).length} réponse{Object.keys(project.answers || {}).length > 1 ? 's' : ''}</span>
                       </div>
+                      {progress !== null && (
+                        <div className="flex items-center gap-2">
+                          <Save className="w-4 h-4" />
+                          <span>{progress}% du questionnaire complété</span>
+                        </div>
+                      )}
                       <div className="flex items-center gap-2">
                         <Users className="w-4 h-4" />
                         <span>{teamsCount} équipe{teamsCount > 1 ? 's' : ''} recommandée{teamsCount > 1 ? 's' : ''}</span>
@@ -183,9 +241,14 @@ export const HomeScreen = ({ submittedProjects = [], onStartNewProject, onOpenPr
                       <button
                         type="button"
                         onClick={() => onOpenProject(project.id)}
-                        className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-all hv-button hv-button-primary"
+                        className={`inline-flex items-center px-4 py-2 rounded-lg font-semibold transition-all hv-button ${
+                          isDraft
+                            ? 'bg-amber-500 text-white hover:bg-amber-600'
+                            : 'bg-indigo-600 text-white hover:bg-indigo-700 hv-button-primary'
+                        }`}
                       >
-                        <Eye className="w-4 h-4 mr-2" /> Consulter la synthèse
+                        {isDraft ? <Edit className="w-4 h-4 mr-2" /> : <Eye className="w-4 h-4 mr-2" />}
+                        {isDraft ? 'Continuer le questionnaire' : 'Consulter la synthèse'}
                       </button>
                       <button
                         type="button"

@@ -10,6 +10,7 @@ import { initialTeams } from './data/teams.js';
 import { loadPersistedState, persistState } from './utils/storage.js';
 import { shouldShowQuestion } from './utils/questions.js';
 import { analyzeAnswers } from './utils/rules.js';
+import { extractProjectName } from './utils/projects.js';
 
 export const App = () => {
   const [mode, setMode] = useState('user');
@@ -17,7 +18,7 @@ export const App = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [analysis, setAnalysis] = useState(null);
-  const [submittedProjects, setSubmittedProjects] = useState([]);
+  const [projects, setProjects] = useState([]);
   const [activeProjectId, setActiveProjectId] = useState(null);
   const [isHighVisibility, setIsHighVisibility] = useState(false);
   const [validationError, setValidationError] = useState(null);
@@ -42,7 +43,33 @@ export const App = () => {
     }
     if (savedState.answers && typeof savedState.answers === 'object') setAnswers(savedState.answers);
     if (typeof savedState.analysis !== 'undefined') setAnalysis(savedState.analysis);
-    if (Array.isArray(savedState.submittedProjects)) setSubmittedProjects(savedState.submittedProjects);
+    if (Array.isArray(savedState.projects)) {
+      setProjects(savedState.projects.map(project => ({
+        status: 'submitted',
+        ...project,
+        status: project.status || 'submitted',
+        answeredQuestions:
+          typeof project.answeredQuestions === 'number'
+            ? project.answeredQuestions
+            : Object.keys(project.answers || {}).length
+      })));
+    } else if (Array.isArray(savedState.submittedProjects)) {
+      setProjects(
+        savedState.submittedProjects.map(project => ({
+          ...project,
+          status: project.status || 'submitted',
+          lastUpdated: project.lastUpdated || project.submittedAt || null,
+          lastQuestionIndex:
+            typeof project.lastQuestionIndex === 'number' ? project.lastQuestionIndex : 0,
+          totalQuestions:
+            typeof project.totalQuestions === 'number' ? project.totalQuestions : questions.length,
+          answeredQuestions:
+            typeof project.answeredQuestions === 'number'
+              ? project.answeredQuestions
+              : Object.keys(project.answers || {}).length
+        }))
+      );
+    }
     if (typeof savedState.activeProjectId === 'string') setActiveProjectId(savedState.activeProjectId);
     if (Array.isArray(savedState.questions)) setQuestions(savedState.questions);
     if (Array.isArray(savedState.rules)) setRules(savedState.rules);
@@ -79,7 +106,7 @@ export const App = () => {
         rules,
         teams,
         isHighVisibility,
-        submittedProjects,
+        projects,
         activeProjectId
       });
       persistTimeoutRef.current = null;
@@ -101,7 +128,7 @@ export const App = () => {
     rules,
     teams,
     isHighVisibility,
-    submittedProjects,
+    projects,
     activeProjectId,
     isHydrated
   ]);
@@ -290,60 +317,136 @@ export const App = () => {
       return;
     }
 
-    const project = submittedProjects.find(item => item.id === projectId);
+    const project = projects.find(item => item.id === projectId);
     if (!project) {
       return;
     }
 
-    setAnswers(project.answers || {});
-    setAnalysis(project.analysis || null);
-    setCurrentQuestionIndex(0);
+    const projectAnswers = project.answers || {};
+    const derivedQuestions = questions.filter(q => shouldShowQuestion(q, projectAnswers));
+    const derivedAnalysis = project.analysis || (Object.keys(projectAnswers).length > 0 ? analyzeAnswers(projectAnswers, rules) : null);
+    const totalQuestions = derivedQuestions.length;
+    const rawIndex = typeof project.lastQuestionIndex === 'number' ? project.lastQuestionIndex : 0;
+    const sanitizedIndex = totalQuestions > 0 ? Math.min(Math.max(rawIndex, 0), totalQuestions - 1) : 0;
+
+    setAnswers(projectAnswers);
+    setAnalysis(derivedAnalysis);
+    setCurrentQuestionIndex(project.status === 'draft' ? sanitizedIndex : 0);
     setValidationError(null);
     setActiveProjectId(project.id);
-    setScreen('synthesis');
-  }, [submittedProjects]);
+    setScreen(project.status === 'draft' ? 'questionnaire' : 'synthesis');
+  }, [projects, questions, rules]);
 
   const handleDeleteProject = useCallback((projectId) => {
     if (!projectId) {
       return;
     }
 
-    setSubmittedProjects(prevProjects => prevProjects.filter(project => project.id !== projectId));
+    setProjects(prevProjects => prevProjects.filter(project => project.id !== projectId));
     setActiveProjectId(prev => (prev === projectId ? null : prev));
   }, []);
 
-  const handleSubmitProject = useCallback((payload = {}) => {
-    const projectNameRaw = payload.projectName || '';
-    const sanitizedName =
-      typeof projectNameRaw === 'string' && projectNameRaw.trim().length > 0
-        ? projectNameRaw.trim()
-        : 'Projet sans nom';
+  const upsertProject = useCallback((entry) => {
+    return prevProjects => {
+      if (!entry || !entry.id) {
+        return prevProjects;
+      }
 
-    const nextAnswers = payload.answers && typeof payload.answers === 'object' ? payload.answers : answers;
-    const nextAnalysis = payload.analysis && typeof payload.analysis === 'object' ? payload.analysis : analysis;
+      const filtered = prevProjects.filter(project => project.id !== entry.id);
+      return [entry, ...filtered];
+    };
+  }, []);
 
-    if (!nextAnalysis) {
-      return;
+  const handleSaveProject = useCallback((payload = {}) => {
+    const baseAnswers = payload.answers && typeof payload.answers === 'object' ? payload.answers : answers;
+    const sanitizedAnswers = baseAnswers || {};
+    const status = payload.status === 'submitted' ? 'submitted' : 'draft';
+    const projectId = activeProjectId || payload.id || `project-${Date.now()}`;
+    const relevantQuestions = questions.filter(question => shouldShowQuestion(question, sanitizedAnswers));
+    const computedTotalQuestions = payload.totalQuestions
+      || (relevantQuestions.length > 0 ? relevantQuestions.length : activeQuestions.length);
+    const totalQuestions = computedTotalQuestions > 0 ? computedTotalQuestions : activeQuestions.length;
+    const answeredQuestionsCount = relevantQuestions.length > 0
+      ? relevantQuestions.filter(question => {
+        const value = sanitizedAnswers[question.id];
+        if (Array.isArray(value)) {
+          return value.length > 0;
+        }
+        if (typeof value === 'string') {
+          return value.trim().length > 0;
+        }
+        return value !== null && value !== undefined;
+      }).length
+      : Object.keys(sanitizedAnswers).length;
+    const now = new Date().toISOString();
+
+    let computedAnalysis = null;
+    if (payload.analysis && typeof payload.analysis === 'object') {
+      computedAnalysis = payload.analysis;
+    } else if (Object.keys(sanitizedAnswers).length > 0) {
+      computedAnalysis = analyzeAnswers(sanitizedAnswers, rules);
     }
 
-    const projectId = activeProjectId || payload.id || `project-${Date.now()}`;
+    if (status === 'submitted' && !computedAnalysis) {
+      return null;
+    }
 
-    const projectEntry = {
+    const inferredName = extractProjectName(sanitizedAnswers, questions);
+    const projectNameRaw = typeof payload.projectName === 'string' ? payload.projectName : inferredName;
+    const sanitizedName =
+      projectNameRaw && projectNameRaw.trim().length > 0 ? projectNameRaw.trim() : 'Projet sans nom';
+
+    let lastQuestionIndex =
+      typeof payload.lastQuestionIndex === 'number' ? payload.lastQuestionIndex : currentQuestionIndex;
+    if (status === 'submitted' && totalQuestions > 0) {
+      lastQuestionIndex = totalQuestions - 1;
+    }
+
+    const clampedLastIndex = totalQuestions > 0
+      ? Math.min(Math.max(lastQuestionIndex, 0), totalQuestions - 1)
+      : 0;
+
+    const entry = {
       id: projectId,
       projectName: sanitizedName,
-      answers: nextAnswers,
-      analysis: nextAnalysis,
-      submittedAt: new Date().toISOString()
+      answers: sanitizedAnswers,
+      analysis: computedAnalysis,
+      status,
+      lastUpdated: now,
+      lastQuestionIndex: clampedLastIndex,
+      totalQuestions,
+      answeredQuestions: Math.min(answeredQuestionsCount, totalQuestions || answeredQuestionsCount)
     };
 
-    setSubmittedProjects(prevProjects => {
-      const filtered = prevProjects.filter(project => project.id !== projectId);
-      return [projectEntry, ...filtered];
-    });
+    if (status === 'submitted') {
+      entry.submittedAt = now;
+    }
 
+    setProjects(upsertProject(entry));
     setActiveProjectId(projectId);
-    setScreen('home');
-  }, [activeProjectId, answers, analysis]);
+
+    if (computedAnalysis) {
+      setAnalysis(computedAnalysis);
+    }
+
+    return entry;
+  }, [activeProjectId, activeQuestions.length, answers, currentQuestionIndex, questions, rules, shouldShowQuestion, upsertProject]);
+
+  const handleSubmitProject = useCallback((payload = {}) => {
+    const entry = handleSaveProject({ ...payload, status: 'submitted' });
+    if (entry) {
+      setValidationError(null);
+      setScreen('home');
+    }
+  }, [handleSaveProject]);
+
+  const handleSaveDraft = useCallback(() => {
+    const entry = handleSaveProject({ status: 'draft', lastQuestionIndex: currentQuestionIndex });
+    if (entry) {
+      setValidationError(null);
+      setScreen('home');
+    }
+  }, [currentQuestionIndex, handleSaveProject]);
 
   const handleToggleHighVisibility = useCallback(() => {
     setIsHighVisibility(prev => !prev);
@@ -443,7 +546,7 @@ export const App = () => {
         {mode === 'user' ? (
           screen === 'home' ? (
             <HomeScreen
-              submittedProjects={submittedProjects}
+              projects={projects}
               onStartNewProject={handleCreateNewProject}
               onOpenProject={handleOpenProject}
               onDeleteProject={handleDeleteProject}
@@ -457,6 +560,7 @@ export const App = () => {
               onNext={handleNext}
               onBack={handleBack}
               allQuestions={questions}
+              onSaveDraft={handleSaveDraft}
               validationError={validationError}
             />
           ) : (
