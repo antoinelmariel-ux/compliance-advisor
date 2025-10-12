@@ -637,89 +637,87 @@ export const ProjectShowcase = ({
                   </button>
                 )
               )}
-              <button
-                type="button"
-                onClick={onClose}
-                className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/10 p-3 text-slate-200 transition hover:bg-white/20"
-                aria-label="Fermer la vitrine du projet"
-              >
-                <Close className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
-                </div>
-              </div>
-
-              {isEditing && canEdit && (
-                <form
-                  id={formId}
-                  onSubmit={handleSubmitEdit}
-                  className="mt-10 space-y-6 rounded-[28px] border border-white/15 bg-slate-900/60 p-6 sm:p-8 text-slate-100 backdrop-blur-xl"
-                  style={{ boxShadow: neoCardShadow }}
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/10 p-3 text-slate-200 transition hover:bg-white/20"
+                  aria-label="Fermer la vitrine du projet"
                 >
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200">Mode édition actif</p>
-                      <h3 className="mt-1 text-lg font-semibold text-white">Ajustez les informations présentées dans la vitrine</h3>
-                    </div>
-                    <p className="text-xs text-slate-300/80 sm:max-w-xs">
-                      Chaque modification sera appliquée aux réponses du questionnaire correspondant.
-                    </p>
+                  <Close className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            {isEditing && canEdit && (
+              <form
+                id={formId}
+                onSubmit={handleSubmitEdit}
+                className="mt-10 space-y-6 rounded-[28px] border border-white/15 bg-slate-900/60 p-6 sm:p-8 text-slate-100 backdrop-blur-xl"
+                style={{ boxShadow: neoCardShadow }}
+              >
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200">Mode édition actif</p>
+                    <h3 className="mt-1 text-lg font-semibold text-white">Ajustez les informations présentées dans la vitrine</h3>
                   </div>
+                  <p className="text-xs text-slate-300/80 sm:max-w-xs">
+                    Chaque modification sera appliquée aux réponses du questionnaire correspondant.
+                  </p>
+                </div>
 
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    {editableFields.map(field => {
-                      const fieldId = field.id;
-                      const question = field.question;
-                      const type = question?.type || field.fallbackType || 'text';
-                      const label = question?.question || field.fallbackLabel || fieldId;
-                      const value = draftValues[fieldId] ?? '';
-                      const isLong = type === 'long_text';
-                      const isMulti = type === 'multi_choice';
-                      const isDate = type === 'date';
-                      const helperText = isMulti
-                        ? 'Indiquez une audience par ligne.'
-                        : ['problemPainPoints', 'solutionBenefits', 'tractionSignals', 'teamCoreMembers', 'teamValues'].includes(fieldId)
-                          ? 'Utilisez une ligne par élément pour une meilleure mise en forme.'
-                          : null;
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  {editableFields.map(field => {
+                    const fieldId = field.id;
+                    const question = field.question;
+                    const type = question?.type || field.fallbackType || 'text';
+                    const label = question?.question || field.fallbackLabel || fieldId;
+                    const value = draftValues[fieldId] ?? '';
+                    const isLong = type === 'long_text';
+                    const isMulti = type === 'multi_choice';
+                    const isDate = type === 'date';
+                    const helperText = isMulti
+                      ? 'Indiquez une audience par ligne.'
+                      : ['problemPainPoints', 'solutionBenefits', 'tractionSignals', 'teamCoreMembers', 'teamValues'].includes(fieldId)
+                        ? 'Utilisez une ligne par élément pour une meilleure mise en forme.'
+                        : null;
 
-                      return (
-                        <div key={fieldId} className={`${isLong || isMulti ? 'sm:col-span-2' : ''}`}>
-                          <label
-                            htmlFor={`showcase-edit-${fieldId}`}
-                            className="block text-[0.65rem] font-semibold uppercase tracking-[0.4em] text-indigo-200/80"
-                          >
-                            {label}
-                          </label>
-                          {isDate ? (
-                            <input
-                              id={`showcase-edit-${fieldId}`}
-                              type="date"
-                              value={value}
-                              onChange={event => handleFieldChange(fieldId, event.target.value)}
-                              className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-400/40"
-                              style={{ boxShadow: neoInsetShadow }}
-                            />
-                          ) : isLong || isMulti ? (
-                            <textarea
-                              id={`showcase-edit-${fieldId}`}
-                              value={value}
-                              onChange={event => handleFieldChange(fieldId, event.target.value)}
-                              rows={isMulti ? 4 : 5}
-                              className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-400/40"
-                              style={{ boxShadow: neoInsetShadow }}
-                            />
-                          ) : (
-                            <input
-                              id={`showcase-edit-${fieldId}`}
-                              type="text"
-                              value={value}
-                              onChange={event => handleFieldChange(fieldId, event.target.value)}
-                              className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-400/40"
-                              style={{ boxShadow: neoInsetShadow }}
-                            />
-                          )}
-                          {helperText && (
+                    return (
+                      <div key={fieldId} className={`${isLong || isMulti ? 'sm:col-span-2' : ''}`}>
+                        <label
+                          htmlFor={`showcase-edit-${fieldId}`}
+                          className="block text-[0.65rem] font-semibold uppercase tracking-[0.4em] text-indigo-200/80"
+                        >
+                          {label}
+                        </label>
+                        {isDate ? (
+                          <input
+                            id={`showcase-edit-${fieldId}`}
+                            type="date"
+                            value={value}
+                            onChange={event => handleFieldChange(fieldId, event.target.value)}
+                            className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-400/40"
+                            style={{ boxShadow: neoInsetShadow }}
+                          />
+                        ) : isLong || isMulti ? (
+                          <textarea
+                            id={`showcase-edit-${fieldId}`}
+                            value={value}
+                            onChange={event => handleFieldChange(fieldId, event.target.value)}
+                            rows={isMulti ? 4 : 5}
+                            className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-400/40"
+                            style={{ boxShadow: neoInsetShadow }}
+                          />
+                        ) : (
+                          <input
+                            id={`showcase-edit-${fieldId}`}
+                            type="text"
+                            value={value}
+                            onChange={event => handleFieldChange(fieldId, event.target.value)}
+                            className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-400/40"
+                            style={{ boxShadow: neoInsetShadow }}
+                          />
+                        )}
+                        {helperText && (
                             <p className="mt-2 text-xs text-slate-400">{helperText}</p>
                           )}
                         </div>
@@ -1050,11 +1048,9 @@ export const ProjectShowcase = ({
                   </div>
                 )}
               </section>
-            )}
-          </div>
+          )}
         </div>
       </div>
-    </div>
   );
 
   if (renderInStandalone) {
