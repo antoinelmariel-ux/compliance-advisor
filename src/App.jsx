@@ -4,6 +4,7 @@ import { SynthesisReport } from './components/SynthesisReport.jsx';
 import { HomeScreen } from './components/HomeScreen.jsx';
 import { BackOffice } from './components/BackOffice.jsx';
 import { CheckCircle } from './components/icons.js';
+import { MandatoryQuestionsSummary } from './components/MandatoryQuestionsSummary.jsx';
 import { initialQuestions } from './data/questions.js';
 import { initialRules } from './data/rules.js';
 import { initialTeams } from './data/teams.js';
@@ -11,6 +12,18 @@ import { loadPersistedState, persistState } from './utils/storage.js';
 import { shouldShowQuestion } from './utils/questions.js';
 import { analyzeAnswers } from './utils/rules.js';
 import { extractProjectName } from './utils/projects.js';
+
+const isAnswerProvided = (value) => {
+  if (Array.isArray(value)) {
+    return value.length > 0;
+  }
+
+  if (typeof value === 'string') {
+    return value.trim().length > 0;
+  }
+
+  return value !== null && value !== undefined;
+};
 
 export const App = () => {
   const [mode, setMode] = useState('user');
@@ -149,6 +162,21 @@ export const App = () => {
     [questions, answers]
   );
 
+  const unansweredMandatoryQuestions = useMemo(
+    () =>
+      activeQuestions.filter(question => question.required && !isAnswerProvided(answers[question.id])),
+    [activeQuestions, answers]
+  );
+
+  const pendingMandatoryQuestions = useMemo(
+    () =>
+      unansweredMandatoryQuestions.map(question => ({
+        question,
+        position: activeQuestions.findIndex(item => item.id === question.id) + 1
+      })),
+    [unansweredMandatoryQuestions, activeQuestions]
+  );
+
   useEffect(() => {
     if (!isHydrated) return;
     if (activeQuestions.length === 0) return;
@@ -156,6 +184,25 @@ export const App = () => {
       setCurrentQuestionIndex(activeQuestions.length - 1);
     }
   }, [activeQuestions.length, currentQuestionIndex, isHydrated]);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+    if (screen !== 'synthesis') return;
+    if (unansweredMandatoryQuestions.length === 0) return;
+
+    const firstMissingId = unansweredMandatoryQuestions[0].id;
+    const targetIndex = activeQuestions.findIndex(question => question.id === firstMissingId);
+    if (targetIndex >= 0) {
+      setCurrentQuestionIndex(targetIndex);
+    }
+    setValidationError(null);
+    setScreen('mandatory-summary');
+  }, [
+    screen,
+    unansweredMandatoryQuestions,
+    activeQuestions,
+    isHydrated
+  ]);
 
   const handleAnswer = useCallback((questionId, answer) => {
     setAnswers(prevAnswers => {
@@ -275,30 +322,34 @@ export const App = () => {
   }, [resetProjectState]);
 
   const handleNext = useCallback(() => {
-    const currentQuestion = activeQuestions[currentQuestionIndex];
-    if (currentQuestion?.required) {
-      const answer = answers[currentQuestion.id];
-      const isAnswerProvided = Array.isArray(answer) ? answer.length > 0 : !!answer;
-
-      if (!isAnswerProvided) {
-        setValidationError({
-          questionId: currentQuestion.id,
-          message: 'Veuillez répondre à cette question obligatoire avant de poursuivre.'
-        });
-        return;
-      }
-    }
-
-    setValidationError(null);
-
     if (currentQuestionIndex < activeQuestions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
-    } else {
-      const result = analyzeAnswers(answers, rules);
-      setAnalysis(result);
-      setScreen('synthesis');
+      setValidationError(null);
+      return;
     }
-  }, [activeQuestions, currentQuestionIndex, answers, rules]);
+
+    const firstMissingId = unansweredMandatoryQuestions[0]?.id;
+    if (firstMissingId) {
+      const targetIndex = activeQuestions.findIndex(question => question.id === firstMissingId);
+      if (targetIndex >= 0) {
+        setCurrentQuestionIndex(targetIndex);
+      }
+      setValidationError(null);
+      setScreen('mandatory-summary');
+      return;
+    }
+
+    const result = analyzeAnswers(answers, rules);
+    setAnalysis(result);
+    setValidationError(null);
+    setScreen('synthesis');
+  }, [
+    activeQuestions,
+    currentQuestionIndex,
+    unansweredMandatoryQuestions,
+    answers,
+    rules
+  ]);
 
   const handleBack = useCallback(() => {
     if (currentQuestionIndex > 0) {
@@ -324,17 +375,34 @@ export const App = () => {
 
     const projectAnswers = project.answers || {};
     const derivedQuestions = questions.filter(q => shouldShowQuestion(q, projectAnswers));
-    const derivedAnalysis = project.analysis || (Object.keys(projectAnswers).length > 0 ? analyzeAnswers(projectAnswers, rules) : null);
+    const derivedAnalysis = project.analysis
+      || (Object.keys(projectAnswers).length > 0 ? analyzeAnswers(projectAnswers, rules) : null);
+    const missingMandatory = derivedQuestions.filter(question => question.required && !isAnswerProvided(projectAnswers[question.id]));
     const totalQuestions = derivedQuestions.length;
     const rawIndex = typeof project.lastQuestionIndex === 'number' ? project.lastQuestionIndex : 0;
     const sanitizedIndex = totalQuestions > 0 ? Math.min(Math.max(rawIndex, 0), totalQuestions - 1) : 0;
+    const firstMissingId = missingMandatory[0]?.id;
+    const missingIndex = firstMissingId
+      ? derivedQuestions.findIndex(question => question.id === firstMissingId)
+      : -1;
+    const startingIndex = missingIndex >= 0 ? missingIndex : project.status === 'draft' ? sanitizedIndex : 0;
 
     setAnswers(projectAnswers);
     setAnalysis(derivedAnalysis);
-    setCurrentQuestionIndex(project.status === 'draft' ? sanitizedIndex : 0);
+    setCurrentQuestionIndex(startingIndex);
     setValidationError(null);
     setActiveProjectId(project.id);
-    setScreen(project.status === 'draft' ? 'questionnaire' : 'synthesis');
+
+    if (project.status === 'draft') {
+      setScreen('questionnaire');
+      return;
+    }
+
+    if (missingMandatory.length > 0) {
+      setScreen('mandatory-summary');
+    } else {
+      setScreen('synthesis');
+    }
   }, [projects, questions, rules]);
 
   const handleDeleteProject = useCallback((projectId) => {
@@ -453,7 +521,13 @@ export const App = () => {
   }, []);
 
   const handleBackToQuestionnaire = useCallback(() => {
-    if (activeQuestions.length > 0) {
+    if (unansweredMandatoryQuestions.length > 0) {
+      const firstMissingId = unansweredMandatoryQuestions[0].id;
+      const targetIndex = activeQuestions.findIndex(question => question.id === firstMissingId);
+      if (targetIndex >= 0) {
+        setCurrentQuestionIndex(targetIndex);
+      }
+    } else if (activeQuestions.length > 0) {
       const lastIndex = activeQuestions.length - 1;
       setCurrentQuestionIndex(prevIndex => {
         if (prevIndex > lastIndex) {
@@ -462,8 +536,30 @@ export const App = () => {
         return prevIndex;
       });
     }
+    setValidationError(null);
+    setScreen('questionnaire');
+  }, [activeQuestions, unansweredMandatoryQuestions]);
+
+  const handleNavigateToQuestion = useCallback((questionId) => {
+    const targetIndex = activeQuestions.findIndex(question => question.id === questionId);
+    if (targetIndex >= 0) {
+      setCurrentQuestionIndex(targetIndex);
+    }
+    setValidationError(null);
     setScreen('questionnaire');
   }, [activeQuestions]);
+
+  const handleProceedToSynthesis = useCallback(() => {
+    if (unansweredMandatoryQuestions.length > 0) {
+      setScreen('mandatory-summary');
+      return;
+    }
+
+    const result = analyzeAnswers(answers, rules);
+    setAnalysis(result);
+    setValidationError(null);
+    setScreen('synthesis');
+  }, [answers, rules, unansweredMandatoryQuestions]);
 
   return (
     <div className="min-h-screen">
@@ -562,6 +658,14 @@ export const App = () => {
               allQuestions={questions}
               onSaveDraft={handleSaveDraft}
               validationError={validationError}
+            />
+          ) : screen === 'mandatory-summary' ? (
+            <MandatoryQuestionsSummary
+              pendingQuestions={pendingMandatoryQuestions}
+              totalQuestions={activeQuestions.length}
+              onBackToQuestionnaire={handleBackToQuestionnaire}
+              onNavigateToQuestion={handleNavigateToQuestion}
+              onProceedToSynthesis={handleProceedToSynthesis}
             />
           ) : (
             <SynthesisReport
