@@ -7,11 +7,11 @@ import { ProjectShowcase } from './ProjectShowcase.jsx';
 import { extractProjectName } from '../utils/projects.js';
 
 const escapeHtml = (value) => {
-  if (typeof value !== 'string') {
+  if (value === null || value === undefined) {
     return '';
   }
 
-  return value
+  return String(value)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
@@ -238,19 +238,6 @@ const getTeamPriority = (analysis, teamId) => {
   });
 
   return bestPriority;
-};
-
-const escapeHtml = (value) => {
-  if (value === null || value === undefined) {
-    return '';
-  }
-
-  return String(value)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
 };
 
 const formatAsHtmlText = (value) => {
