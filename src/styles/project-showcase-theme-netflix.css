@@ -1,0 +1,225 @@
+/*
+ * Thème « Immersion cinéma » – clin d'œil à l'interface Netflix.
+ * Fond sombre anthracite, halo rouge vif et cartes rétro-éclairées.
+ */
+
+[data-showcase-theme='netflix'] {
+  --showcase-font-family: 'Netflix Sans', 'Helvetica Neue', 'Segoe UI', sans-serif;
+  --showcase-font-heading: 'Netflix Sans', 'Helvetica Neue', 'Segoe UI', sans-serif;
+  --showcase-color-background: radial-gradient(circle at 15% 10%, rgba(229, 9, 20, 0.22), transparent 58%),
+    radial-gradient(circle at 90% 8%, rgba(229, 9, 20, 0.18), transparent 55%),
+    linear-gradient(160deg, #060608 0%, #0b0b0f 45%, #111116 100%);
+  --showcase-color-card: linear-gradient(150deg, rgba(14, 14, 20, 0.92), rgba(8, 8, 12, 0.94));
+  --showcase-color-surface: rgba(10, 10, 16, 0.88);
+  --showcase-color-surface-strong: rgba(12, 12, 18, 0.92);
+  --showcase-color-surface-soft: rgba(18, 18, 26, 0.7);
+  --showcase-color-text-strong: #ffffff;
+  --showcase-color-text-body: rgba(235, 235, 241, 0.88);
+  --showcase-color-text-muted: rgba(200, 200, 208, 0.68);
+  --showcase-color-text-soft: rgba(160, 160, 170, 0.52);
+  --showcase-color-accent: #e50914;
+  --showcase-color-accent-strong: #ff3c28;
+  --showcase-color-accent-alt: #f5c518;
+  --showcase-border-soft: rgba(255, 255, 255, 0.08);
+  --showcase-border-strong: rgba(255, 255, 255, 0.16);
+  --showcase-shadow-card: 0 40px 120px rgba(0, 0, 0, 0.65);
+  --showcase-shadow-floating: 0 30px 80px rgba(229, 9, 20, 0.28);
+  --showcase-tag-background: rgba(229, 9, 20, 0.16);
+  --showcase-tag-color: rgba(255, 255, 255, 0.88);
+  --showcase-focus-ring: 0 0 0 3px rgba(229, 9, 20, 0.45);
+  --showcase-backdrop-blur: blur(20px);
+  --showcase-gradient-from: rgba(8, 8, 12, 1);
+  --showcase-gradient-via: rgba(17, 17, 24, 0.9);
+  --showcase-gradient-to: rgba(12, 12, 18, 1);
+  --showcase-overlay-soft: radial-gradient(circle at 20% 20%, rgba(229, 9, 20, 0.35), transparent 70%);
+  --showcase-overlay-strong: radial-gradient(circle at 78% 18%, rgba(229, 9, 20, 0.28), transparent 70%);
+  color-scheme: dark;
+}
+
+[data-showcase-theme='netflix'] [data-showcase-card] {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 48px 160px rgba(0, 0, 0, 0.6);
+}
+
+[data-showcase-theme='netflix'] [data-showcase-card]::before,
+[data-showcase-theme='netflix'] [data-showcase-card]::after {
+  content: '';
+  position: absolute;
+  inset: -35%;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(229, 9, 20, 0.22) 0%, transparent 65%);
+  filter: blur(120px);
+  opacity: 0.9;
+  z-index: 0;
+  animation: netflixPulse 18s ease-in-out infinite alternate;
+}
+
+[data-showcase-theme='netflix'] [data-showcase-card]::after {
+  background: radial-gradient(circle, rgba(244, 63, 94, 0.24) 0%, transparent 60%);
+  animation-delay: -6s;
+}
+
+[data-showcase-theme='netflix'] [data-showcase-card] > div:not([data-showcase-overlay]) {
+  position: relative;
+  z-index: 1;
+}
+
+[data-showcase-theme='netflix'] [data-showcase-theme-switcher] {
+  background: rgba(12, 12, 18, 0.9);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.55);
+}
+
+[data-showcase-theme='netflix'] [data-showcase-theme-switcher]::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(120deg, rgba(229, 9, 20, 0.22), rgba(244, 63, 94, 0.2));
+  opacity: 0.5;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+[data-showcase-theme='netflix'] [data-showcase-theme-switcher] button[aria-pressed='true'] {
+  background: linear-gradient(135deg, #e50914, #ff3c28);
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 18px 45px rgba(229, 9, 20, 0.45);
+  color: #ffffff;
+}
+
+[data-showcase-theme='netflix'] [data-showcase-theme-switcher] button:not([aria-pressed='true']):hover {
+  background: rgba(229, 9, 20, 0.24);
+  color: #ff3c28;
+}
+
+[data-showcase-theme='netflix'] header[data-showcase-section='hero'] {
+  background: linear-gradient(150deg, rgba(10, 10, 16, 0.96) 0%, rgba(8, 8, 12, 0.95) 45%, rgba(15, 8, 12, 0.92) 100%);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 48px 140px rgba(0, 0, 0, 0.7);
+}
+
+[data-showcase-theme='netflix'] header[data-showcase-section='hero']::before,
+[data-showcase-theme='netflix'] header[data-showcase-section='hero']::after {
+  content: '';
+  position: absolute;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  filter: blur(120px);
+  pointer-events: none;
+  opacity: 0.6;
+  z-index: 0;
+}
+
+[data-showcase-theme='netflix'] header[data-showcase-section='hero']::before {
+  background: radial-gradient(circle, rgba(229, 9, 20, 0.32) 0%, transparent 70%);
+  inset: -120px auto auto -140px;
+}
+
+[data-showcase-theme='netflix'] header[data-showcase-section='hero']::after {
+  background: radial-gradient(circle, rgba(244, 63, 94, 0.28) 0%, transparent 70%);
+  inset: auto -130px -160px auto;
+}
+
+[data-showcase-theme='netflix'] header[data-showcase-section='hero'] > * {
+  position: relative;
+  z-index: 1;
+}
+
+[data-showcase-theme='netflix'] [data-showcase-section] {
+  background: rgba(12, 12, 18, 0.9);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.55);
+}
+
+[data-showcase-theme='netflix'] [data-showcase-section='problem'],
+[data-showcase-theme='netflix'] [data-showcase-section='innovation'],
+[data-showcase-theme='netflix'] [data-showcase-section='team'] {
+  background: linear-gradient(160deg, rgba(12, 12, 18, 0.92), rgba(8, 8, 12, 0.92));
+}
+
+[data-showcase-theme='netflix'] [data-showcase-element],
+[data-showcase-theme='netflix'] [data-showcase-aside] {
+  background: rgba(10, 10, 16, 0.96);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.6);
+}
+
+[data-showcase-theme='netflix'] [data-showcase-section] h2,
+[data-showcase-theme='netflix'] [data-showcase-section] h3 {
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+[data-showcase-theme='netflix'] [data-showcase-section] p,
+[data-showcase-theme='netflix'] [data-showcase-section] li {
+  color: rgba(230, 230, 236, 0.85);
+}
+
+[data-showcase-theme='netflix'] [data-showcase-section] ul li::before {
+  color: #e50914;
+  font-weight: 700;
+}
+
+[data-showcase-theme='netflix'] [data-showcase-element='hero-highlight'] {
+  background: linear-gradient(135deg, rgba(229, 9, 20, 0.3), rgba(244, 63, 94, 0.22));
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 60px rgba(229, 9, 20, 0.35);
+}
+
+[data-showcase-theme='netflix'] [data-showcase-element='metric-card'],
+[data-showcase-theme='netflix'] [data-showcase-element='vision-card'],
+[data-showcase-theme='netflix'] [data-showcase-element='solution-card'] {
+  background: linear-gradient(180deg, rgba(12, 12, 18, 0.96), rgba(20, 0, 4, 0.92));
+}
+
+[data-showcase-theme='netflix'] [data-showcase-section] a {
+  color: #ff3c28;
+}
+
+[data-showcase-theme='netflix'] [data-showcase-section] a:hover {
+  color: #ffa49a;
+}
+
+[data-showcase-theme='netflix'] button,
+[data-showcase-theme='netflix'] [data-showcase-section] button {
+  background: linear-gradient(135deg, #e50914, #ff3c28);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  letter-spacing: 0.22em;
+  box-shadow: 0 20px 55px rgba(229, 9, 20, 0.4);
+}
+
+[data-showcase-theme='netflix'] button:hover,
+[data-showcase-theme='netflix'] [data-showcase-section] button:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, #ff3c28, #ff6150);
+}
+
+[data-showcase-theme='netflix'] button:focus-visible,
+[data-showcase-theme='netflix'] [data-showcase-section] button:focus-visible {
+  box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.45);
+}
+
+[data-showcase-theme='netflix'] [data-showcase-section='timeline'] {
+  background: linear-gradient(160deg, rgba(12, 12, 18, 0.94), rgba(25, 8, 12, 0.92));
+}
+
+[data-showcase-theme='netflix'] [data-showcase-element='timeline-profile'] {
+  background: rgba(14, 14, 20, 0.96);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+@keyframes netflixPulse {
+  0% {
+    transform: scale(1) translate(0, 0);
+  }
+  50% {
+    transform: scale(1.05) translate(3%, 2%);
+  }
+  100% {
+    transform: scale(1.1) translate(-3%, 3%);
+  }
+}

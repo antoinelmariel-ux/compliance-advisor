@@ -46,25 +46,22 @@ const SHOWCASE_THEMES = [
     id: 'inspiration',
     label: 'Inspiration',
     shortLabel: 'Inspiration',
-    description: 'Esthétique Apple, morphing organique et gradients lumineux.',
+    description:
+      'Style Apple clair : typographie SF Pro, surfaces immaculées et accents bleus subtils.',
   },
   {
-    id: 'aurora',
-    label: 'Aurora néon',
-    shortLabel: 'Aurora',
-    description: 'Jeux de lumières et ambiance futuriste pour un rendu premium.',
+    id: 'netflix',
+    label: 'Immersion cinéma',
+    shortLabel: 'Netflix',
+    description:
+      'Ambiance Netflix : fond cinématographique sombre, rouge signature et halos lumineux.',
   },
   {
-    id: 'minimal',
-    label: 'Nordique minimal',
-    shortLabel: 'Minimal',
-    description: 'Palette claire et structurée idéale pour les documents institutionnels.',
-  },
-  {
-    id: 'sunset',
-    label: 'Sunset impact',
-    shortLabel: 'Sunset',
-    description: 'Dégradés chauds et contrastés pour un storytelling percutant.',
+    id: 'amnesty',
+    label: 'Engagement Amnesty',
+    shortLabel: 'Amnesty',
+    description:
+      "Contrastes noir/jaune inspirés d’Amnesty International, typographie militante et badges manifestes.",
   },
 ];
 
@@ -358,7 +355,7 @@ export const ProjectShowcase = ({
   );
 
   const [selectedTheme, setSelectedTheme] = useState(() => {
-    const fallbackTheme = SHOWCASE_THEMES[0]?.id || 'aurora';
+    const fallbackTheme = SHOWCASE_THEMES[0]?.id || 'inspiration';
 
     if (typeof window === 'undefined' || typeof window.localStorage === 'undefined') {
       return fallbackTheme;
