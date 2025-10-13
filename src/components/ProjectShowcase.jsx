@@ -416,6 +416,10 @@ export const ProjectShowcase = ({
   const canEdit = typeof onUpdateAnswers === 'function';
   const shouldShowPreview = !isEditing || !canEdit;
   const formId = 'project-showcase-edit-form';
+  const isInspirationTheme = selectedTheme === 'inspiration';
+
+  const getThemeClasses = (defaultClasses, inspirationClasses) =>
+    isInspirationTheme ? inspirationClasses : defaultClasses;
 
   const handleStartEditing = useCallback(() => {
     setDraftValues(buildDraftValues(editableFields, answers, rawProjectName));
@@ -654,46 +658,68 @@ export const ProjectShowcase = ({
     <div
       data-showcase-card
       data-showcase-theme={selectedTheme}
-      className="relative w-full overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100"
+      className={getThemeClasses(
+        'relative w-full overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100',
+        'relative w-full overflow-hidden'
+      )}
       onMouseMove={handleParallaxMove}
       onMouseLeave={handleParallaxLeave}
       ref={showcaseCardRef}
     >
-      <div className="pointer-events-none absolute inset-0 overflow-hidden" data-showcase-overlay>
-        <div
-          className="absolute -top-48 -left-32 h-80 w-80 rounded-full bg-indigo-500/20 blur-3xl transition-transform duration-300 ease-out"
-          style={parallaxLayers.far}
-          aria-hidden="true"
-          data-showcase-layer="glow-far"
-        />
-        <div
-          className="absolute -bottom-40 -right-24 h-96 w-96 rounded-full bg-sky-500/25 blur-[120px] transition-transform duration-500 ease-out"
-          style={parallaxLayers.mid}
-          aria-hidden="true"
-          data-showcase-layer="glow-mid"
-        />
-        <div
-          className="absolute top-1/2 left-1/2 h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/10 bg-white/5 backdrop-blur-xl transition-transform duration-300 ease-out"
-          style={parallaxLayers.near}
-          aria-hidden="true"
-          data-showcase-layer="glow-near"
-        />
-        <div
-          className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.12),_transparent_60%)]"
-          aria-hidden="true"
-          data-showcase-layer="glow-overlay"
-        />
-      </div>
+      {!isInspirationTheme && (
+        <div className="pointer-events-none absolute inset-0 overflow-hidden" data-showcase-overlay>
+          <div
+            className="absolute -top-48 -left-32 h-80 w-80 rounded-full bg-indigo-500/20 blur-3xl transition-transform duration-300 ease-out"
+            style={parallaxLayers.far}
+            aria-hidden="true"
+            data-showcase-layer="glow-far"
+          />
+          <div
+            className="absolute -bottom-40 -right-24 h-96 w-96 rounded-full bg-sky-500/25 blur-[120px] transition-transform duration-500 ease-out"
+            style={parallaxLayers.mid}
+            aria-hidden="true"
+            data-showcase-layer="glow-mid"
+          />
+          <div
+            className="absolute top-1/2 left-1/2 h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/10 bg-white/5 backdrop-blur-xl transition-transform duration-300 ease-out"
+            style={parallaxLayers.near}
+            aria-hidden="true"
+            data-showcase-layer="glow-near"
+          />
+          <div
+            className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.12),_transparent_60%)]"
+            aria-hidden="true"
+            data-showcase-layer="glow-overlay"
+          />
+        </div>
+      )}
 
-      <div className="relative px-6 pt-10 pb-16 sm:px-14 sm:pt-16 sm:pb-20">
+      <div className={getThemeClasses('relative px-6 pt-10 pb-16 sm:px-14 sm:pt-16 sm:pb-20', 'relative px-6 pt-10 pb-16 sm:px-14 sm:pt-16 sm:pb-20')}>
         <div
           data-showcase-theme-switcher
-          className="mb-8 flex flex-col gap-4 rounded-[28px] border border-white/10 bg-white/5 p-4 sm:flex-row sm:items-center sm:justify-between"
+          className={getThemeClasses(
+            'mb-8 flex flex-col gap-4 rounded-[28px] border border-white/10 bg-white/5 p-4 sm:flex-row sm:items-center sm:justify-between',
+            'mb-8 flex flex-col gap-4 rounded-[28px] p-4 sm:flex-row sm:items-center sm:justify-between'
+          )}
         >
-          <div className="max-w-xl text-xs text-slate-200/80">
-            <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80">Style de présentation</p>
+          <div className={getThemeClasses('max-w-xl text-xs text-slate-200/80', 'max-w-xl text-xs')}>
+            <p
+              className={getThemeClasses(
+                'text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80',
+                'text-[0.65rem] font-semibold uppercase tracking-[0.4em]'
+              )}
+            >
+              Style de présentation
+            </p>
             {activeTheme?.description && (
-              <p className="mt-2 text-[0.7rem] leading-relaxed text-slate-300/80">{activeTheme.description}</p>
+              <p
+                className={getThemeClasses(
+                  'mt-2 text-[0.7rem] leading-relaxed text-slate-300/80',
+                  'mt-2 text-[0.75rem] leading-relaxed'
+                )}
+              >
+                {activeTheme.description}
+              </p>
             )}
           </div>
           <div className="flex flex-wrap gap-2">
@@ -704,11 +730,14 @@ export const ProjectShowcase = ({
                   key={theme.id}
                   type="button"
                   onClick={() => handleThemeChange(theme.id)}
-                  className={`inline-flex items-center justify-center rounded-full border px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.3em] transition focus:outline-none focus:ring-2 focus:ring-indigo-400/40 ${
-                    isActiveTheme
-                      ? 'border-white/20 bg-white/15 text-white shadow-lg shadow-indigo-500/30'
-                      : 'border-white/10 bg-transparent text-slate-200/80 hover:bg-white/10'
-                  }`}
+                  className={getThemeClasses(
+                    `inline-flex items-center justify-center rounded-full border px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.3em] transition focus:outline-none focus:ring-2 focus:ring-indigo-400/40 ${
+                      isActiveTheme
+                        ? 'border-white/20 bg-white/15 text-white shadow-lg shadow-indigo-500/30'
+                        : 'border-white/10 bg-transparent text-slate-200/80 hover:bg-white/10'
+                    }`,
+                    'inline-flex items-center justify-center rounded-full px-4 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.3em] transition focus:outline-none'
+                  )}
                   aria-pressed={isActiveTheme}
                   title={theme.description}
                 >
@@ -721,8 +750,15 @@ export const ProjectShowcase = ({
 
         <header
           data-showcase-section="hero"
-          className="rounded-[32px] border border-white/10 bg-white/5 p-8 sm:p-12 backdrop-blur-xl"
-          style={{ boxShadow: '20px 20px 60px rgba(2, 6, 23, 0.45), -18px -18px 50px rgba(148, 163, 184, 0.12)' }}
+          className={getThemeClasses(
+            'rounded-[32px] border border-white/10 bg-white/5 p-8 sm:p-12 backdrop-blur-xl',
+            'rounded-[32px] p-8 sm:p-12'
+          )}
+          style={
+            isInspirationTheme
+              ? undefined
+              : { boxShadow: '20px 20px 60px rgba(2, 6, 23, 0.45), -18px -18px 50px rgba(148, 163, 184, 0.12)' }
+          }
         >
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
           <div className="max-w-3xl">
@@ -735,31 +771,58 @@ export const ProjectShowcase = ({
                   {safeProjectName}
                 </h2>
                 {hasText(slogan) && (
-                  <p className="mt-5 text-2xl font-semibold text-indigo-200 sm:text-3xl" style={{ textShadow: '0 12px 40px rgba(79, 70, 229, 0.4)' }}>
+                  <p
+                    className={getThemeClasses(
+                      'mt-5 text-2xl font-semibold text-indigo-200 sm:text-3xl',
+                      'mt-5 text-2xl font-semibold sm:text-3xl'
+                    )}
+                    style={
+                      isInspirationTheme
+                        ? undefined
+                        : { textShadow: '0 12px 40px rgba(79, 70, 229, 0.4)' }
+                    }
+                  >
                     {renderTextWithLinks(slogan)}
                   </p>
                 )}
               </>
             ) : (
               <>
-                <p className="mt-6 text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200">Mode édition</p>
-                <h2 className="mt-4 text-4xl font-bold text-white sm:text-5xl">
+                <p
+                  className={getThemeClasses(
+                    'mt-6 text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200',
+                    'mt-6 text-[0.65rem] font-semibold uppercase tracking-[0.45em]'
+                  )}
+                >
+                  Mode édition
+                </p>
+                <h2
+                  className={getThemeClasses(
+                    'mt-4 text-4xl font-bold text-white sm:text-5xl',
+                    'mt-4 text-4xl font-bold sm:text-5xl'
+                  )}
+                >
                   Personnalisez la vitrine du projet
                 </h2>
-                <p className="mt-3 text-sm text-slate-300/80">
+                <p
+                  className={getThemeClasses('mt-3 text-sm text-slate-300/80', 'mt-3 text-sm')}
+                >
                   Modifiez les informations via le formulaire ci-dessous. L'aperçu est temporairement masqué pendant l'édition.
                 </p>
               </>
             )}
           </div>
-            <div className="flex flex-wrap items-center gap-3 self-start lg:self-auto">
-              <button
-                type="button"
-                onClick={onClose}
-                className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/10 p-3 text-slate-200 transition hover:bg-white/20"
-                aria-label="Fermer la vitrine du projet"
-                ref={renderInStandalone ? undefined : closeButtonRef}
-              >
+          <div className="flex flex-wrap items-center gap-3 self-start lg:self-auto">
+            <button
+              type="button"
+              onClick={onClose}
+              className={getThemeClasses(
+                'inline-flex items-center justify-center rounded-full border border-white/10 bg-white/10 p-3 text-slate-200 transition hover:bg-white/20',
+                'inline-flex items-center justify-center rounded-full p-3 transition'
+              )}
+              aria-label="Fermer la vitrine du projet"
+              ref={renderInStandalone ? undefined : closeButtonRef}
+            >
                 <Close className="h-4 w-4" />
               </button>
               </div>
@@ -769,15 +832,32 @@ export const ProjectShowcase = ({
               <form
                 id={formId}
                 onSubmit={handleSubmitEdit}
-                className="mt-10 space-y-6 rounded-[28px] border border-white/15 bg-slate-900/60 p-6 sm:p-8 text-slate-100 backdrop-blur-xl"
-                style={{ boxShadow: neoCardShadow }}
+                className={getThemeClasses(
+                  'mt-10 space-y-6 rounded-[28px] border border-white/15 bg-slate-900/60 p-6 sm:p-8 text-slate-100 backdrop-blur-xl',
+                  'mt-10 space-y-6 rounded-[28px] p-6 sm:p-8'
+                )}
+                style={isInspirationTheme ? undefined : { boxShadow: neoCardShadow }}
               >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
-                    <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200">Mode édition actif</p>
-                    <h3 className="mt-1 text-lg font-semibold text-white">Ajustez les informations présentées dans la vitrine</h3>
+                    <p
+                      className={getThemeClasses(
+                        'text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200',
+                        'text-[0.65rem] font-semibold uppercase tracking-[0.45em]'
+                      )}
+                    >
+                      Mode édition actif
+                    </p>
+                    <h3
+                      className={getThemeClasses(
+                        'mt-1 text-lg font-semibold text-white',
+                        'mt-1 text-lg font-semibold'
+                      )}
+                    >
+                      Ajustez les informations présentées dans la vitrine
+                    </h3>
                   </div>
-                  <p className="text-xs text-slate-300/80 sm:max-w-xs">
+                  <p className={getThemeClasses('text-xs text-slate-300/80 sm:max-w-xs', 'text-xs sm:max-w-xs')}>
                     Chaque modification sera appliquée aux réponses du questionnaire correspondant.
                   </p>
                 </div>
@@ -802,7 +882,10 @@ export const ProjectShowcase = ({
                       <div key={fieldId} className={`${isLong || isMulti ? 'sm:col-span-2' : ''}`}>
                         <label
                           htmlFor={`showcase-edit-${fieldId}`}
-                          className="block text-[0.65rem] font-semibold uppercase tracking-[0.4em] text-indigo-200/80"
+                          className={getThemeClasses(
+                            'block text-[0.65rem] font-semibold uppercase tracking-[0.4em] text-indigo-200/80',
+                            'block text-[0.65rem] font-semibold uppercase tracking-[0.4em]'
+                          )}
                         >
                           {label}
                         </label>
@@ -812,8 +895,11 @@ export const ProjectShowcase = ({
                             type="date"
                             value={value}
                             onChange={event => handleFieldChange(fieldId, event.target.value)}
-                            className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-400/40"
-                            style={{ boxShadow: neoInsetShadow }}
+                            className={getThemeClasses(
+                              'mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-400/40',
+                              'mt-2 w-full rounded-xl px-3 py-2 text-sm focus:outline-none'
+                            )}
+                            style={isInspirationTheme ? undefined : { boxShadow: neoInsetShadow }}
                           />
                         ) : isLong || isMulti ? (
                           <textarea
@@ -821,8 +907,11 @@ export const ProjectShowcase = ({
                             value={value}
                             onChange={event => handleFieldChange(fieldId, event.target.value)}
                             rows={isMulti ? 4 : 5}
-                            className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-400/40"
-                            style={{ boxShadow: neoInsetShadow }}
+                            className={getThemeClasses(
+                              'mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-400/40',
+                              'mt-2 w-full rounded-xl px-3 py-2 text-sm focus:outline-none'
+                            )}
+                            style={isInspirationTheme ? undefined : { boxShadow: neoInsetShadow }}
                           />
                         ) : (
                           <input
@@ -830,12 +919,17 @@ export const ProjectShowcase = ({
                             type="text"
                             value={value}
                             onChange={event => handleFieldChange(fieldId, event.target.value)}
-                            className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-400/40"
-                            style={{ boxShadow: neoInsetShadow }}
+                            className={getThemeClasses(
+                              'mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-400/40',
+                              'mt-2 w-full rounded-xl px-3 py-2 text-sm focus:outline-none'
+                            )}
+                            style={isInspirationTheme ? undefined : { boxShadow: neoInsetShadow }}
                           />
                         )}
                         {helperText && (
-                            <p className="mt-2 text-xs text-slate-400">{helperText}</p>
+                            <p className={getThemeClasses('mt-2 text-xs text-slate-400', 'mt-2 text-xs')}>
+                              {helperText}
+                            </p>
                           )}
                         </div>
                       );
@@ -846,13 +940,19 @@ export const ProjectShowcase = ({
                     <button
                       type="button"
                       onClick={handleCancelEditing}
-                      className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/5 px-5 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-slate-200 transition hover:bg-white/10"
+                      className={getThemeClasses(
+                        'inline-flex items-center justify-center rounded-full border border-white/15 bg-white/5 px-5 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-slate-200 transition hover:bg-white/10',
+                        'inline-flex items-center justify-center rounded-full px-5 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.45em] transition'
+                      )}
                     >
                       Annuler
                     </button>
                     <button
                       type="submit"
-                      className="inline-flex items-center justify-center rounded-full border border-indigo-400/60 bg-gradient-to-r from-indigo-500 via-sky-500 to-cyan-400 px-5 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-white shadow-lg shadow-indigo-500/30 transition hover:brightness-110"
+                      className={getThemeClasses(
+                        'inline-flex items-center justify-center rounded-full border border-indigo-400/60 bg-gradient-to-r from-indigo-500 via-sky-500 to-cyan-400 px-5 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-white shadow-lg shadow-indigo-500/30 transition hover:brightness-110',
+                        'inline-flex items-center justify-center rounded-full px-5 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.45em] transition'
+                      )}
                     >
                       <CheckCircle className="mr-2 h-4 w-4" />
                       Enregistrer les modifications
@@ -867,16 +967,33 @@ export const ProjectShowcase = ({
                     <div
                       key={highlight.id}
                       data-showcase-element="hero-highlight"
-                      className="rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-200 backdrop-blur-xl"
-                      style={{ boxShadow: neoCardShadow }}
+                      className={getThemeClasses(
+                        'rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-200 backdrop-blur-xl',
+                        'rounded-3xl p-6 text-sm'
+                      )}
+                      style={isInspirationTheme ? undefined : { boxShadow: neoCardShadow }}
                     >
-                      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/90">
+                      <p
+                        className={getThemeClasses(
+                          'text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/90',
+                          'text-[0.65rem] font-semibold uppercase tracking-[0.45em]'
+                        )}
+                      >
                         {highlight.label}
                       </p>
-                      <p className="mt-3 text-3xl font-bold text-white" style={{ textShadow: '0 18px 45px rgba(79, 70, 229, 0.45)' }}>
+                      <p
+                        className={getThemeClasses('mt-3 text-3xl font-bold text-white', 'mt-3 text-3xl font-bold')}
+                        style={
+                          isInspirationTheme
+                            ? undefined
+                            : { textShadow: '0 18px 45px rgba(79, 70, 229, 0.45)' }
+                        }
+                      >
                         {highlight.value}
                       </p>
-                      <p className="mt-3 text-xs text-slate-300/80">{highlight.caption}</p>
+                      <p className={getThemeClasses('mt-3 text-xs text-slate-300/80', 'mt-3 text-xs')}>
+                        {highlight.caption}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -886,13 +1003,27 @@ export const ProjectShowcase = ({
             {shouldShowPreview && (
               <section
                 data-showcase-section="problem"
-                className="mt-14 rounded-[32px] border border-white/10 bg-white/5 p-8 sm:p-12 text-slate-100 backdrop-blur-xl"
-                style={{ boxShadow: neoCardShadow }}
+                className={getThemeClasses(
+                  'mt-14 rounded-[32px] border border-white/10 bg-white/5 p-8 sm:p-12 text-slate-100 backdrop-blur-xl',
+                  'mt-14 rounded-[32px] p-8 sm:p-12'
+                )}
+                style={isInspirationTheme ? undefined : { boxShadow: neoCardShadow }}
               >
                 <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
                   <div className="max-w-3xl">
-                    <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80">Le problème</p>
-                    <h3 className="mt-3 text-3xl font-bold text-white">Pourquoi ce projet doit exister</h3>
+                    <p
+                      className={getThemeClasses(
+                        'text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80',
+                        'text-[0.65rem] font-semibold uppercase tracking-[0.45em]'
+                      )}
+                    >
+                      Le problème
+                    </p>
+                    <h3
+                      className={getThemeClasses('mt-3 text-3xl font-bold text-white', 'mt-3 text-3xl font-bold')}
+                    >
+                      Pourquoi ce projet doit exister
+                    </h3>
                     {renderList(problemPainPoints)}
                   </div>
                 </div>
@@ -902,26 +1033,57 @@ export const ProjectShowcase = ({
             {shouldShowPreview && (
               <section
                 data-showcase-section="solution"
-                className="mt-14 rounded-[32px] border border-white/10 bg-gradient-to-br from-indigo-500/30 via-transparent to-sky-500/30 p-[1px]"
-                style={{ boxShadow: neoCardShadow }}
+                className={getThemeClasses(
+                  'mt-14 rounded-[32px] border border-white/10 bg-gradient-to-br from-indigo-500/30 via-transparent to-sky-500/30 p-[1px]',
+                  'mt-14 rounded-[32px] p-0'
+                )}
+                style={isInspirationTheme ? undefined : { boxShadow: neoCardShadow }}
               >
-                <div className="h-full w-full rounded-[30px] bg-slate-950/80 px-8 py-10 text-slate-100 sm:px-12">
+                <div
+                  className={getThemeClasses(
+                    'h-full w-full rounded-[30px] bg-slate-950/80 px-8 py-10 text-slate-100 sm:px-12',
+                    'h-full w-full rounded-[30px] px-8 py-10 sm:px-12'
+                  )}
+                >
                   <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
                     <div>
-                      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80">La solution</p>
-                      <h3 className="mt-3 text-3xl font-bold text-white">Comment nous changeons la donne</h3>
+                      <p
+                        className={getThemeClasses(
+                          'text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80',
+                          'text-[0.65rem] font-semibold uppercase tracking-[0.45em]'
+                        )}
+                      >
+                        La solution
+                      </p>
+                      <h3
+                        className={getThemeClasses('mt-3 text-3xl font-bold text-white', 'mt-3 text-3xl font-bold')}
+                      >
+                        Comment nous changeons la donne
+                      </h3>
                     </div>
-                    <Rocket className="text-4xl text-sky-300" />
+                    <Rocket className={getThemeClasses('text-4xl text-sky-300', 'text-4xl')} />
                   </div>
                   <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2">
                     {hasText(solutionDescription) && (
                       <div
                         data-showcase-element="solution-card"
-                        className="rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-200 backdrop-blur-xl"
-                        style={{ boxShadow: neoCardShadow }}
+                        className={getThemeClasses(
+                          'rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-200 backdrop-blur-xl',
+                          'rounded-3xl p-6 text-sm'
+                        )}
+                        style={isInspirationTheme ? undefined : { boxShadow: neoCardShadow }}
                       >
-                        <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/90">Expérience proposée</p>
-                        <p className="mt-3 text-sm leading-relaxed text-slate-200/90">
+                        <p
+                          className={getThemeClasses(
+                            'text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/90',
+                            'text-[0.65rem] font-semibold uppercase tracking-[0.45em]'
+                          )}
+                        >
+                          Expérience proposée
+                        </p>
+                        <p
+                          className={getThemeClasses('mt-3 text-sm leading-relaxed text-slate-200/90', 'mt-3 text-sm leading-relaxed')}
+                        >
                           {renderTextWithLinks(solutionDescription)}
                         </p>
                       </div>
@@ -929,21 +1091,43 @@ export const ProjectShowcase = ({
                     {solutionBenefits.length > 0 && (
                       <div
                         data-showcase-element="solution-card"
-                        className="rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-200 backdrop-blur-xl"
-                        style={{ boxShadow: neoCardShadow }}
+                        className={getThemeClasses(
+                          'rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-200 backdrop-blur-xl',
+                          'rounded-3xl p-6 text-sm'
+                        )}
+                        style={isInspirationTheme ? undefined : { boxShadow: neoCardShadow }}
                       >
-                        <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/90">Bénéfices clés</p>
+                        <p
+                          className={getThemeClasses(
+                            'text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/90',
+                            'text-[0.65rem] font-semibold uppercase tracking-[0.45em]'
+                          )}
+                        >
+                          Bénéfices clés
+                        </p>
                         {renderList(solutionBenefits)}
                       </div>
                     )}
                     {hasText(solutionComparison) && (
                       <div
                         data-showcase-element="solution-card"
-                        className="rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-200 backdrop-blur-xl"
-                        style={{ boxShadow: neoCardShadow }}
+                        className={getThemeClasses(
+                          'rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-200 backdrop-blur-xl',
+                          'rounded-3xl p-6 text-sm'
+                        )}
+                        style={isInspirationTheme ? undefined : { boxShadow: neoCardShadow }}
                       >
-                        <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/90">Pourquoi c'est différent</p>
-                        <p className="mt-3 text-sm leading-relaxed text-slate-200/90">
+                        <p
+                          className={getThemeClasses(
+                            'text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/90',
+                            'text-[0.65rem] font-semibold uppercase tracking-[0.45em]'
+                          )}
+                        >
+                          Pourquoi c'est différent
+                        </p>
+                        <p
+                          className={getThemeClasses('mt-3 text-sm leading-relaxed text-slate-200/90', 'mt-3 text-sm leading-relaxed')}
+                        >
                           {renderTextWithLinks(solutionComparison)}
                         </p>
                       </div>
@@ -1168,7 +1352,10 @@ export const ProjectShowcase = ({
       <div
         data-showcase-scope
         data-showcase-theme={selectedTheme}
-        className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 py-12 px-4 sm:px-8"
+        className={getThemeClasses(
+          'min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 py-12 px-4 sm:px-8',
+          'min-h-screen bg-[#f5f5f7] py-12 px-4 sm:px-8'
+        )}
       >
         <div className="mx-auto w-full">{showcaseCard}</div>
       </div>
@@ -1179,7 +1366,10 @@ export const ProjectShowcase = ({
     <section
       data-showcase-scope
       data-showcase-theme={selectedTheme}
-      className="min-h-screen w-full bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 px-4 py-10 sm:px-8"
+      className={getThemeClasses(
+        'min-h-screen w-full bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 px-4 py-10 sm:px-8',
+        'min-h-screen w-full bg-[#f5f5f7] px-4 py-10 sm:px-8'
+      )}
       aria-label="Vitrine marketing du projet"
     >
       <div className="w-full">{showcaseCard}</div>
