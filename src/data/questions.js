@@ -42,27 +42,6 @@ export const initialQuestions =  [
     }
   },
   {
-    id: 'valueProposition',
-    type: 'long_text',
-    question: 'Formulez votre proposition de valeur en une ou deux phrases.',
-    options: [],
-    required: true,
-    conditions: [],
-    conditionLogic: 'all',
-    guidance: {
-      objective: 'Clarifier ce que le projet apporte, pour qui et en quoi il est différent.',
-      details: "Cette proposition de valeur structure toute la narration : elle sera reprise dans la hero section et les sections suivantes.",
-      tips: [
-        'Précisez le public cible, le bénéfice clé et l’impact mesurable.',
-        'Évitez le jargon technique : privilégiez un langage accessible.'
-      ]
-    },
-    showcase: {
-      sections: ['hero'],
-      usage: 'Résumé principal repris dans le paragraphe d’introduction.'
-    }
-  },
-  {
     id: 'targetAudience',
     type: 'multi_choice',
     question: 'Quelles audiences doivent être convaincues en priorité ?',
@@ -90,27 +69,6 @@ export const initialQuestions =  [
     }
   },
   {
-    id: 'problemInsight',
-    type: 'text',
-    question: 'Quel chiffre fort ou constat illustre le problème que vous résolvez ?',
-    options: [],
-    required: true,
-    conditions: [],
-    conditionLogic: 'all',
-    guidance: {
-      objective: 'Ancrer le récit dans un fait marquant qui crée de la tension dramatique.',
-      details: 'Cette statistique ou observation sert d’accroche dans la section “Problème”.',
-      tips: [
-        'Précisez la source (étude, observation terrain, retour client).',
-        'Formulez la donnée sous forme de phrase courte et percutante.'
-      ]
-    },
-    showcase: {
-      sections: ['problem'],
-      usage: 'Phrase introductive en surbrillance dans la section problème.'
-    }
-  },
-  {
     id: 'problemPainPoints',
     type: 'long_text',
     question: 'Listez 2 à 3 pain points concrets vécus par vos utilisateurs.',
@@ -129,27 +87,6 @@ export const initialQuestions =  [
     showcase: {
       sections: ['problem'],
       usage: 'Liste des irritants principaux affichée dans la colonne de gauche.'
-    }
-  },
-  {
-    id: 'problemTestimonial',
-    type: 'long_text',
-    question: 'Partagez un témoignage utilisateur ou une mini mise en situation.',
-    options: [],
-    required: false,
-    conditions: [],
-    conditionLogic: 'all',
-    guidance: {
-      objective: 'Humaniser le problème grâce à une voix ou un scénario concret.',
-      details: 'Ce témoignage sera présenté dans un encart pour créer une connexion émotionnelle.',
-      tips: [
-        'Privilégiez un format court (2-3 phrases) centré sur une émotion ou un obstacle.',
-        'Si vous n’avez pas encore de témoignage, décrivez une scène type “avant projet”.'
-      ]
-    },
-    showcase: {
-      sections: ['problem'],
-      usage: 'Encart témoignage situé à droite de la section problème.'
     }
   },
   {
@@ -195,27 +132,6 @@ export const initialQuestions =  [
     }
   },
   {
-    id: 'solutionExperience',
-    type: 'text',
-    question: 'Quel visuel, maquette ou démonstration illustre le mieux votre solution ?',
-    options: [],
-    required: false,
-    conditions: [],
-    conditionLogic: 'all',
-    guidance: {
-      objective: 'Donner un aperçu concret de l’expérience proposée.',
-      details: 'Cette information permet de suggérer un visuel ou un format immersif dans la vitrine.',
-      tips: [
-        'Mentionnez le support disponible (mockup, capture, vidéo, prototype).',
-        'Précisez le moment du parcours où cette preuve visuelle sera présentée.'
-      ]
-    },
-    showcase: {
-      sections: ['solution'],
-      usage: 'Bloc « Preuve immersive » mettant en avant le support visuel.'
-    }
-  },
-  {
     id: 'solutionComparison',
     type: 'long_text',
     question: 'En quoi votre approche se distingue-t-elle des alternatives actuelles ?',
@@ -237,27 +153,6 @@ export const initialQuestions =  [
     }
   },
   {
-    id: 'innovationSecret',
-    type: 'long_text',
-    question: 'Quelle est votre “secret sauce” ou élément différenciant clé ?',
-    options: [],
-    required: true,
-    conditions: [],
-    conditionLogic: 'all',
-    guidance: {
-      objective: 'Expliquer en quoi votre approche dépasse les standards du marché.',
-      details: 'Ce contenu nourrit la section “Innovation” et crédibilise votre avance.',
-      tips: [
-        'Insistez sur la méthode, la technologie ou l’insight qui change tout.',
-        'Reliez cet élément différenciant à une preuve utilisateur ou métier.'
-      ]
-    },
-    showcase: {
-      sections: ['innovation'],
-      usage: 'Paragraphe principal de la section innovation.'
-    }
-  },
-  {
     id: 'innovationProcess',
     type: 'long_text',
     question: 'Comment votre équipe transforme cette innovation en expérience fluide ?',
@@ -276,48 +171,6 @@ export const initialQuestions =  [
     showcase: {
       sections: ['innovation'],
       usage: 'Encart explicatif sur le fonctionnement de l’innovation.'
-    }
-  },
-  {
-    id: 'marketSize',
-    type: 'text',
-    question: 'Quel chiffre illustre le potentiel de marché ou la traction attendue ?',
-    options: [],
-    required: false,
-    conditions: [],
-    conditionLogic: 'all',
-    guidance: {
-      objective: 'Ancrer la vision dans des données marché ou business.',
-      details: 'Cette information sera mise en avant dans la section “Potentiel & impact”.',
-      tips: [
-        'Utilisez un indicateur simple : taille de marché, croissance, revenu projeté, etc.',
-        'Précisez si possible la source ou la période de référence.'
-      ]
-    },
-    showcase: {
-      sections: ['hero', 'impact'],
-      usage: 'Chiffre clé utilisé dans les encadrés « Potentiel de marché ».'
-    }
-  },
-  {
-    id: 'tractionSignals',
-    type: 'long_text',
-    question: 'Quelles preuves ou signaux de traction pouvez-vous mettre en avant ?',
-    options: [],
-    required: false,
-    conditions: [],
-    conditionLogic: 'all',
-    guidance: {
-      objective: 'Rassurer votre audience avec des éléments concrets (chiffres, retours, partenaires).',
-      details: 'Chaque ligne sera affichée comme une preuve dans la section “Potentiel & impact”.',
-      tips: [
-        'Listez des chiffres clés, logos partenaires, mentions presse ou résultats de pilote.',
-        'Associez chaque preuve à une courte description pour contextualiser.'
-      ]
-    },
-    showcase: {
-      sections: ['impact'],
-      usage: 'Liste des signaux de traction mise en évidence dans la vitrine.'
     }
   },
   {
@@ -423,27 +276,6 @@ export const initialQuestions =  [
     showcase: {
       sections: ['team'],
       usage: 'Liste « Collectif moteur » dans la section équipe.'
-    }
-  },
-  {
-    id: 'teamValues',
-    type: 'long_text',
-    question: 'Quelles valeurs ou principes guident votre équipe ?',
-    options: [],
-    required: false,
-    conditions: [],
-    conditionLogic: 'all',
-    guidance: {
-      objective: 'Rassurer sur la posture de l’équipe face aux parties prenantes.',
-      details: 'Chaque valeur sera transformée en badge pour renforcer la signature du projet.',
-      tips: [
-        'Listez 3 valeurs maximum pour rester mémorable.',
-        'Formulez-les de manière positive (“Transparence proactive”, “Sens du terrain”, etc.).'
-      ]
-    },
-    showcase: {
-      sections: ['team'],
-      usage: 'Badges de valeurs dans la section équipe.'
     }
   }
 ];
