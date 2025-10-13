@@ -17,6 +17,7 @@ import { createDemoProject } from './data/demoProject.js';
 
 const APP_VERSION = 'v1.0.12';
 
+
 const isAnswerProvided = (value) => {
   if (Array.isArray(value)) {
     return value.length > 0;

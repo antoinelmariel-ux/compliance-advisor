@@ -407,6 +407,7 @@ export const ProjectShowcase = ({
   }, [answers, editableFields, isEditing, rawProjectName]);
 
   const canEdit = typeof onUpdateAnswers === 'function';
+  const shouldShowPreview = !isEditing || !canEdit;
   const formId = 'project-showcase-edit-form';
 
   const handleStartEditing = useCallback(() => {
@@ -662,19 +663,33 @@ export const ProjectShowcase = ({
           style={{ boxShadow: '20px 20px 60px rgba(2, 6, 23, 0.45), -18px -18px 50px rgba(148, 163, 184, 0.12)' }}
         >
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-            <div className="max-w-3xl">
-              <h2
-                className="mt-6 text-5xl font-black leading-tight sm:text-6xl sm:leading-[1.05]"
-                style={heroTitleStyle}
-              >
-                {safeProjectName}
-              </h2>
-              {hasText(slogan) && (
-                <p className="mt-5 text-2xl font-semibold text-indigo-200 sm:text-3xl" style={{ textShadow: '0 12px 40px rgba(79, 70, 229, 0.4)' }}>
-                  {renderTextWithLinks(slogan)}
+          <div className="max-w-3xl">
+            {shouldShowPreview ? (
+              <>
+                <h2
+                  className="mt-6 text-5xl font-black leading-tight sm:text-6xl sm:leading-[1.05]"
+                  style={heroTitleStyle}
+                >
+                  {safeProjectName}
+                </h2>
+                {hasText(slogan) && (
+                  <p className="mt-5 text-2xl font-semibold text-indigo-200 sm:text-3xl" style={{ textShadow: '0 12px 40px rgba(79, 70, 229, 0.4)' }}>
+                    {renderTextWithLinks(slogan)}
+                  </p>
+                )}
+              </>
+            ) : (
+              <>
+                <p className="mt-6 text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200">Mode édition</p>
+                <h2 className="mt-4 text-4xl font-bold text-white sm:text-5xl">
+                  Personnalisez la vitrine du projet
+                </h2>
+                <p className="mt-3 text-sm text-slate-300/80">
+                  Modifiez les informations via le formulaire ci-dessous. L'aperçu est temporairement masqué pendant l'édition.
                 </p>
-              )}
-            </div>
+              </>
+            )}
+          </div>
             <div className="flex flex-wrap items-center gap-3 self-start lg:self-auto">
               <button
                 type="button"
@@ -784,7 +799,7 @@ export const ProjectShowcase = ({
                 </form>
               )}
 
-              {heroHighlights.length > 0 && (
+              {shouldShowPreview && heroHighlights.length > 0 && (
                 <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-3">
                   {heroHighlights.map(highlight => (
                     <div
@@ -806,73 +821,77 @@ export const ProjectShowcase = ({
               )}
             </header>
 
-            <section
-              data-showcase-section="problem"
-              className="mt-14 rounded-[32px] border border-white/10 bg-white/5 p-8 sm:p-12 text-slate-100 backdrop-blur-xl"
-              style={{ boxShadow: neoCardShadow }}
-            >
-              <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
-                <div className="max-w-3xl">
-                  <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80">Le problème</p>
-                  <h3 className="mt-3 text-3xl font-bold text-white">Pourquoi ce projet doit exister</h3>
-                  {renderList(problemPainPoints)}
-                </div>
-              </div>
-            </section>
-
-            <section
-              data-showcase-section="solution"
-              className="mt-14 rounded-[32px] border border-white/10 bg-gradient-to-br from-indigo-500/30 via-transparent to-sky-500/30 p-[1px]"
-              style={{ boxShadow: neoCardShadow }}
-            >
-              <div className="h-full w-full rounded-[30px] bg-slate-950/80 px-8 py-10 text-slate-100 sm:px-12">
-                <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-                  <div>
-                    <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80">La solution</p>
-                    <h3 className="mt-3 text-3xl font-bold text-white">Comment nous changeons la donne</h3>
+            {shouldShowPreview && (
+              <section
+                data-showcase-section="problem"
+                className="mt-14 rounded-[32px] border border-white/10 bg-white/5 p-8 sm:p-12 text-slate-100 backdrop-blur-xl"
+                style={{ boxShadow: neoCardShadow }}
+              >
+                <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
+                  <div className="max-w-3xl">
+                    <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80">Le problème</p>
+                    <h3 className="mt-3 text-3xl font-bold text-white">Pourquoi ce projet doit exister</h3>
+                    {renderList(problemPainPoints)}
                   </div>
-                  <Rocket className="text-4xl text-sky-300" />
                 </div>
-                <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2">
-                  {hasText(solutionDescription) && (
-                    <div
-                      data-showcase-element="solution-card"
-                      className="rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-200 backdrop-blur-xl"
-                      style={{ boxShadow: neoCardShadow }}
-                    >
-                      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/90">Expérience proposée</p>
-                      <p className="mt-3 text-sm leading-relaxed text-slate-200/90">
-                        {renderTextWithLinks(solutionDescription)}
-                      </p>
-                    </div>
-                  )}
-                  {solutionBenefits.length > 0 && (
-                    <div
-                      data-showcase-element="solution-card"
-                      className="rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-200 backdrop-blur-xl"
-                      style={{ boxShadow: neoCardShadow }}
-                    >
-                      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/90">Bénéfices clés</p>
-                      {renderList(solutionBenefits)}
-                    </div>
-                  )}
-                  {hasText(solutionComparison) && (
-                    <div
-                      data-showcase-element="solution-card"
-                      className="rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-200 backdrop-blur-xl"
-                      style={{ boxShadow: neoCardShadow }}
-                    >
-                      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/90">Pourquoi c'est différent</p>
-                      <p className="mt-3 text-sm leading-relaxed text-slate-200/90">
-                        {renderTextWithLinks(solutionComparison)}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </section>
+              </section>
+            )}
 
-            {hasText(innovationProcess) && (
+            {shouldShowPreview && (
+              <section
+                data-showcase-section="solution"
+                className="mt-14 rounded-[32px] border border-white/10 bg-gradient-to-br from-indigo-500/30 via-transparent to-sky-500/30 p-[1px]"
+                style={{ boxShadow: neoCardShadow }}
+              >
+                <div className="h-full w-full rounded-[30px] bg-slate-950/80 px-8 py-10 text-slate-100 sm:px-12">
+                  <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+                    <div>
+                      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80">La solution</p>
+                      <h3 className="mt-3 text-3xl font-bold text-white">Comment nous changeons la donne</h3>
+                    </div>
+                    <Rocket className="text-4xl text-sky-300" />
+                  </div>
+                  <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2">
+                    {hasText(solutionDescription) && (
+                      <div
+                        data-showcase-element="solution-card"
+                        className="rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-200 backdrop-blur-xl"
+                        style={{ boxShadow: neoCardShadow }}
+                      >
+                        <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/90">Expérience proposée</p>
+                        <p className="mt-3 text-sm leading-relaxed text-slate-200/90">
+                          {renderTextWithLinks(solutionDescription)}
+                        </p>
+                      </div>
+                    )}
+                    {solutionBenefits.length > 0 && (
+                      <div
+                        data-showcase-element="solution-card"
+                        className="rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-200 backdrop-blur-xl"
+                        style={{ boxShadow: neoCardShadow }}
+                      >
+                        <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/90">Bénéfices clés</p>
+                        {renderList(solutionBenefits)}
+                      </div>
+                    )}
+                    {hasText(solutionComparison) && (
+                      <div
+                        data-showcase-element="solution-card"
+                        className="rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-200 backdrop-blur-xl"
+                        style={{ boxShadow: neoCardShadow }}
+                      >
+                        <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/90">Pourquoi c'est différent</p>
+                        <p className="mt-3 text-sm leading-relaxed text-slate-200/90">
+                          {renderTextWithLinks(solutionComparison)}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {shouldShowPreview && hasText(innovationProcess) && (
               <section
                 data-showcase-section="innovation"
                 className="mt-14 rounded-[32px] border border-white/10 bg-white/5 p-8 sm:p-12 text-slate-100 backdrop-blur-xl"
@@ -895,116 +914,120 @@ export const ProjectShowcase = ({
               </section>
             )}
 
-            <section
-              data-showcase-section="evidence"
-              className="mt-14 rounded-[32px] border border-white/10 bg-white/5 p-8 sm:p-12 text-slate-100 backdrop-blur-xl"
-              style={{ boxShadow: neoCardShadow }}
-            >
-              <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
-                <div className="max-w-3xl space-y-8">
-                  <div>
-                    <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80">Potentiel & impact</p>
-                    <h3 className="mt-3 text-3xl font-bold text-white">Les preuves qui donnent envie d'y croire</h3>
-                    <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                      {timelineSummary && (
+            {shouldShowPreview && (
+              <section
+                data-showcase-section="evidence"
+                className="mt-14 rounded-[32px] border border-white/10 bg-white/5 p-8 sm:p-12 text-slate-100 backdrop-blur-xl"
+                style={{ boxShadow: neoCardShadow }}
+              >
+                <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
+                  <div className="max-w-3xl space-y-8">
+                    <div>
+                      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80">Potentiel & impact</p>
+                      <h3 className="mt-3 text-3xl font-bold text-white">Les preuves qui donnent envie d'y croire</h3>
+                      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        {timelineSummary && (
+                          <div
+                            data-showcase-element="metric-card"
+                            className="rounded-3xl border border-white/10 bg-white/5 p-5 text-sm text-slate-200 backdrop-blur-xl"
+                            style={{ boxShadow: neoCardShadow }}
+                          >
+                            <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/70">Préparation au lancement</p>
+                            <p className="mt-2 text-2xl font-bold text-white">{`${timelineSummary.weeks} sem.`}</p>
+                            <p className="mt-2 text-xs text-slate-300/80">
+                              {timelineSummary.satisfied ? 'Runway suffisant pour activer les relais.' : 'Runway à renforcer pour sécuriser la diffusion.'}
+                            </p>
+                          </div>
+                        )}
                         <div
                           data-showcase-element="metric-card"
                           className="rounded-3xl border border-white/10 bg-white/5 p-5 text-sm text-slate-200 backdrop-blur-xl"
                           style={{ boxShadow: neoCardShadow }}
                         >
-                          <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/70">Préparation au lancement</p>
-                          <p className="mt-2 text-2xl font-bold text-white">{`${timelineSummary.weeks} sem.`}</p>
-                          <p className="mt-2 text-xs text-slate-300/80">
-                            {timelineSummary.satisfied ? 'Runway suffisant pour activer les relais.' : 'Runway à renforcer pour sécuriser la diffusion.'}
-                          </p>
+                          <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/70">Complexité estimée</p>
+                          <p className="mt-2 text-2xl font-bold text-white">{complexity}</p>
+                          <p className="mt-2 text-xs text-slate-300/80">Basée sur les points de vigilance identifiés.</p>
                         </div>
-                      )}
-                      <div
-                        data-showcase-element="metric-card"
-                        className="rounded-3xl border border-white/10 bg-white/5 p-5 text-sm text-slate-200 backdrop-blur-xl"
-                        style={{ boxShadow: neoCardShadow }}
-                      >
-                        <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/70">Complexité estimée</p>
-                        <p className="mt-2 text-2xl font-bold text-white">{complexity}</p>
-                        <p className="mt-2 text-xs text-slate-300/80">Basée sur les points de vigilance identifiés.</p>
                       </div>
                     </div>
+                    {hasText(visionStatement) && (
+                      <div
+                        data-showcase-element="vision-card"
+                        className="rounded-3xl border border-white/10 bg-white/5 p-6 text-slate-200 backdrop-blur-xl"
+                        style={{ boxShadow: neoCardShadow }}
+                      >
+                        <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80">Vision</p>
+                        <p className="mt-3 text-base leading-relaxed text-slate-200/90">{renderTextWithLinks(visionStatement)}</p>
+                      </div>
+                    )}
                   </div>
-                  {hasText(visionStatement) && (
-                    <div
-                      data-showcase-element="vision-card"
-                      className="rounded-3xl border border-white/10 bg-white/5 p-6 text-slate-200 backdrop-blur-xl"
+                  {primaryRisk && (
+                    <aside
+                      data-showcase-aside="risk"
+                      className="max-w-sm rounded-3xl border border-amber-400/30 bg-gradient-to-br from-amber-500/20 via-amber-500/10 to-amber-300/10 p-6 text-sm leading-relaxed text-amber-100 backdrop-blur-xl"
                       style={{ boxShadow: neoCardShadow }}
                     >
-                      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80">Vision</p>
-                      <p className="mt-3 text-base leading-relaxed text-slate-200/90">{renderTextWithLinks(visionStatement)}</p>
-                    </div>
+                      <AlertTriangle className="mb-4 h-8 w-8 text-amber-300" />
+                      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.4em] text-amber-200/90">Point de vigilance</p>
+                      <h4 className="mt-3 text-xl font-semibold text-white">{primaryRisk.title || 'Vigilance prioritaire'}</h4>
+                      <p className="mt-4 text-sm text-amber-100/90">{renderTextWithLinks(primaryRisk.description)}</p>
+                      <p className="mt-4 text-[0.65rem] font-semibold uppercase tracking-[0.4em] text-amber-200/90">Priorité : {primaryRisk.priority}</p>
+                    </aside>
                   )}
                 </div>
-                {primaryRisk && (
-                  <aside
-                    data-showcase-aside="risk"
-                    className="max-w-sm rounded-3xl border border-amber-400/30 bg-gradient-to-br from-amber-500/20 via-amber-500/10 to-amber-300/10 p-6 text-sm leading-relaxed text-amber-100 backdrop-blur-xl"
-                    style={{ boxShadow: neoCardShadow }}
-                  >
-                    <AlertTriangle className="mb-4 h-8 w-8 text-amber-300" />
-                    <p className="text-[0.65rem] font-semibold uppercase tracking-[0.4em] text-amber-200/90">Point de vigilance</p>
-                    <h4 className="mt-3 text-xl font-semibold text-white">{primaryRisk.title || 'Vigilance prioritaire'}</h4>
-                    <p className="mt-4 text-sm text-amber-100/90">{renderTextWithLinks(primaryRisk.description)}</p>
-                    <p className="mt-4 text-[0.65rem] font-semibold uppercase tracking-[0.4em] text-amber-200/90">Priorité : {primaryRisk.priority}</p>
-                  </aside>
-                )}
-              </div>
-            </section>
+              </section>
+            )}
 
-            <section
-              data-showcase-section="team"
-              className="mt-14 rounded-[32px] border border-white/10 bg-white/5 p-8 sm:p-12 text-slate-100 backdrop-blur-xl"
-              style={{ boxShadow: neoCardShadow }}
-            >
-              <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
-                <div className="max-w-3xl space-y-6 text-sm text-slate-200/90">
-                  <div>
-                    <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80">L'équipe</p>
-                    <h3 className="mt-3 text-3xl font-bold text-white">Les talents derrière la vision</h3>
-                  </div>
-                  {hasText(teamLead) && (
-                    <p>
-                      <span className="font-semibold text-white">Lead du projet :</span>{' '}
-                      {renderTextWithLinks(teamLead)}
-                    </p>
-                  )}
-                  {teamCoreMembers.length > 0 && (
+            {shouldShowPreview && (
+              <section
+                data-showcase-section="team"
+                className="mt-14 rounded-[32px] border border-white/10 bg-white/5 p-8 sm:p-12 text-slate-100 backdrop-blur-xl"
+                style={{ boxShadow: neoCardShadow }}
+              >
+                <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
+                  <div className="max-w-3xl space-y-6 text-sm text-slate-200/90">
                     <div>
-                      <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-200/90">Collectif moteur</p>
-                      {renderList(teamCoreMembers)}
+                      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80">L'équipe</p>
+                      <h3 className="mt-3 text-3xl font-bold text-white">Les talents derrière la vision</h3>
                     </div>
+                    {hasText(teamLead) && (
+                      <p>
+                        <span className="font-semibold text-white">Lead du projet :</span>{' '}
+                        {renderTextWithLinks(teamLead)}
+                      </p>
+                    )}
+                    {teamCoreMembers.length > 0 && (
+                      <div>
+                        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-200/90">Collectif moteur</p>
+                        {renderList(teamCoreMembers)}
+                      </div>
+                    )}
+                  </div>
+                  {normalizedTeams.length > 0 && (
+                    <aside
+                      data-showcase-aside="teams"
+                      className="max-w-sm rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-100 backdrop-blur-xl"
+                      style={{ boxShadow: neoCardShadow }}
+                    >
+                      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80">Alliés activés</p>
+                      <div className="mt-4 space-y-3">
+                        {normalizedTeams.map(team => (
+                          <div key={team.id} className="flex items-start gap-3">
+                            <Users className="mt-1 h-4 w-4 text-sky-300" />
+                            <div>
+                              <p className="text-sm font-semibold text-white">{team.name}</p>
+                              <p className="text-xs text-slate-300/80">{team.expertise}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </aside>
                   )}
                 </div>
-                {normalizedTeams.length > 0 && (
-                  <aside
-                    data-showcase-aside="teams"
-                    className="max-w-sm rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-100 backdrop-blur-xl"
-                    style={{ boxShadow: neoCardShadow }}
-                  >
-                    <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80">Alliés activés</p>
-                    <div className="mt-4 space-y-3">
-                      {normalizedTeams.map(team => (
-                        <div key={team.id} className="flex items-start gap-3">
-                          <Users className="mt-1 h-4 w-4 text-sky-300" />
-                          <div>
-                            <p className="text-sm font-semibold text-white">{team.name}</p>
-                            <p className="text-xs text-slate-300/80">{team.expertise}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </aside>
-                )}
-              </div>
-            </section>
+              </section>
+            )}
 
-            {(runway || timelineSummary) && (
+            {shouldShowPreview && (runway || timelineSummary) && (
               <section
                 data-showcase-section="timeline"
                 className="mt-14 rounded-[32px] border border-white/10 bg-gradient-to-br from-indigo-500/25 via-transparent to-sky-500/25 p-8 sm:p-12 text-slate-100 backdrop-blur-xl"
