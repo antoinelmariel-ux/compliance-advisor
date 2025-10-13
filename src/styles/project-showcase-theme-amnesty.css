@@ -78,9 +78,20 @@
 }
 
 [data-showcase-theme='amnesty'] [data-showcase-theme-switcher] {
+  position: relative;
+  border-radius: 0;
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--showcase-notch-size)) 0,
+    100% var(--showcase-notch-size),
+    100% 100%,
+    var(--showcase-notch-size) 100%,
+    0 calc(100% - var(--showcase-notch-size))
+  );
   background: rgba(255, 255, 255, 0.88);
   border: 2px solid rgba(18, 18, 18, 0.2);
   box-shadow: 0 20px 60px rgba(18, 18, 18, 0.16);
+  padding: clamp(1rem, 2vw, 1.5rem);
 }
 
 [data-showcase-theme='amnesty'] [data-showcase-theme-switcher]::after {
