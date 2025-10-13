@@ -26,12 +26,6 @@
   --netflix-shadow-hero: 0 28px 70px rgba(0, 0, 0, 0.55);
   --netflix-shadow-card: 0 32px 80px rgba(0, 0, 0, 0.6);
   --netflix-shadow-floating: 0 24px 45px rgba(0, 0, 0, 0.5);
-  --showcase-hero-gradient: linear-gradient(120deg, rgba(229, 9, 20, 0.95), rgba(244, 63, 94, 0.85), rgba(249, 250, 251, 0.2));
-  --showcase-hero-text-shadow: 0 35px 80px rgba(229, 9, 20, 0.55);
-  --showcase-hero-slogan-shadow: 0 24px 60px rgba(244, 63, 94, 0.45);
-  --showcase-hero-highlight-shadow: 0 28px 70px rgba(229, 9, 20, 0.5);
-  --showcase-surface-shadow: var(--netflix-shadow-card);
-  --showcase-input-shadow: inset 8px 8px 18px rgba(10, 10, 12, 0.65), inset -8px -8px 18px rgba(60, 60, 75, 0.25);
   --netflix-radius-lg: 36px;
   --netflix-radius-md: 26px;
   --netflix-radius-sm: 18px;
@@ -383,47 +377,6 @@
 :where([data-showcase-scope][data-showcase-theme='netflix']) header[data-showcase-section='hero'] p {
   color: rgba(255, 255, 255, 0.78);
   font-size: clamp(1.05rem, 2vw, 1.45rem);
-}
-
-@keyframes showcaseHeroGradientShift {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 50% 46%;
-  }
-  100% {
-    background-position: 100% 50%;
-  }
-}
-
-:where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-element='hero-title'] {
-  background-image: var(--showcase-hero-gradient);
-  background-size: 230% 230%;
-  background-position: 0% 50%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  text-shadow: var(--showcase-hero-text-shadow);
-  animation: showcaseHeroGradientShift 18s ease-in-out infinite alternate;
-}
-
-:where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-element='hero-slogan'] {
-  text-shadow: var(--showcase-hero-slogan-shadow);
-}
-
-:where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-element='hero-highlight-value'] {
-  text-shadow: var(--showcase-hero-highlight-shadow);
-}
-
-:where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-surface='raised'] {
-  box-shadow: var(--showcase-surface-shadow);
-}
-
-:where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-input] {
-  box-shadow: var(--showcase-input-shadow);
-  background-color: rgba(8, 8, 12, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 :where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-element='hero-highlight'],
