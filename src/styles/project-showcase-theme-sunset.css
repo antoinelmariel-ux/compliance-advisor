@@ -58,6 +58,18 @@
   filter: blur(120px);
 }
 
+[data-showcase-theme='sunset'][data-showcase-card]::before,
+[data-showcase-theme='sunset'][data-showcase-card]::after,
+[data-showcase-theme='sunset'] [data-showcase-layer],
+[data-showcase-theme='sunset'] :is([data-showcase-section], header[data-showcase-section='hero'])::before,
+[data-showcase-theme='sunset'] :is([data-showcase-section], header[data-showcase-section='hero'])::after,
+[data-showcase-theme='sunset'] :is([data-showcase-section='problem'], [data-showcase-section='innovation'], [data-showcase-section='team'])::before,
+[data-showcase-theme='sunset'] :is([data-showcase-section='problem'], [data-showcase-section='innovation'], [data-showcase-section='team'])::after,
+[data-showcase-theme='sunset'] :is([data-showcase-section='solution'], [data-showcase-section='evidence'], [data-showcase-section='timeline'])::before,
+[data-showcase-theme='sunset'] :is([data-showcase-section='solution'], [data-showcase-section='evidence'], [data-showcase-section='timeline'])::after {
+  pointer-events: none;
+}
+
 [data-showcase-theme='sunset'][data-showcase-card]::after {
   background: radial-gradient(circle, rgba(118, 75, 162, 0.12), transparent 70%);
 }
