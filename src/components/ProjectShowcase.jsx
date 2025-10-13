@@ -414,6 +414,8 @@ export const ProjectShowcase = ({
   const shouldShowPreview = !isEditing || !canEdit;
   const formId = 'project-showcase-edit-form';
   const isInspirationTheme = selectedTheme === 'inspiration';
+  const isNetflixTheme = selectedTheme === 'netflix';
+  const isAmnestyTheme = selectedTheme === 'amnesty';
 
   const getThemeClasses = (defaultClasses, inspirationClasses, themeOverrides) => {
     if (themeOverrides && typeof themeOverrides === 'object') {
@@ -424,6 +426,12 @@ export const ProjectShowcase = ({
     }
 
     return isInspirationTheme ? inspirationClasses : defaultClasses;
+  };
+
+  const combineTransform = (baseTransform, extraTransform) => {
+    const base = typeof baseTransform === 'string' ? baseTransform.trim() : '';
+    const extra = typeof extraTransform === 'string' ? extraTransform.trim() : '';
+    return [base, extra].filter(Boolean).join(' ');
   };
 
   const handleStartEditing = useCallback(() => {
@@ -502,6 +510,51 @@ export const ProjectShowcase = ({
   const runway = useMemo(() => computeRunway(answers), [answers]);
   const timelineSummary = useMemo(() => computeTimelineSummary(timelineDetails), [timelineDetails]);
   const primaryRisk = useMemo(() => getPrimaryRisk(analysis), [analysis]);
+  const [parallaxOffset, setParallaxOffset] = useState({ x: 0, y: 0 });
+
+  const handleParallaxMove = useCallback((event) => {
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const offsetX = (event.clientX - bounds.left) / bounds.width - 0.5;
+    const offsetY = (event.clientY - bounds.top) / bounds.height - 0.5;
+
+    setParallaxOffset({
+      x: Math.max(-0.5, Math.min(0.5, offsetX)),
+      y: Math.max(-0.5, Math.min(0.5, offsetY))
+    });
+  }, []);
+
+  const handleParallaxLeave = useCallback(() => {
+    setParallaxOffset({ x: 0, y: 0 });
+  }, []);
+
+  const heroTitleStyle = useMemo(
+    () => ({
+      backgroundImage: 'linear-gradient(120deg, #a855f7, #6366f1, #0ea5e9)',
+      backgroundSize: '200% 200%',
+      backgroundPosition: `${50 + parallaxOffset.x * 30}% ${50 + parallaxOffset.y * 30}%`,
+      WebkitBackgroundClip: 'text',
+      color: 'transparent',
+      textShadow: '0 25px 60px rgba(79, 70, 229, 0.45)',
+      transform: `translate3d(${parallaxOffset.x * 10}px, ${parallaxOffset.y * 16}px, 0)`,
+      transition: 'background-position 0.25s ease, transform 0.25s ease'
+    }),
+    [parallaxOffset]
+  );
+
+  const parallaxLayers = useMemo(
+    () => ({
+      far: {
+        transform: `translate3d(${parallaxOffset.x * 12}px, ${parallaxOffset.y * 12}px, 0)`
+      },
+      mid: {
+        transform: `translate3d(${parallaxOffset.x * 20}px, ${parallaxOffset.y * 20}px, 0)`
+      },
+      near: {
+        transform: `translate3d(${parallaxOffset.x * 32}px, ${parallaxOffset.y * 32}px, 0)`
+      }
+    }),
+    [parallaxOffset]
+  );
 
   const heroHighlights = useMemo(
     () =>
@@ -611,6 +664,9 @@ export const ProjectShowcase = ({
     };
   }, [selectedTheme]);
 
+  const neoCardShadow = '18px 18px 45px rgba(15, 23, 42, 0.55), -18px -18px 45px rgba(148, 163, 184, 0.12)';
+  const neoInsetShadow = 'inset 8px 8px 16px rgba(15, 23, 42, 0.45), inset -8px -8px 16px rgba(148, 163, 184, 0.15)';
+
   const showcaseCard = (
     <div
       data-showcase-card
@@ -623,14 +679,156 @@ export const ProjectShowcase = ({
           amnesty: 'relative w-full overflow-hidden bg-[#fff9c2] text-zinc-900'
         }
       )}
+      onMouseMove={handleParallaxMove}
+      onMouseLeave={handleParallaxLeave}
       ref={showcaseCardRef}
     >
-      <div className="pointer-events-none absolute inset-0 overflow-hidden" data-showcase-overlay>
-        <div aria-hidden="true" data-showcase-layer="glow-far" />
-        <div aria-hidden="true" data-showcase-layer="glow-mid" />
-        <div aria-hidden="true" data-showcase-layer="glow-near" />
-        <div aria-hidden="true" data-showcase-layer="glow-overlay" />
-      </div>
+      {isNetflixTheme && (
+        <div className="pointer-events-none absolute inset-0 overflow-hidden" data-showcase-overlay>
+          <div
+            aria-hidden="true"
+            data-showcase-layer="glow-far"
+            style={{
+              position: 'absolute',
+              top: '-18%',
+              right: '-12%',
+              width: '58%',
+              height: '70%',
+              background: 'linear-gradient(125deg, rgba(229, 9, 20, 0.48), rgba(15, 8, 12, 0.05))',
+              filter: 'blur(120px)',
+              transform: combineTransform(parallaxLayers.far?.transform, 'skewY(-6deg)')
+            }}
+          />
+          <div
+            aria-hidden="true"
+            data-showcase-layer="glow-mid"
+            style={{
+              position: 'absolute',
+              bottom: '-22%',
+              left: '-18%',
+              width: '60%',
+              height: '65%',
+              background: 'linear-gradient(140deg, rgba(229, 9, 20, 0.4), transparent)',
+              filter: 'blur(110px)',
+              transform: combineTransform(
+                parallaxLayers.mid?.transform,
+                'skewY(-10deg) rotate(-3deg)'
+              )
+            }}
+          />
+          <div
+            aria-hidden="true"
+            data-showcase-layer="glow-near"
+            style={{
+              position: 'absolute',
+              top: '12%',
+              left: '8%',
+              width: '42%',
+              height: '45%',
+              background: 'linear-gradient(160deg, rgba(244, 63, 94, 0.32), transparent)',
+              border: '1px solid rgba(229, 9, 20, 0.2)',
+              transform: combineTransform(parallaxLayers.near?.transform, 'skewX(-12deg)'),
+              boxShadow: '0 0 140px rgba(229, 9, 20, 0.35)',
+              mixBlendMode: 'screen'
+            }}
+          />
+          <div
+            aria-hidden="true"
+            data-showcase-layer="glow-overlay"
+            style={{
+              position: 'absolute',
+              inset: 0,
+              background:
+                'radial-gradient(circle at 12% 18%, rgba(229, 9, 20, 0.28), transparent 60%), radial-gradient(circle at 88% 8%, rgba(244, 63, 94, 0.22), transparent 68%)',
+              mixBlendMode: 'screen'
+            }}
+          />
+        </div>
+      )}
+
+      {isAmnestyTheme && (
+        <div className="pointer-events-none absolute inset-0 overflow-hidden" data-showcase-overlay>
+          <div
+            aria-hidden="true"
+            data-showcase-layer="glow-far"
+            style={{
+              position: 'absolute',
+              top: '-12%',
+              left: '-10%',
+              width: '55%',
+              height: '65%',
+              background: 'linear-gradient(135deg, rgba(255, 237, 0, 0.45), transparent)',
+              filter: 'blur(90px)',
+              transform: combineTransform(parallaxLayers.far?.transform, 'skewY(-12deg)')
+            }}
+          />
+          <div
+            aria-hidden="true"
+            data-showcase-layer="glow-mid"
+            style={{
+              position: 'absolute',
+              bottom: '-18%',
+              right: '-8%',
+              width: '48%',
+              height: '58%',
+              background: 'linear-gradient(120deg, rgba(255, 191, 0, 0.38), transparent)',
+              filter: 'blur(80px)',
+              transform: combineTransform(parallaxLayers.mid?.transform, 'skewX(-10deg)')
+            }}
+          />
+          <div
+            aria-hidden="true"
+            data-showcase-layer="glow-near"
+            style={{
+              position: 'absolute',
+              inset: '18% 12% auto 12%',
+              height: '38%',
+              background:
+                'repeating-linear-gradient(135deg, rgba(18, 18, 18, 0.22) 0px, rgba(18, 18, 18, 0.22) 12px, transparent 12px, transparent 26px)',
+              boxShadow: '0 0 60px rgba(18, 18, 18, 0.22)',
+              mixBlendMode: 'multiply'
+            }}
+          />
+          <div
+            aria-hidden="true"
+            data-showcase-layer="glow-overlay"
+            style={{
+              position: 'absolute',
+              inset: 0,
+              background:
+                'radial-gradient(circle at 25% 18%, rgba(255, 237, 0, 0.35), transparent 65%), radial-gradient(circle at 80% 4%, rgba(255, 191, 0, 0.25), transparent 68%)'
+            }}
+          />
+        </div>
+      )}
+
+      {!isInspirationTheme && !isNetflixTheme && !isAmnestyTheme && (
+        <div className="pointer-events-none absolute inset-0 overflow-hidden" data-showcase-overlay>
+          <div
+            className="absolute -top-48 -left-32 h-80 w-80 rounded-full bg-indigo-500/20 blur-3xl transition-transform duration-300 ease-out"
+            style={parallaxLayers.far}
+            aria-hidden="true"
+            data-showcase-layer="glow-far"
+          />
+          <div
+            className="absolute -bottom-40 -right-24 h-96 w-96 rounded-full bg-sky-500/25 blur-[120px] transition-transform duration-500 ease-out"
+            style={parallaxLayers.mid}
+            aria-hidden="true"
+            data-showcase-layer="glow-mid"
+          />
+          <div
+            className="absolute top-1/2 left-1/2 h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/10 bg-white/5 backdrop-blur-xl transition-transform duration-300 ease-out"
+            style={parallaxLayers.near}
+            aria-hidden="true"
+            data-showcase-layer="glow-near"
+          />
+          <div
+            className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.12),_transparent_60%)]"
+            aria-hidden="true"
+            data-showcase-layer="glow-overlay"
+          />
+        </div>
+      )}
 
       <div className={getThemeClasses('relative px-6 pt-10 pb-16 sm:px-14 sm:pt-16 sm:pb-20', 'relative px-6 pt-10 pb-16 sm:px-14 sm:pt-16 sm:pb-20')}>
         {showThemeControls && (
@@ -696,33 +894,41 @@ export const ProjectShowcase = ({
 
         <header
           data-showcase-section="hero"
-          data-showcase-surface="raised"
           className={getThemeClasses(
             'rounded-[32px] border border-white/10 bg-white/5 p-8 sm:p-12 backdrop-blur-xl',
             'rounded-[32px] p-8 sm:p-12'
           )}
+          style={
+            isInspirationTheme
+              ? undefined
+              : { boxShadow: '20px 20px 60px rgba(2, 6, 23, 0.45), -18px -18px 50px rgba(148, 163, 184, 0.12)' }
+          }
         >
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-            <div className="max-w-3xl">
-              {shouldShowPreview ? (
-                <>
-                  <h2
-                    className="mt-6 text-5xl font-black leading-tight sm:text-6xl sm:leading-[1.05]"
-                  data-showcase-element="hero-title"
+          <div className="max-w-3xl">
+            {shouldShowPreview ? (
+              <>
+                <h2
+                  className="mt-6 text-5xl font-black leading-tight sm:text-6xl sm:leading-[1.05]"
+                  style={heroTitleStyle}
+                >
+                  {safeProjectName}
+                </h2>
+                {hasText(slogan) && (
+                  <p
+                    className={getThemeClasses(
+                      'mt-5 text-2xl font-semibold text-indigo-200 sm:text-3xl',
+                      'mt-5 text-2xl font-semibold sm:text-3xl'
+                    )}
+                    style={
+                      isInspirationTheme
+                        ? undefined
+                        : { textShadow: '0 12px 40px rgba(79, 70, 229, 0.4)' }
+                    }
                   >
-                    {safeProjectName}
-                  </h2>
-                  {hasText(slogan) && (
-                    <p
-                      className={getThemeClasses(
-                        'mt-5 text-2xl font-semibold text-indigo-200 sm:text-3xl',
-                        'mt-5 text-2xl font-semibold sm:text-3xl'
-                      )}
-                    data-showcase-element="hero-slogan"
-                    >
-                      {renderTextWithLinks(slogan)}
-                    </p>
-                  )}
+                    {renderTextWithLinks(slogan)}
+                  </p>
+                )}
               </>
             ) : (
               <>
@@ -770,11 +976,11 @@ export const ProjectShowcase = ({
               <form
                 id={formId}
                 onSubmit={handleSubmitEdit}
-                data-showcase-surface="raised"
                 className={getThemeClasses(
                   'mt-10 space-y-6 rounded-[28px] border border-white/15 bg-slate-900/60 p-6 sm:p-8 text-slate-100 backdrop-blur-xl',
                   'mt-10 space-y-6 rounded-[28px] p-6 sm:p-8'
                 )}
+                style={isInspirationTheme ? undefined : { boxShadow: neoCardShadow }}
               >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
@@ -833,11 +1039,11 @@ export const ProjectShowcase = ({
                             type="date"
                             value={value}
                             onChange={event => handleFieldChange(fieldId, event.target.value)}
-                            data-showcase-input
                             className={getThemeClasses(
                               'mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-400/40',
                               'mt-2 w-full rounded-xl px-3 py-2 text-sm focus:outline-none'
                             )}
+                            style={isInspirationTheme ? undefined : { boxShadow: neoInsetShadow }}
                           />
                         ) : isLong || isMulti ? (
                           <textarea
@@ -845,11 +1051,11 @@ export const ProjectShowcase = ({
                             value={value}
                             onChange={event => handleFieldChange(fieldId, event.target.value)}
                             rows={isMulti ? 4 : 5}
-                            data-showcase-input
                             className={getThemeClasses(
                               'mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-400/40',
                               'mt-2 w-full rounded-xl px-3 py-2 text-sm focus:outline-none'
                             )}
+                            style={isInspirationTheme ? undefined : { boxShadow: neoInsetShadow }}
                           />
                         ) : (
                           <input
@@ -857,11 +1063,11 @@ export const ProjectShowcase = ({
                             type="text"
                             value={value}
                             onChange={event => handleFieldChange(fieldId, event.target.value)}
-                            data-showcase-input
                             className={getThemeClasses(
                               'mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-400/40',
                               'mt-2 w-full rounded-xl px-3 py-2 text-sm focus:outline-none'
                             )}
+                            style={isInspirationTheme ? undefined : { boxShadow: neoInsetShadow }}
                           />
                         )}
                         {helperText && (
@@ -905,11 +1111,11 @@ export const ProjectShowcase = ({
                     <div
                       key={highlight.id}
                       data-showcase-element="hero-highlight"
-                      data-showcase-surface="raised"
                       className={getThemeClasses(
                         'rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-200 backdrop-blur-xl',
                         'rounded-3xl p-6 text-sm'
                       )}
+                      style={isInspirationTheme ? undefined : { boxShadow: neoCardShadow }}
                     >
                       <p
                         className={getThemeClasses(
@@ -921,7 +1127,11 @@ export const ProjectShowcase = ({
                       </p>
                       <p
                         className={getThemeClasses('mt-3 text-3xl font-bold text-white', 'mt-3 text-3xl font-bold')}
-                        data-showcase-element="hero-highlight-value"
+                        style={
+                          isInspirationTheme
+                            ? undefined
+                            : { textShadow: '0 18px 45px rgba(79, 70, 229, 0.45)' }
+                        }
                       >
                         {highlight.value}
                       </p>
@@ -937,11 +1147,11 @@ export const ProjectShowcase = ({
             {shouldShowPreview && (
               <section
                 data-showcase-section="problem"
-                data-showcase-surface="raised"
                 className={getThemeClasses(
                   'mt-14 rounded-[32px] border border-white/10 bg-white/5 p-8 sm:p-12 text-slate-100 backdrop-blur-xl',
                   'mt-14 rounded-[32px] p-8 sm:p-12'
                 )}
+                style={isInspirationTheme ? undefined : { boxShadow: neoCardShadow }}
               >
                 <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
                   <div className="max-w-3xl">
@@ -967,11 +1177,11 @@ export const ProjectShowcase = ({
             {shouldShowPreview && (
               <section
                 data-showcase-section="solution"
-                data-showcase-surface="raised"
                 className={getThemeClasses(
                   'mt-14 rounded-[32px] border border-white/10 bg-gradient-to-br from-indigo-500/30 via-transparent to-sky-500/30 p-[1px]',
                   'mt-14 rounded-[32px] p-0'
                 )}
+                style={isInspirationTheme ? undefined : { boxShadow: neoCardShadow }}
               >
                 <div
                   className={getThemeClasses(
@@ -1001,11 +1211,11 @@ export const ProjectShowcase = ({
                     {hasText(solutionDescription) && (
                       <div
                         data-showcase-element="solution-card"
-                        data-showcase-surface="raised"
                         className={getThemeClasses(
                           'rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-200 backdrop-blur-xl',
                           'rounded-3xl p-6 text-sm'
                         )}
+                        style={isInspirationTheme ? undefined : { boxShadow: neoCardShadow }}
                       >
                         <p
                           className={getThemeClasses(
@@ -1025,11 +1235,11 @@ export const ProjectShowcase = ({
                     {solutionBenefits.length > 0 && (
                       <div
                         data-showcase-element="solution-card"
-                        data-showcase-surface="raised"
                         className={getThemeClasses(
                           'rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-200 backdrop-blur-xl',
                           'rounded-3xl p-6 text-sm'
                         )}
+                        style={isInspirationTheme ? undefined : { boxShadow: neoCardShadow }}
                       >
                         <p
                           className={getThemeClasses(
@@ -1045,11 +1255,11 @@ export const ProjectShowcase = ({
                     {hasText(solutionComparison) && (
                       <div
                         data-showcase-element="solution-card"
-                        data-showcase-surface="raised"
                         className={getThemeClasses(
                           'rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-200 backdrop-blur-xl',
                           'rounded-3xl p-6 text-sm'
                         )}
+                        style={isInspirationTheme ? undefined : { boxShadow: neoCardShadow }}
                       >
                         <p
                           className={getThemeClasses(
@@ -1074,8 +1284,8 @@ export const ProjectShowcase = ({
             {shouldShowPreview && hasText(innovationProcess) && (
               <section
                 data-showcase-section="innovation"
-                data-showcase-surface="raised"
                 className="mt-14 rounded-[32px] border border-white/10 bg-white/5 p-8 sm:p-12 text-slate-100 backdrop-blur-xl"
+                style={{ boxShadow: neoCardShadow }}
               >
                 <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
                   <div>
@@ -1084,8 +1294,8 @@ export const ProjectShowcase = ({
                   </div>
                   <div
                     data-showcase-element="innovation-card"
-                    data-showcase-surface="raised"
                     className="rounded-3xl border border-white/10 bg-white/5 p-6 text-sm leading-relaxed text-slate-200 backdrop-blur-xl"
+                    style={{ boxShadow: neoCardShadow }}
                   >
                     <Compass className="mb-4 h-7 w-7 text-sky-300" />
                     {renderTextWithLinks(innovationProcess)}
@@ -1097,8 +1307,8 @@ export const ProjectShowcase = ({
             {shouldShowPreview && (
               <section
                 data-showcase-section="evidence"
-                data-showcase-surface="raised"
                 className="mt-14 rounded-[32px] border border-white/10 bg-white/5 p-8 sm:p-12 text-slate-100 backdrop-blur-xl"
+                style={{ boxShadow: neoCardShadow }}
               >
                 <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
                   <div className="max-w-3xl space-y-8">
@@ -1109,8 +1319,8 @@ export const ProjectShowcase = ({
                         {timelineSummary && (
                           <div
                             data-showcase-element="metric-card"
-                            data-showcase-surface="raised"
                             className="rounded-3xl border border-white/10 bg-white/5 p-5 text-sm text-slate-200 backdrop-blur-xl"
+                            style={{ boxShadow: neoCardShadow }}
                           >
                             <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/70">Préparation au lancement</p>
                             <p className="mt-2 text-2xl font-bold text-white">{`${timelineSummary.weeks} sem.`}</p>
@@ -1121,8 +1331,8 @@ export const ProjectShowcase = ({
                         )}
                         <div
                           data-showcase-element="metric-card"
-                          data-showcase-surface="raised"
                           className="rounded-3xl border border-white/10 bg-white/5 p-5 text-sm text-slate-200 backdrop-blur-xl"
+                          style={{ boxShadow: neoCardShadow }}
                         >
                           <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/70">Complexité estimée</p>
                           <p className="mt-2 text-2xl font-bold text-white">{complexity}</p>
@@ -1133,8 +1343,8 @@ export const ProjectShowcase = ({
                     {hasText(visionStatement) && (
                       <div
                         data-showcase-element="vision-card"
-                        data-showcase-surface="raised"
                         className="rounded-3xl border border-white/10 bg-white/5 p-6 text-slate-200 backdrop-blur-xl"
+                        style={{ boxShadow: neoCardShadow }}
                       >
                         <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80">Vision</p>
                         <p className="mt-3 text-base leading-relaxed text-slate-200/90">{renderTextWithLinks(visionStatement)}</p>
@@ -1144,8 +1354,8 @@ export const ProjectShowcase = ({
                   {primaryRisk && (
                     <aside
                       data-showcase-aside="risk"
-                      data-showcase-surface="raised"
                       className="max-w-sm rounded-3xl border border-amber-400/30 bg-gradient-to-br from-amber-500/20 via-amber-500/10 to-amber-300/10 p-6 text-sm leading-relaxed text-amber-100 backdrop-blur-xl"
+                      style={{ boxShadow: neoCardShadow }}
                     >
                       <AlertTriangle className="mb-4 h-8 w-8 text-amber-300" />
                       <p className="text-[0.65rem] font-semibold uppercase tracking-[0.4em] text-amber-200/90">Point de vigilance</p>
@@ -1161,8 +1371,8 @@ export const ProjectShowcase = ({
             {shouldShowPreview && (
               <section
                 data-showcase-section="team"
-                data-showcase-surface="raised"
                 className="mt-14 rounded-[32px] border border-white/10 bg-white/5 p-8 sm:p-12 text-slate-100 backdrop-blur-xl"
+                style={{ boxShadow: neoCardShadow }}
               >
                 <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
                   <div className="max-w-3xl space-y-6 text-sm text-slate-200/90">
@@ -1184,11 +1394,11 @@ export const ProjectShowcase = ({
                     )}
                   </div>
                   {normalizedTeams.length > 0 && (
-                  <aside
-                    data-showcase-aside="teams"
-                    data-showcase-surface="raised"
-                    className="max-w-sm rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-100 backdrop-blur-xl"
-                  >
+                    <aside
+                      data-showcase-aside="teams"
+                      className="max-w-sm rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-100 backdrop-blur-xl"
+                      style={{ boxShadow: neoCardShadow }}
+                    >
                       <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80">Alliés activés</p>
                       <div className="mt-4 space-y-3">
                         {normalizedTeams.map(team => (
@@ -1210,8 +1420,8 @@ export const ProjectShowcase = ({
             {shouldShowPreview && (runway || timelineSummary) && (
               <section
                 data-showcase-section="timeline"
-                data-showcase-surface="raised"
                 className="mt-14 rounded-[32px] border border-white/10 bg-gradient-to-br from-indigo-500/25 via-transparent to-sky-500/25 p-8 sm:p-12 text-slate-100 backdrop-blur-xl"
+                style={{ boxShadow: neoCardShadow }}
               >
                 <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
                   <div className="space-y-3">
@@ -1230,9 +1440,9 @@ export const ProjectShowcase = ({
                     {timelineSummary.profiles.map(profile => (
                       <div
                         data-showcase-element="timeline-profile"
-                        data-showcase-surface="raised"
                         key={profile.id}
                         className="rounded-3xl border border-white/10 bg-white/5 p-5 text-sm text-slate-200 backdrop-blur-xl"
+                        style={{ boxShadow: neoCardShadow }}
                       >
                         <p className="text-sm font-semibold text-white">{profile.label}</p>
                         {profile.description && (
