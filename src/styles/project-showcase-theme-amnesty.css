@@ -24,6 +24,12 @@
   --showcase-border-strong: rgba(148, 163, 184, 0.3);
   --showcase-shadow-card: 0 32px 120px rgba(15, 23, 42, 0.45);
   --showcase-shadow-floating: 0 24px 80px rgba(8, 47, 73, 0.35);
+  --showcase-hero-gradient: linear-gradient(120deg, rgba(250, 204, 21, 0.95), rgba(249, 115, 22, 0.85), rgba(15, 23, 42, 0.25));
+  --showcase-hero-text-shadow: 0 30px 70px rgba(202, 138, 4, 0.5);
+  --showcase-hero-slogan-shadow: 0 20px 50px rgba(234, 179, 8, 0.4);
+  --showcase-hero-highlight-shadow: 0 24px 55px rgba(146, 64, 14, 0.4);
+  --showcase-surface-shadow: 18px 18px 45px rgba(15, 23, 42, 0.55), -18px -18px 45px rgba(148, 163, 184, 0.12);
+  --showcase-input-shadow: inset 8px 8px 16px rgba(15, 23, 42, 0.45), inset -8px -8px 16px rgba(148, 163, 184, 0.15);
   --showcase-radius-lg: 32px;
   --showcase-radius-md: 24px;
   --showcase-radius-sm: 16px;
@@ -209,6 +215,48 @@
   box-shadow: var(--showcase-shadow-floating);
   padding: 1.5rem;
   color: inherit;
+}
+
+@keyframes showcaseHeroGradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 50% 45%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
+:where([data-showcase-scope][data-showcase-theme='amnesty']) [data-showcase-element='hero-title'] {
+  background-image: var(--showcase-hero-gradient);
+  background-size: 220% 220%;
+  background-position: 0% 50%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: var(--showcase-hero-text-shadow);
+  animation: showcaseHeroGradientShift 20s ease-in-out infinite alternate;
+}
+
+:where([data-showcase-scope][data-showcase-theme='amnesty']) [data-showcase-element='hero-slogan'] {
+  text-shadow: var(--showcase-hero-slogan-shadow);
+}
+
+:where([data-showcase-scope][data-showcase-theme='amnesty']) [data-showcase-element='hero-highlight-value'] {
+  text-shadow: var(--showcase-hero-highlight-shadow);
+}
+
+:where([data-showcase-scope][data-showcase-theme='amnesty']) [data-showcase-surface='raised'] {
+  box-shadow: var(--showcase-surface-shadow);
+}
+
+:where([data-showcase-scope][data-showcase-theme='amnesty']) [data-showcase-input] {
+  box-shadow: var(--showcase-input-shadow);
+  background-color: rgba(2, 6, 23, 0.85);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  color: var(--showcase-color-text-strong);
 }
 
 :where([data-showcase-scope][data-showcase-theme='amnesty']) [data-showcase-section] ul {
