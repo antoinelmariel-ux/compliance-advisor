@@ -342,6 +342,7 @@ export const ProjectShowcase = ({
   onUpdateAnswers
 }) => {
   const closeButtonRef = useRef(null);
+  const showcaseCardRef = useRef(null);
   const rawProjectName = typeof projectName === 'string' ? projectName.trim() : '';
   const safeProjectName = rawProjectName.length > 0 ? rawProjectName : 'Votre projet';
   const normalizedTeams = Array.isArray(relevantTeams) ? relevantTeams : [];
@@ -592,6 +593,60 @@ export const ProjectShowcase = ({
     }
   }, [renderInStandalone]);
 
+  useEffect(() => {
+    if (typeof document === 'undefined') {
+      return undefined;
+    }
+
+    const rootElement = showcaseCardRef.current;
+    if (!rootElement) {
+      return undefined;
+    }
+
+    const sections = Array.from(
+      rootElement.querySelectorAll(
+        "[data-showcase-section], header[data-showcase-section='hero']"
+      )
+    );
+
+    const removeVisibility = () => {
+      sections.forEach(section => section.classList.remove('is-visible'));
+    };
+
+    if (selectedTheme !== 'inspiration') {
+      removeVisibility();
+      return undefined;
+    }
+
+    sections.forEach(section => {
+      section.classList.add('is-visible');
+    });
+
+    if (typeof IntersectionObserver !== 'function') {
+      return () => {
+        removeVisibility();
+      };
+    }
+
+    const observer = new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    sections.forEach(section => observer.observe(section));
+
+    return () => {
+      observer.disconnect();
+      removeVisibility();
+    };
+  }, [selectedTheme]);
+
   const neoCardShadow = '18px 18px 45px rgba(15, 23, 42, 0.55), -18px -18px 45px rgba(148, 163, 184, 0.12)';
   const neoInsetShadow = 'inset 8px 8px 16px rgba(15, 23, 42, 0.45), inset -8px -8px 16px rgba(148, 163, 184, 0.15)';
 
@@ -602,6 +657,7 @@ export const ProjectShowcase = ({
       className="relative w-full overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100"
       onMouseMove={handleParallaxMove}
       onMouseLeave={handleParallaxLeave}
+      ref={showcaseCardRef}
     >
       <div className="pointer-events-none absolute inset-0 overflow-hidden" data-showcase-overlay>
         <div
