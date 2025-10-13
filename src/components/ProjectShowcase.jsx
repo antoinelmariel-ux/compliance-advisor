@@ -335,7 +335,6 @@ export const ProjectShowcase = ({
   renderInStandalone = false,
   onUpdateAnswers
 }) => {
-  const overlayRef = useRef(null);
   const closeButtonRef = useRef(null);
   const rawProjectName = typeof projectName === 'string' ? projectName.trim() : '';
   const safeProjectName = rawProjectName.length > 0 ? rawProjectName : 'Votre projet';
@@ -577,8 +576,8 @@ export const ProjectShowcase = ({
       return;
     }
 
-    if (overlayRef.current) {
-      overlayRef.current.scrollTop = 0;
+    if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     if (closeButtonRef.current && typeof closeButtonRef.current.focus === 'function') {
@@ -586,7 +585,6 @@ export const ProjectShowcase = ({
     }
   }, [renderInStandalone]);
 
-  const neoPanelShadow = '35px 35px 80px rgba(2, 6, 23, 0.65), -25px -25px 70px rgba(148, 163, 184, 0.12)';
   const neoCardShadow = '18px 18px 45px rgba(15, 23, 42, 0.55), -18px -18px 45px rgba(148, 163, 184, 0.12)';
   const neoInsetShadow = 'inset 8px 8px 16px rgba(15, 23, 42, 0.45), inset -8px -8px 16px rgba(148, 163, 184, 0.15)';
 
@@ -594,8 +592,7 @@ export const ProjectShowcase = ({
     <div
       data-showcase-card
       data-showcase-theme={selectedTheme}
-      className="relative w-full overflow-hidden rounded-[42px] border border-white/10 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100"
-      style={{ boxShadow: neoPanelShadow }}
+      className="relative w-full overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100"
       onMouseMove={handleParallaxMove}
       onMouseLeave={handleParallaxLeave}
     >
@@ -1094,24 +1091,14 @@ export const ProjectShowcase = ({
   }
 
   return (
-    <div
-      ref={renderInStandalone ? undefined : overlayRef}
+    <section
       data-showcase-scope
       data-showcase-theme={selectedTheme}
-      className="fixed inset-0 z-50 flex flex-col items-center justify-start overflow-y-auto bg-slate-950/80 backdrop-blur pt-10 pb-16 sm:pt-16 sm:pb-20"
-      role="dialog"
-      aria-modal="true"
+      className="w-full px-4 py-10 sm:px-8"
       aria-label="Vitrine marketing du projet"
     >
-      <button
-        type="button"
-        className="absolute inset-0"
-        aria-label="Fermer la vitrine"
-        onClick={onClose}
-      />
-
-      <div className="relative w-full px-4 py-10 sm:px-8 sm:py-12">{showcaseCard}</div>
-    </div>
+      <div className="w-full">{showcaseCard}</div>
+    </section>
   );
 };
 

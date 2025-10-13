@@ -15,7 +15,7 @@ import { analyzeAnswers } from './utils/rules.js';
 import { extractProjectName } from './utils/projects.js';
 import { createDemoProject } from './data/demoProject.js';
 
-const APP_VERSION = 'v1.0.10';
+const APP_VERSION = 'v1.0.12';
 
 const isAnswerProvided = (value) => {
   if (Array.isArray(value)) {
@@ -123,6 +123,7 @@ export const App = () => {
   const [teams, setTeams] = useState(initialTeams);
   const [isHydrated, setIsHydrated] = useState(false);
   const persistTimeoutRef = useRef(null);
+  const previousScreenRef = useRef(null);
 
   useEffect(() => {
     const savedState = loadPersistedState();
@@ -514,10 +515,18 @@ export const App = () => {
       questions: visibleQuestions.length > 0 ? visibleQuestions : questions,
       timelineDetails
     });
-  }, [projects, questions, rules, teams, shouldShowQuestion]);
+    previousScreenRef.current = screen;
+    setScreen('showcase');
+  }, [projects, questions, rules, teams, screen, shouldShowQuestion]);
 
   const handleCloseProjectShowcase = useCallback(() => {
     setShowcaseProjectContext(null);
+    if (previousScreenRef.current) {
+      setScreen(previousScreenRef.current);
+    } else {
+      setScreen('home');
+    }
+    previousScreenRef.current = null;
   }, []);
 
   const upsertProject = useCallback((entry) => {
@@ -774,7 +783,7 @@ export const App = () => {
               onNavigateToQuestion={handleNavigateToQuestion}
               onProceedToSynthesis={handleProceedToSynthesis}
             />
-          ) : (
+          ) : screen === 'synthesis' ? (
             <SynthesisReport
               answers={answers}
               analysis={analysis}
@@ -786,7 +795,19 @@ export const App = () => {
               onSubmitProject={handleSubmitProject}
               isExistingProject={Boolean(activeProjectId)}
             />
-          )
+          ) : screen === 'showcase' ? (
+            showcaseProjectContext ? (
+              <ProjectShowcase
+                projectName={showcaseProjectContext.projectName}
+                onClose={handleCloseProjectShowcase}
+                analysis={showcaseProjectContext.analysis}
+                relevantTeams={showcaseProjectContext.relevantTeams}
+                questions={showcaseProjectContext.questions}
+                answers={showcaseProjectContext.answers}
+                timelineDetails={showcaseProjectContext.timelineDetails}
+              />
+            ) : null
+          ) : null
         ) : (
           <BackOffice
             questions={questions}
@@ -804,18 +825,6 @@ export const App = () => {
           Compliance Advisor · Version {APP_VERSION}
         </p>
       </footer>
-
-      {showcaseProjectContext && (
-        <ProjectShowcase
-          projectName={showcaseProjectContext.projectName}
-          onClose={handleCloseProjectShowcase}
-          analysis={showcaseProjectContext.analysis}
-          relevantTeams={showcaseProjectContext.relevantTeams}
-          questions={showcaseProjectContext.questions}
-          answers={showcaseProjectContext.answers}
-          timelineDetails={showcaseProjectContext.timelineDetails}
-        />
-      )}
     </div>
   );
 };
