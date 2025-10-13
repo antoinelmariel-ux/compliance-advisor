@@ -9,6 +9,12 @@ import {
   Edit,
   Compass
 } from './icons.js';
+import {
+  AppleShowcaseContainer,
+  NetflixShowcaseContainer,
+  AmnestyShowcaseContainer
+} from './themes/ThemeContainers.jsx';
+
 import { formatAnswer } from '../utils/questions.js';
 import { renderTextWithLinks } from '../utils/linkify.js';
 
@@ -43,11 +49,12 @@ const SHOWCASE_THEME_STORAGE_KEY = 'compliance-advisor.showcase-theme';
 
 const SHOWCASE_THEMES = [
   {
-    id: 'inspiration',
-    label: 'Inspiration',
-    shortLabel: 'Inspiration',
+    id: 'apple',
+    label: 'Apple Keynote',
+    shortLabel: 'Apple',
     description:
-      'Style Apple clair : typographie SF Pro, surfaces immaculées et accents bleus subtils.',
+      'Esprit Apple Keynote : lumière diffuse, typographie SF Pro et halo bleu précis.',
+    component: AppleShowcaseContainer,
   },
   {
     id: 'netflix',
@@ -55,6 +62,7 @@ const SHOWCASE_THEMES = [
     shortLabel: 'Netflix',
     description:
       'Ambiance Netflix : fond cinématographique sombre, rouge signature et halos lumineux.',
+    component: NetflixShowcaseContainer,
   },
   {
     id: 'amnesty',
@@ -62,8 +70,16 @@ const SHOWCASE_THEMES = [
     shortLabel: 'Amnesty',
     description:
       "Contrastes noir/jaune inspirés d’Amnesty International, typographie militante et badges manifestes.",
+    component: AmnestyShowcaseContainer,
   },
 ];
+
+const THEME_CONTAINERS = {
+  apple: AppleShowcaseContainer,
+  netflix: NetflixShowcaseContainer,
+  amnesty: AmnestyShowcaseContainer
+};
+
 
 const SHOWCASE_FIELD_CONFIG = [
   { id: 'projectName', fallbackLabel: 'Nom du projet', fallbackType: 'text' },
@@ -355,7 +371,7 @@ export const ProjectShowcase = ({
   );
 
   const [selectedTheme, setSelectedTheme] = useState(() => {
-    const fallbackTheme = SHOWCASE_THEMES[0]?.id || 'inspiration';
+    const fallbackTheme = SHOWCASE_THEMES[0]?.id || 'apple';
 
     if (typeof window === 'undefined' || typeof window.localStorage === 'undefined') {
       return fallbackTheme;
@@ -413,11 +429,11 @@ export const ProjectShowcase = ({
   const canEdit = typeof onUpdateAnswers === 'function';
   const shouldShowPreview = !isEditing || !canEdit;
   const formId = 'project-showcase-edit-form';
-  const isInspirationTheme = selectedTheme === 'inspiration';
+  const isAppleTheme = selectedTheme === 'apple';
   const isNetflixTheme = selectedTheme === 'netflix';
   const isAmnestyTheme = selectedTheme === 'amnesty';
 
-  const getThemeClasses = (defaultClasses, inspirationClasses, themeOverrides) => {
+  const getThemeClasses = (defaultClasses, appleClasses, themeOverrides) => {
     if (themeOverrides && typeof themeOverrides === 'object') {
       const override = themeOverrides[selectedTheme];
       if (typeof override === 'string') {
@@ -425,7 +441,7 @@ export const ProjectShowcase = ({
       }
     }
 
-    return isInspirationTheme ? inspirationClasses : defaultClasses;
+    return isAppleTheme ? appleClasses : defaultClasses;
   };
 
   const combineTransform = (baseTransform, extraTransform) => {
@@ -630,7 +646,7 @@ export const ProjectShowcase = ({
       sections.forEach(section => section.classList.remove('is-visible'));
     };
 
-    if (selectedTheme !== 'inspiration') {
+    if (selectedTheme !== 'apple') {
       removeVisibility();
       return undefined;
     }
@@ -802,7 +818,7 @@ export const ProjectShowcase = ({
         </div>
       )}
 
-      {!isInspirationTheme && !isNetflixTheme && !isAmnestyTheme && (
+      {!isAppleTheme && !isNetflixTheme && !isAmnestyTheme && (
         <div className="pointer-events-none absolute inset-0 overflow-hidden" data-showcase-overlay>
           <div
             className="absolute -top-48 -left-32 h-80 w-80 rounded-full bg-indigo-500/20 blur-3xl transition-transform duration-300 ease-out"
@@ -897,7 +913,7 @@ export const ProjectShowcase = ({
             'rounded-[32px] p-8 sm:p-12'
           )}
           style={
-            isInspirationTheme
+            isAppleTheme
               ? undefined
               : { boxShadow: '20px 20px 60px rgba(2, 6, 23, 0.45), -18px -18px 50px rgba(148, 163, 184, 0.12)' }
           }
@@ -919,7 +935,7 @@ export const ProjectShowcase = ({
                       'mt-5 text-2xl font-semibold sm:text-3xl'
                     )}
                     style={
-                      isInspirationTheme
+                      isAppleTheme
                         ? undefined
                         : { textShadow: '0 12px 40px rgba(79, 70, 229, 0.4)' }
                     }
@@ -978,7 +994,7 @@ export const ProjectShowcase = ({
                   'mt-10 space-y-6 rounded-[28px] border border-white/15 bg-slate-900/60 p-6 sm:p-8 text-slate-100 backdrop-blur-xl',
                   'mt-10 space-y-6 rounded-[28px] p-6 sm:p-8'
                 )}
-                style={isInspirationTheme ? undefined : { boxShadow: neoCardShadow }}
+                style={isAppleTheme ? undefined : { boxShadow: neoCardShadow }}
               >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
@@ -1041,7 +1057,7 @@ export const ProjectShowcase = ({
                               'mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-400/40',
                               'mt-2 w-full rounded-xl px-3 py-2 text-sm focus:outline-none'
                             )}
-                            style={isInspirationTheme ? undefined : { boxShadow: neoInsetShadow }}
+                            style={isAppleTheme ? undefined : { boxShadow: neoInsetShadow }}
                           />
                         ) : isLong || isMulti ? (
                           <textarea
@@ -1053,7 +1069,7 @@ export const ProjectShowcase = ({
                               'mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-400/40',
                               'mt-2 w-full rounded-xl px-3 py-2 text-sm focus:outline-none'
                             )}
-                            style={isInspirationTheme ? undefined : { boxShadow: neoInsetShadow }}
+                            style={isAppleTheme ? undefined : { boxShadow: neoInsetShadow }}
                           />
                         ) : (
                           <input
@@ -1065,7 +1081,7 @@ export const ProjectShowcase = ({
                               'mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-400/40',
                               'mt-2 w-full rounded-xl px-3 py-2 text-sm focus:outline-none'
                             )}
-                            style={isInspirationTheme ? undefined : { boxShadow: neoInsetShadow }}
+                            style={isAppleTheme ? undefined : { boxShadow: neoInsetShadow }}
                           />
                         )}
                         {helperText && (
@@ -1113,7 +1129,7 @@ export const ProjectShowcase = ({
                         'rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-200 backdrop-blur-xl',
                         'rounded-3xl p-6 text-sm'
                       )}
-                      style={isInspirationTheme ? undefined : { boxShadow: neoCardShadow }}
+                      style={isAppleTheme ? undefined : { boxShadow: neoCardShadow }}
                     >
                       <p
                         className={getThemeClasses(
@@ -1126,7 +1142,7 @@ export const ProjectShowcase = ({
                       <p
                         className={getThemeClasses('mt-3 text-3xl font-bold text-white', 'mt-3 text-3xl font-bold')}
                         style={
-                          isInspirationTheme
+                          isAppleTheme
                             ? undefined
                             : { textShadow: '0 18px 45px rgba(79, 70, 229, 0.45)' }
                         }
@@ -1149,7 +1165,7 @@ export const ProjectShowcase = ({
                   'mt-14 rounded-[32px] border border-white/10 bg-white/5 p-8 sm:p-12 text-slate-100 backdrop-blur-xl',
                   'mt-14 rounded-[32px] p-8 sm:p-12'
                 )}
-                style={isInspirationTheme ? undefined : { boxShadow: neoCardShadow }}
+                style={isAppleTheme ? undefined : { boxShadow: neoCardShadow }}
               >
                 <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
                   <div className="max-w-3xl">
@@ -1179,7 +1195,7 @@ export const ProjectShowcase = ({
                   'mt-14 rounded-[32px] border border-white/10 bg-gradient-to-br from-indigo-500/30 via-transparent to-sky-500/30 p-[1px]',
                   'mt-14 rounded-[32px] p-0'
                 )}
-                style={isInspirationTheme ? undefined : { boxShadow: neoCardShadow }}
+                style={isAppleTheme ? undefined : { boxShadow: neoCardShadow }}
               >
                 <div
                   className={getThemeClasses(
@@ -1213,7 +1229,7 @@ export const ProjectShowcase = ({
                           'rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-200 backdrop-blur-xl',
                           'rounded-3xl p-6 text-sm'
                         )}
-                        style={isInspirationTheme ? undefined : { boxShadow: neoCardShadow }}
+                        style={isAppleTheme ? undefined : { boxShadow: neoCardShadow }}
                       >
                         <p
                           className={getThemeClasses(
@@ -1237,7 +1253,7 @@ export const ProjectShowcase = ({
                           'rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-200 backdrop-blur-xl',
                           'rounded-3xl p-6 text-sm'
                         )}
-                        style={isInspirationTheme ? undefined : { boxShadow: neoCardShadow }}
+                        style={isAppleTheme ? undefined : { boxShadow: neoCardShadow }}
                       >
                         <p
                           className={getThemeClasses(
@@ -1257,7 +1273,7 @@ export const ProjectShowcase = ({
                           'rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-200 backdrop-blur-xl',
                           'rounded-3xl p-6 text-sm'
                         )}
-                        style={isInspirationTheme ? undefined : { boxShadow: neoCardShadow }}
+                        style={isAppleTheme ? undefined : { boxShadow: neoCardShadow }}
                       >
                         <p
                           className={getThemeClasses(
@@ -1489,41 +1505,12 @@ export const ProjectShowcase = ({
       </div>
   );
 
-  if (renderInStandalone) {
-    return (
-      <div
-        data-showcase-scope
-        data-showcase-theme={selectedTheme}
-        className={getThemeClasses(
-          'min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 py-12 px-4 sm:px-8',
-          'min-h-screen bg-[#f5f5f7] py-12 px-4 sm:px-8',
-          {
-            netflix: 'min-h-screen bg-[#050507] py-12 px-4 sm:px-8',
-            amnesty: 'min-h-screen bg-[#fff9c2] py-12 px-4 sm:px-8'
-          }
-        )}
-      >
-        <div className="mx-auto w-full">{showcaseCard}</div>
-      </div>
-    );
-  }
+  const ThemeContainer = activeTheme?.component || THEME_CONTAINERS[selectedTheme] || THEME_CONTAINERS.apple;
 
   return (
-    <section
-      data-showcase-scope
-      data-showcase-theme={selectedTheme}
-      className={getThemeClasses(
-        'min-h-screen w-full bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 px-4 py-10 sm:px-8',
-        'min-h-screen w-full bg-[#f5f5f7] px-4 py-10 sm:px-8',
-        {
-          netflix: 'min-h-screen w-full bg-[#050507] px-4 py-10 sm:px-8',
-          amnesty: 'min-h-screen w-full bg-[#fff9c2] px-4 py-10 sm:px-8'
-        }
-      )}
-      aria-label="Vitrine marketing du projet"
-    >
-      <div className="w-full">{showcaseCard}</div>
-    </section>
+    <ThemeContainer renderInStandalone={renderInStandalone}>
+      {showcaseCard}
+    </ThemeContainer>
   );
 };
 

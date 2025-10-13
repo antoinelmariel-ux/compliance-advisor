@@ -1,9 +1,9 @@
 /*
- * Thème « Inspiration » – interprétation lumineuse inspirée des campagnes Apple.
+ * Thème « Apple » – interprétation lumineuse inspirée des campagnes Apple.
  * Surfaces immaculées, typographie SF Pro et halos bleus légèrement irisés.
  */
 
-[data-showcase-theme='inspiration'] {
+[data-showcase-theme='apple'] {
   --showcase-font-family: 'SF Pro Text', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --showcase-font-heading: 'SF Pro Display', 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --showcase-radius-lg: 46px;
@@ -39,24 +39,24 @@
   color-scheme: light;
 }
 
-[data-showcase-theme='inspiration'] header[data-showcase-section='hero'] {
+[data-showcase-theme='apple'] header[data-showcase-section='hero'] {
   border-radius: 58px;
   padding: clamp(2.5rem, 6vw, 4.25rem);
 }
 
-[data-showcase-theme='inspiration'] [data-showcase-section] {
+[data-showcase-theme='apple'] [data-showcase-section] {
   border-radius: 40px;
   padding: clamp(2rem, 5vw, 3.25rem);
 }
 
-[data-showcase-theme='inspiration'] [data-showcase-element],
-[data-showcase-theme='inspiration'] [data-showcase-aside] {
+[data-showcase-theme='apple'] [data-showcase-element],
+[data-showcase-theme='apple'] [data-showcase-aside] {
   border-radius: 30px;
   padding: 1.85rem;
 }
 
-[data-showcase-theme='inspiration'] [data-showcase-scope]::before,
-[data-showcase-theme='inspiration'] [data-showcase-scope]::after {
+[data-showcase-theme='apple'] [data-showcase-scope]::before,
+[data-showcase-theme='apple'] [data-showcase-scope]::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -64,30 +64,30 @@
   z-index: 0;
 }
 
-[data-showcase-theme='inspiration'] [data-showcase-scope]::before {
+[data-showcase-theme='apple'] [data-showcase-scope]::before {
   background: radial-gradient(circle at 18% 30%, rgba(180, 206, 255, 0.32), transparent 68%);
   filter: blur(70px);
   opacity: 0.8;
 }
 
-[data-showcase-theme='inspiration'] [data-showcase-scope]::after {
+[data-showcase-theme='apple'] [data-showcase-scope]::after {
   background: radial-gradient(circle at 82% 70%, rgba(74, 144, 226, 0.22), transparent 70%);
   filter: blur(110px);
   opacity: 0.6;
 }
 
-[data-showcase-theme='inspiration'] [data-showcase-scope] > * {
+[data-showcase-theme='apple'] [data-showcase-scope] > * {
   position: relative;
   z-index: 1;
 }
 
-[data-showcase-theme='inspiration'] [data-showcase-card] {
+[data-showcase-theme='apple'] [data-showcase-card] {
   backdrop-filter: blur(28px);
   border: 1px solid rgba(120, 120, 128, 0.14);
 }
 
-[data-showcase-theme='inspiration'] [data-showcase-card]::before,
-[data-showcase-theme='inspiration'] [data-showcase-card]::after {
+[data-showcase-theme='apple'] [data-showcase-card]::before,
+[data-showcase-theme='apple'] [data-showcase-card]::after {
   content: '';
   position: absolute;
   inset: -30%;
@@ -95,26 +95,26 @@
   background: radial-gradient(circle, rgba(180, 206, 255, 0.28) 0%, transparent 70%);
   filter: blur(120px);
   opacity: 0.7;
-  animation: inspirationOrb 24s ease-in-out infinite alternate;
+  animation: appleOrb 24s ease-in-out infinite alternate;
   z-index: 0;
 }
 
-[data-showcase-theme='inspiration'] [data-showcase-card]::after {
+[data-showcase-theme='apple'] [data-showcase-card]::after {
   background: radial-gradient(circle, rgba(90, 200, 250, 0.24) 0%, transparent 65%);
   animation-delay: -8s;
 }
 
-[data-showcase-theme='inspiration'] [data-showcase-card] > div:not([data-showcase-overlay]) {
+[data-showcase-theme='apple'] [data-showcase-card] > div:not([data-showcase-overlay]) {
   backdrop-filter: blur(10px);
 }
 
-[data-showcase-theme='inspiration'] [data-showcase-theme-switcher] {
+[data-showcase-theme='apple'] [data-showcase-theme-switcher] {
   background: rgba(255, 255, 255, 0.82);
   border-color: rgba(120, 120, 128, 0.16);
   box-shadow: 0 12px 45px rgba(15, 23, 42, 0.08);
 }
 
-[data-showcase-theme='inspiration'] [data-showcase-theme-switcher]::before {
+[data-showcase-theme='apple'] [data-showcase-theme-switcher]::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -125,26 +125,26 @@
   pointer-events: none;
 }
 
-[data-showcase-theme='inspiration'] [data-showcase-theme-switcher] button[aria-pressed='true'] {
+[data-showcase-theme='apple'] [data-showcase-theme-switcher] button[aria-pressed='true'] {
   background: linear-gradient(135deg, #0a84ff, #66a6ff);
   border-color: transparent;
   color: #fff;
   box-shadow: 0 12px 28px rgba(10, 132, 255, 0.32);
 }
 
-[data-showcase-theme='inspiration'] [data-showcase-theme-switcher] button:not([aria-pressed='true']):hover {
+[data-showcase-theme='apple'] [data-showcase-theme-switcher] button:not([aria-pressed='true']):hover {
   background: rgba(10, 132, 255, 0.12);
   color: #0a84ff;
 }
 
-[data-showcase-theme='inspiration'] header[data-showcase-section='hero'] {
+[data-showcase-theme='apple'] header[data-showcase-section='hero'] {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(244, 246, 249, 0.88) 100%);
   border-color: rgba(120, 120, 128, 0.14);
   box-shadow: 0 28px 70px rgba(15, 23, 42, 0.12);
 }
 
-[data-showcase-theme='inspiration'] header[data-showcase-section='hero']::before,
-[data-showcase-theme='inspiration'] header[data-showcase-section='hero']::after {
+[data-showcase-theme='apple'] header[data-showcase-section='hero']::before,
+[data-showcase-theme='apple'] header[data-showcase-section='hero']::after {
   content: '';
   position: absolute;
   width: 320px;
@@ -156,64 +156,64 @@
   z-index: 0;
 }
 
-[data-showcase-theme='inspiration'] header[data-showcase-section='hero']::before {
+[data-showcase-theme='apple'] header[data-showcase-section='hero']::before {
   background: radial-gradient(circle, rgba(10, 132, 255, 0.28) 0%, transparent 70%);
   inset: -140px auto auto -120px;
 }
 
-[data-showcase-theme='inspiration'] header[data-showcase-section='hero']::after {
+[data-showcase-theme='apple'] header[data-showcase-section='hero']::after {
   background: radial-gradient(circle, rgba(120, 122, 255, 0.22) 0%, transparent 70%);
   inset: auto -140px -160px auto;
 }
 
-[data-showcase-theme='inspiration'] header[data-showcase-section='hero'] > * {
+[data-showcase-theme='apple'] header[data-showcase-section='hero'] > * {
   position: relative;
   z-index: 1;
 }
 
-[data-showcase-theme='inspiration'] [data-showcase-section] {
+[data-showcase-theme='apple'] [data-showcase-section] {
   background: rgba(255, 255, 255, 0.86);
   border-color: rgba(120, 120, 128, 0.16);
   box-shadow: 0 16px 60px rgba(15, 23, 42, 0.06);
 }
 
-[data-showcase-theme='inspiration'] [data-showcase-section='problem'],
-[data-showcase-theme='inspiration'] [data-showcase-section='innovation'],
-[data-showcase-theme='inspiration'] [data-showcase-section='team'] {
+[data-showcase-theme='apple'] [data-showcase-section='problem'],
+[data-showcase-theme='apple'] [data-showcase-section='innovation'],
+[data-showcase-theme='apple'] [data-showcase-section='team'] {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(244, 246, 249, 0.9));
 }
 
-[data-showcase-theme='inspiration'] [data-showcase-section] h2,
-[data-showcase-theme='inspiration'] [data-showcase-section] h3 {
+[data-showcase-theme='apple'] [data-showcase-section] h2,
+[data-showcase-theme='apple'] [data-showcase-section] h3 {
   color: #1d1d1f;
 }
 
-[data-showcase-theme='inspiration'] [data-showcase-section] p,
-[data-showcase-theme='inspiration'] [data-showcase-section] li {
+[data-showcase-theme='apple'] [data-showcase-section] p,
+[data-showcase-theme='apple'] [data-showcase-section] li {
   color: rgba(44, 44, 46, 0.78);
 }
 
-[data-showcase-theme='inspiration'] [data-showcase-element],
-[data-showcase-theme='inspiration'] [data-showcase-aside] {
+[data-showcase-theme='apple'] [data-showcase-element],
+[data-showcase-theme='apple'] [data-showcase-aside] {
   background: rgba(255, 255, 255, 0.92);
   border-color: rgba(120, 120, 128, 0.16);
   box-shadow: 0 18px 50px rgba(15, 23, 42, 0.08);
 }
 
-[data-showcase-theme='inspiration'] [data-showcase-section] ul li::before {
+[data-showcase-theme='apple'] [data-showcase-section] ul li::before {
   color: #0a84ff;
 }
 
-[data-showcase-theme='inspiration'] [data-showcase-section] a {
+[data-showcase-theme='apple'] [data-showcase-section] a {
   color: #0a84ff;
 }
 
-[data-showcase-theme='inspiration'] [data-showcase-section] a:hover {
+[data-showcase-theme='apple'] [data-showcase-section] a:hover {
   color: #0077ed;
 }
 
-[data-showcase-theme='inspiration'] button,
-[data-showcase-theme='inspiration'] [data-showcase-section] button {
+[data-showcase-theme='apple'] button,
+[data-showcase-theme='apple'] [data-showcase-section] button {
   background: linear-gradient(135deg, #0a84ff, #5ac8fa);
   border: none;
   color: #ffffff;
@@ -222,40 +222,40 @@
   box-shadow: 0 16px 36px rgba(10, 132, 255, 0.25);
 }
 
-[data-showcase-theme='inspiration'] button:hover,
-[data-showcase-theme='inspiration'] [data-showcase-section] button:hover {
+[data-showcase-theme='apple'] button:hover,
+[data-showcase-theme='apple'] [data-showcase-section] button:hover {
   background: linear-gradient(135deg, #0a84ff, #4a90e2);
   transform: translateY(-2px);
 }
 
-[data-showcase-theme='inspiration'] button:focus-visible,
-[data-showcase-theme='inspiration'] [data-showcase-section] button:focus-visible {
+[data-showcase-theme='apple'] button:focus-visible,
+[data-showcase-theme='apple'] [data-showcase-section] button:focus-visible {
   box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.35);
 }
 
-[data-showcase-theme='inspiration'] [data-showcase-section='timeline'] {
+[data-showcase-theme='apple'] [data-showcase-section='timeline'] {
   background: rgba(244, 246, 249, 0.92);
 }
 
-[data-showcase-theme='inspiration'] [data-showcase-element='timeline-profile'] {
+[data-showcase-theme='apple'] [data-showcase-element='timeline-profile'] {
   background: rgba(255, 255, 255, 0.94);
 }
 
-[data-showcase-theme='inspiration'] [data-showcase-element='hero-highlight'] {
+[data-showcase-theme='apple'] [data-showcase-element='hero-highlight'] {
   background: linear-gradient(135deg, rgba(90, 200, 250, 0.12), rgba(10, 132, 255, 0.18));
   border-color: rgba(10, 132, 255, 0.22);
 }
 
-[data-showcase-theme='inspiration'] [data-showcase-aside='testimonial'] {
+[data-showcase-theme='apple'] [data-showcase-aside='testimonial'] {
   background: rgba(255, 255, 255, 0.94);
   border-color: rgba(120, 120, 128, 0.18);
 }
 
-[data-showcase-theme='inspiration'] [data-showcase-aside='testimonial'] svg {
+[data-showcase-theme='apple'] [data-showcase-aside='testimonial'] svg {
   color: #0a84ff;
 }
 
-@keyframes inspirationOrb {
+@keyframes appleOrb {
   0% {
     transform: translate3d(-5%, -4%, 0) scale(1);
   }
