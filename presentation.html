@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Présentation du projet · Compliance Advisor</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+    />
+    <link rel="stylesheet" href="./src/styles/project-showcase.css" />
+    <link rel="stylesheet" href="./src/styles/project-showcase-theme-inspiration.css" />
+    <link rel="stylesheet" href="./src/styles/project-showcase-theme-netflix.css" />
+    <link rel="stylesheet" href="./src/styles/project-showcase-theme-amnesty.css" />
+    <link rel="stylesheet" href="./src/styles/presentation.css" />
+  </head>
+  <body class="presentation-page">
+    <div id="presentation-root"></div>
+
+    <script src="./src/vendor/react.production.min.js"></script>
+    <script src="./src/vendor/react-dom.production.min.js"></script>
+    <script src="./src/vendor/babel.min.js"></script>
+    <script src="./src/module-loader.js"></script>
+    <script>
+      try {
+        window.ModuleLoader.import('./src/presentation.jsx');
+      } catch (error) {
+        console.error('Erreur lors du chargement de la présentation :', error);
+      }
+    </script>
+  </body>
+</html>

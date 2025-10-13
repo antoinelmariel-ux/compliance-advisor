@@ -70,7 +70,7 @@ export const HomeScreen = ({
   onStartNewProject,
   onOpenProject,
   onDeleteProject,
-  onShowProjectShowcase
+  onOpenPresentation
 }) => {
   const hasProjects = projects.length > 0;
 
@@ -263,13 +263,13 @@ export const HomeScreen = ({
                         {isDraft ? <Edit className="w-4 h-4 mr-2" /> : <Eye className="w-4 h-4 mr-2" />}
                         {isDraft ? 'Continuer le questionnaire' : 'Consulter la synthèse'}
                       </button>
-                      {onShowProjectShowcase && (
+                      {onOpenPresentation && (
                         <button
                           type="button"
-                          onClick={() => onShowProjectShowcase(project.id)}
+                          onClick={() => onOpenPresentation(project.id)}
                           className="inline-flex items-center px-4 py-2 bg-white border border-indigo-200 text-indigo-600 rounded-lg font-semibold hover:bg-indigo-50 transition-all hv-button hv-focus-ring"
                         >
-                          <Sparkles className="w-4 h-4 mr-2" /> Vitrine du projet
+                          <Sparkles className="w-4 h-4 mr-2" /> Présentation
                         </button>
                       )}
                     </div>
