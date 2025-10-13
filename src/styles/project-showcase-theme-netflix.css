@@ -1,50 +1,74 @@
 /*
- * Base scoped styles for the product showcase.
- * They establish a local design system via CSS custom properties so that
- * every theme can override the tokens without leaking styles to the rest
- * of the application.
+ * Netflix inspired presentation theme.
+ * Recreates the cinematic look & feel with bold reds, deep blacks
+ * and immersive lighting layers reminiscent of the platform's UI.
  */
 
 :where([data-showcase-scope][data-showcase-theme='netflix']) {
-  --showcase-font-family: 'Inter', 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --showcase-font-heading: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --showcase-color-background: #020617;
-  --showcase-color-surface: rgba(15, 23, 42, 0.92);
-  --showcase-color-surface-strong: rgba(15, 23, 42, 0.98);
-  --showcase-color-surface-soft: rgba(15, 23, 42, 0.7);
-  --showcase-color-card: rgba(15, 23, 42, 0.86);
-  --showcase-color-text-strong: #f8fafc;
-  --showcase-color-text-body: rgba(226, 232, 240, 0.88);
-  --showcase-color-text-muted: rgba(203, 213, 225, 0.72);
-  --showcase-color-text-soft: rgba(148, 163, 184, 0.65);
-  --showcase-color-accent: #60a5fa;
-  --showcase-color-accent-strong: #38bdf8;
-  --showcase-color-accent-alt: #fbbf24;
-  --showcase-border-soft: rgba(148, 163, 184, 0.18);
-  --showcase-border-strong: rgba(148, 163, 184, 0.3);
-  --showcase-shadow-card: 0 32px 120px rgba(15, 23, 42, 0.45);
-  --showcase-shadow-floating: 0 24px 80px rgba(8, 47, 73, 0.35);
-  --showcase-radius-lg: 32px;
-  --showcase-radius-md: 24px;
-  --showcase-radius-sm: 16px;
-  --showcase-tag-background: rgba(148, 163, 184, 0.14);
-  --showcase-tag-color: rgba(226, 232, 240, 0.88);
-  --showcase-focus-ring: 0 0 0 3px rgba(96, 165, 250, 0.35);
-  --showcase-backdrop-blur: blur(24px);
-  --showcase-gradient-from: rgba(15, 23, 42, 1);
-  --showcase-gradient-via: rgba(15, 23, 42, 0.85);
-  --showcase-gradient-to: rgba(2, 6, 23, 1);
-  --showcase-overlay-soft: radial-gradient(circle at 20% 20%, rgba(37, 99, 235, 0.28), transparent 60%);
-  --showcase-overlay-strong: radial-gradient(circle at 80% 0%, rgba(14, 165, 233, 0.3), transparent 65%);
+  --netflix-font-sans: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  --netflix-font-heading: 'Inter Tight', 'Netflix Sans', 'Helvetica Neue', Arial, sans-serif;
+  --netflix-color-background: #08090f;
+  --netflix-color-backdrop: radial-gradient(circle at 10% 15%, rgba(229, 9, 20, 0.18), transparent 45%),
+    radial-gradient(circle at 80% 0%, rgba(229, 45, 39, 0.16), transparent 55%),
+    linear-gradient(160deg, #02030a 0%, #05060f 30%, #0d0f19 60%, #06070d 100%);
+  --netflix-color-surface: rgba(12, 13, 19, 0.92);
+  --netflix-color-surface-strong: rgba(16, 17, 25, 0.96);
+  --netflix-color-card: rgba(17, 17, 17, 0.94);
+  --netflix-color-panel: rgba(12, 12, 14, 0.88);
+  --netflix-color-border: rgba(255, 255, 255, 0.08);
+  --netflix-color-border-strong: rgba(255, 255, 255, 0.18);
+  --netflix-color-red: #e50914;
+  --netflix-color-red-strong: #f6121d;
+  --netflix-color-red-dark: #b20710;
+  --netflix-color-text: rgba(249, 249, 249, 0.86);
+  --netflix-color-text-muted: rgba(210, 210, 210, 0.62);
+  --netflix-color-text-soft: rgba(200, 200, 200, 0.48);
+  --netflix-shadow-hero: 0 28px 70px rgba(0, 0, 0, 0.55);
+  --netflix-shadow-card: 0 32px 80px rgba(0, 0, 0, 0.6);
+  --netflix-shadow-floating: 0 24px 45px rgba(0, 0, 0, 0.5);
+  --netflix-radius-lg: 36px;
+  --netflix-radius-md: 26px;
+  --netflix-radius-sm: 18px;
+  --netflix-radius-xs: 12px;
+  --netflix-spacing: clamp(3rem, 6vw, 5rem);
+  --netflix-transition-fast: 160ms ease;
+  --netflix-transition-medium: 320ms ease;
+  --netflix-transition-slow: 680ms cubic-bezier(0.22, 1, 0.36, 1);
+  --netflix-accent-glow: rgba(229, 9, 20, 0.35);
+  --netflix-accent-gradient: linear-gradient(135deg, rgba(229, 9, 20, 0.88), rgba(248, 51, 63, 0.92));
 
   position: relative;
   min-height: 100vh;
-  padding: clamp(3rem, 6vw, 4.75rem) clamp(1.5rem, 5vw, 3.5rem);
-  background: var(--showcase-color-background);
-  color: var(--showcase-color-text-body);
-  font-family: var(--showcase-font-family);
-  line-height: 1.6;
+  padding: clamp(3rem, 8vw, 5.5rem) clamp(1.75rem, 6vw, 4rem);
+  background: var(--netflix-color-backdrop);
+  color: var(--netflix-color-text);
+  font-family: var(--netflix-font-sans);
+  line-height: 1.65;
+  overflow-x: hidden;
   isolation: isolate;
+}
+
+:where([data-showcase-scope][data-showcase-theme='netflix'])::before,
+:where([data-showcase-scope][data-showcase-theme='netflix'])::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+}
+
+:where([data-showcase-scope][data-showcase-theme='netflix'])::before {
+  background: radial-gradient(circle at 15% 20%, rgba(229, 9, 20, 0.28), transparent 55%);
+  opacity: 0.8;
+  mix-blend-mode: screen;
+  filter: blur(70px);
+}
+
+:where([data-showcase-scope][data-showcase-theme='netflix'])::after {
+  background: radial-gradient(circle at 85% 10%, rgba(227, 34, 40, 0.32), transparent 60%);
+  opacity: 0.6;
+  mix-blend-mode: screen;
+  filter: blur(80px);
 }
 
 :where([data-showcase-scope][data-showcase-theme='netflix']) * {
@@ -52,8 +76,8 @@
 }
 
 :where([data-showcase-scope][data-showcase-theme='netflix']) *::selection {
-  background: color-mix(in srgb, var(--showcase-color-accent) 35%, transparent);
-  color: var(--showcase-color-text-strong);
+  background: rgba(229, 9, 20, 0.35);
+  color: #fff;
 }
 
 :where([data-showcase-scope][data-showcase-theme='netflix']) h1,
@@ -62,139 +86,297 @@
 :where([data-showcase-scope][data-showcase-theme='netflix']) h4,
 :where([data-showcase-scope][data-showcase-theme='netflix']) h5,
 :where([data-showcase-scope][data-showcase-theme='netflix']) h6 {
-  font-family: var(--showcase-font-heading);
-  color: var(--showcase-color-text-strong);
-  letter-spacing: -0.01em;
+  font-family: var(--netflix-font-heading);
+  color: #fff;
+  letter-spacing: -0.02em;
+  text-transform: none;
 }
 
 :where([data-showcase-scope][data-showcase-theme='netflix']) p,
-:where([data-showcase-scope][data-showcase-theme='netflix']) li {
-  color: var(--showcase-color-text-body);
+:where([data-showcase-scope][data-showcase-theme='netflix']) li,
+:where([data-showcase-scope][data-showcase-theme='netflix']) span {
+  color: var(--netflix-color-text);
+}
+
+:where([data-showcase-scope][data-showcase-theme='netflix']) strong {
+  color: #fff;
 }
 
 :where([data-showcase-scope][data-showcase-theme='netflix']) a {
-  color: var(--showcase-color-accent);
+  color: var(--netflix-color-red);
   text-decoration: none;
-  transition: color 180ms ease;
+  transition: color var(--netflix-transition-fast);
 }
 
 :where([data-showcase-scope][data-showcase-theme='netflix']) a:hover {
-  color: var(--showcase-color-accent-strong);
+  color: var(--netflix-color-red-strong);
 }
 
 :where([data-showcase-scope][data-showcase-theme='netflix']) a:focus-visible,
 :where([data-showcase-scope][data-showcase-theme='netflix']) button:focus-visible,
 :where([data-showcase-scope][data-showcase-theme='netflix']) [tabindex]:focus-visible {
   outline: none;
-  box-shadow: var(--showcase-focus-ring);
+  box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.55);
+  border-radius: var(--netflix-radius-xs);
 }
 
 :where([data-showcase-scope][data-showcase-theme='netflix']) button {
   font-family: inherit;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  font-weight: 700;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  border-radius: var(--showcase-radius-sm);
-  border: 1px solid var(--showcase-border-soft);
-  background: color-mix(in srgb, var(--showcase-color-accent) 18%, transparent);
-  color: var(--showcase-color-text-strong);
-  padding: 0.6rem 1.6rem;
+  padding: 0.7rem 1.8rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: var(--netflix-accent-gradient);
+  color: #fff;
   cursor: pointer;
-  transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease, transform 180ms ease;
+  box-shadow: 0 16px 35px rgba(229, 9, 20, 0.35);
+  transition: transform var(--netflix-transition-fast), box-shadow var(--netflix-transition-fast),
+    filter var(--netflix-transition-fast);
 }
 
 :where([data-showcase-scope][data-showcase-theme='netflix']) button:hover {
-  background: color-mix(in srgb, var(--showcase-color-accent-strong) 24%, transparent);
-  border-color: var(--showcase-color-accent);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 22px 45px rgba(229, 9, 20, 0.5);
+  filter: brightness(1.05);
+}
+
+:where([data-showcase-scope][data-showcase-theme='netflix']) button:active {
+  transform: translateY(1px);
+  box-shadow: 0 12px 28px rgba(229, 9, 20, 0.35);
+  filter: brightness(0.95);
 }
 
 :where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-card] {
   position: relative;
   margin: 0 auto;
   max-width: 1180px;
-  border-radius: var(--showcase-radius-lg);
-  background: var(--showcase-color-card);
-  border: 1px solid var(--showcase-border-soft);
-  box-shadow: var(--showcase-shadow-card);
+  border-radius: var(--netflix-radius-lg);
+  background: linear-gradient(180deg, rgba(16, 16, 20, 0.9) 0%, rgba(9, 9, 13, 0.92) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: var(--netflix-shadow-hero);
   overflow: hidden;
-  color: inherit;
   isolation: isolate;
+  backdrop-filter: blur(18px);
+}
+
+:where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-card]::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid rgba(229, 9, 20, 0.22);
+  opacity: 0.18;
+  pointer-events: none;
 }
 
 :where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-card] > div:not([data-showcase-overlay]) {
   position: relative;
   z-index: 1;
-  padding: clamp(2.5rem, 6vw, 4rem) clamp(1.5rem, 5vw, 3.75rem);
+  padding: clamp(2.75rem, 6vw, 4.2rem) clamp(2rem, 6vw, 4rem);
 }
 
 :where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-overlay] {
   position: absolute;
   inset: 0;
+  overflow: hidden;
   pointer-events: none;
-  background: var(--showcase-overlay-soft);
-  filter: blur(90px);
-  opacity: 0.8;
-  z-index: 0;
+  mix-blend-mode: screen;
+  transform-style: preserve-3d;
+  perspective: 1200px;
+}
+
+@keyframes netflixGlow {
+  0%,
+  100% {
+    transform: translate3d(-8%, -6%, 0) scale(1.05);
+    opacity: 0.35;
+  }
+  50% {
+    transform: translate3d(6%, 4%, 0) scale(1.1);
+    opacity: 0.6;
+  }
+}
+
+@keyframes netflixDrift {
+  0% {
+    transform: translate3d(-4%, -8%, 0) scale(1.12) rotate(1deg);
+    opacity: 0.45;
+  }
+  50% {
+    transform: translate3d(4%, 6%, 0) scale(1.05) rotate(-1deg);
+    opacity: 0.65;
+  }
+  100% {
+    transform: translate3d(-6%, -4%, 0) scale(1.08) rotate(1deg);
+    opacity: 0.45;
+  }
+}
+
+@keyframes netflixPulse {
+  0%,
+  100% {
+    opacity: 0.32;
+  }
+  40% {
+    opacity: 0.6;
+  }
+  60% {
+    opacity: 0.48;
+  }
 }
 
 :where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-layer] {
-  display: none !important;
+  position: absolute;
+  inset: -20%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(229, 9, 20, 0.45), transparent 65%);
+  filter: blur(90px);
+  opacity: 0.45;
+  animation: netflixGlow 18s ease-in-out infinite;
+}
+
+:where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-layer='glow-mid'] {
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.18), transparent 70%);
+  animation: netflixDrift 26s ease-in-out infinite;
+}
+
+:where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-layer='glow-near'] {
+  background: radial-gradient(circle, rgba(229, 9, 20, 0.6), transparent 60%);
+  animation: netflixGlow 22s ease-in-out infinite reverse;
+}
+
+:where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-layer='glow-overlay'] {
+  background: linear-gradient(125deg, rgba(229, 9, 20, 0.45), rgba(229, 9, 20, 0));
+  mix-blend-mode: screen;
+  opacity: 0.35;
+  animation: netflixPulse 4.5s ease-in-out infinite;
 }
 
 :where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-theme-switcher] {
   position: relative;
-  margin-bottom: clamp(2.5rem, 5vw, 3.5rem);
-  padding: 1.25rem 1.5rem;
-  border-radius: var(--showcase-radius-md);
-  background: var(--showcase-color-surface);
-  border: 1px solid var(--showcase-border-soft);
-  box-shadow: var(--showcase-shadow-floating);
-  backdrop-filter: var(--showcase-backdrop-blur);
+  margin-bottom: clamp(2.5rem, 6vw, 4rem);
+  padding: 1.8rem clamp(1.5rem, 5vw, 2.5rem);
+  border-radius: var(--netflix-radius-md);
+  background: linear-gradient(160deg, rgba(12, 12, 14, 0.85), rgba(10, 10, 12, 0.65));
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: var(--netflix-shadow-floating);
+  backdrop-filter: blur(18px);
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1.4rem;
+  overflow: hidden;
+}
+
+:where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-theme-switcher]::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(229, 9, 20, 0.12), transparent 65%);
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+:where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-theme-switcher] > * {
+  position: relative;
+  z-index: 1;
 }
 
 :where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-theme-switcher] p {
-  color: var(--showcase-color-text-muted);
-  font-size: 0.82rem;
+  color: var(--netflix-color-text-muted);
+  font-size: 0.85rem;
   line-height: 1.5;
 }
 
 :where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-theme-switcher] button {
   border-radius: 999px;
-  padding: 0.55rem 1.4rem;
+  padding: 0.55rem 1.45rem;
   letter-spacing: 0.28em;
   font-size: 0.72rem;
-  border: 1px solid transparent;
-  background: var(--showcase-tag-background);
-  color: var(--showcase-tag-color);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.85);
+  transition: transform var(--netflix-transition-fast), background var(--netflix-transition-fast),
+    border-color var(--netflix-transition-fast), color var(--netflix-transition-fast);
+}
+
+:where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-theme-switcher] button:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+  transform: translateY(-1px);
 }
 
 :where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-theme-switcher] button[aria-pressed='true'] {
-  background: color-mix(in srgb, var(--showcase-color-accent) 45%, transparent);
-  border-color: color-mix(in srgb, var(--showcase-color-accent-strong) 40%, transparent);
-  color: var(--showcase-color-text-strong);
+  background: linear-gradient(135deg, rgba(229, 9, 20, 0.75), rgba(229, 9, 20, 0.95));
+  border-color: rgba(229, 9, 20, 0.8);
+  color: #fff;
+  box-shadow: 0 14px 30px rgba(229, 9, 20, 0.35);
 }
 
 :where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-section],
 :where([data-showcase-scope][data-showcase-theme='netflix']) header[data-showcase-section='hero'] {
   position: relative;
-  border-radius: var(--showcase-radius-md);
-  background: var(--showcase-color-surface);
-  border: 1px solid var(--showcase-border-soft);
-  padding: clamp(1.75rem, 4vw, 2.75rem);
+  border-radius: var(--netflix-radius-lg);
+  background: linear-gradient(180deg, rgba(16, 16, 18, 0.92) 0%, rgba(10, 10, 12, 0.88) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: clamp(2.25rem, 5vw, 3.5rem);
   overflow: hidden;
+  box-shadow: var(--netflix-shadow-card);
+  backdrop-filter: blur(20px);
+  transition: transform var(--netflix-transition-medium), box-shadow var(--netflix-transition-medium);
+}
+
+:where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-section]::before,
+:where([data-showcase-scope][data-showcase-theme='netflix']) header[data-showcase-section='hero']::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid rgba(229, 9, 20, 0.15);
+  opacity: 0.25;
+  pointer-events: none;
+  mask: linear-gradient(to bottom, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0));
 }
 
 :where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-section] + [data-showcase-section] {
-  margin-top: clamp(1.75rem, 4vw, 2.75rem);
+  margin-top: clamp(2.5rem, 5vw, 4rem);
 }
 
-:where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-section] h2,
-:where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-section] h3 {
-  margin-bottom: 0.75rem;
+:where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-section]:hover,
+:where([data-showcase-scope][data-showcase-theme='netflix']) header[data-showcase-section='hero']:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 40px 110px rgba(0, 0, 0, 0.6);
+}
+
+:where([data-showcase-scope][data-showcase-theme='netflix']) header[data-showcase-section='hero'] {
+  padding: clamp(2.75rem, 6vw, 4.5rem);
+  background: linear-gradient(180deg, rgba(22, 22, 26, 0.95) 0%, rgba(10, 10, 12, 0.9) 100%);
+}
+
+:where([data-showcase-scope][data-showcase-theme='netflix']) header[data-showcase-section='hero']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle at 25% 25%, rgba(229, 9, 20, 0.18), transparent 60%),
+    radial-gradient(circle at 80% 0%, rgba(229, 9, 20, 0.22), transparent 70%);
+  opacity: 0.9;
+  pointer-events: none;
+  mix-blend-mode: lighten;
+  filter: blur(40px);
+}
+
+:where([data-showcase-scope][data-showcase-theme='netflix']) header[data-showcase-section='hero'] h2 {
+  font-size: clamp(2.9rem, 5vw, 4.75rem);
+  font-weight: 900;
+  line-height: 1.05;
+  text-shadow: 0 25px 60px rgba(0, 0, 0, 0.75);
+}
+
+:where([data-showcase-scope][data-showcase-theme='netflix']) header[data-showcase-section='hero'] p {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: clamp(1.05rem, 2vw, 1.45rem);
 }
 
 :where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-element='hero-highlight'],
@@ -203,12 +385,50 @@
 :where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-element='solution-card'],
 :where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-element='timeline-profile'],
 :where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-aside] {
-  background: var(--showcase-color-surface-strong);
-  border-radius: var(--showcase-radius-sm);
-  border: 1px solid var(--showcase-border-soft);
-  box-shadow: var(--showcase-shadow-floating);
-  padding: 1.5rem;
-  color: inherit;
+  position: relative;
+  border-radius: var(--netflix-radius-md);
+  background: linear-gradient(180deg, rgba(22, 22, 24, 0.95) 0%, rgba(12, 12, 14, 0.95) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: var(--netflix-shadow-floating);
+  padding: clamp(1.5rem, 3vw, 2.4rem);
+  overflow: hidden;
+  transition: transform var(--netflix-transition-medium), box-shadow var(--netflix-transition-medium);
+}
+
+:where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-element='hero-highlight']::before,
+:where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-element='metric-card']::before,
+:where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-element='vision-card']::before,
+:where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-element='solution-card']::before,
+:where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-element='timeline-profile']::before,
+:where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-aside]::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle at 15% 15%, rgba(229, 9, 20, 0.28), transparent 65%);
+  opacity: 0.7;
+  mix-blend-mode: lighten;
+  filter: blur(50px);
+}
+
+:where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-element='solution-card']:hover,
+:where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-element='metric-card']:hover,
+:where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-element='vision-card']:hover,
+:where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-element='timeline-profile']:hover,
+:where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-aside]:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 38px 90px rgba(0, 0, 0, 0.55);
+}
+
+:where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-section] h2,
+:where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-section] h3 {
+  margin-bottom: 0.75rem;
+}
+
+:where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-section] p.lead,
+:where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-section] p[data-lead='true'] {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.78);
 }
 
 :where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-section] ul {
@@ -216,385 +436,205 @@
   padding: 0;
   margin: 0;
   display: grid;
-  gap: 0.75rem;
-}
-
-:where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-section] ul li::before {
-  content: '•';
-  margin-right: 0.5rem;
-  color: var(--showcase-color-accent);
+  gap: 0.9rem;
 }
 
 :where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-section] ul li {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.5rem;
+  position: relative;
+  padding-left: 1.75rem;
+  color: var(--netflix-color-text);
 }
 
-/* Tailwind-like utility fallbacks powered by the theme tokens */
+:where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-section] ul li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.35rem;
+  width: 1rem;
+  height: 0.25rem;
+  border-radius: 999px;
+  background: var(--netflix-accent-gradient);
+  box-shadow: 0 0 18px rgba(229, 9, 20, 0.4);
+}
+
+:where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-aside='risk'] {
+  border-left: 3px solid rgba(229, 9, 20, 0.65);
+  background: linear-gradient(180deg, rgba(26, 10, 12, 0.92) 0%, rgba(10, 4, 6, 0.9) 100%);
+}
+
+:where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-section='timeline'] {
+  background: linear-gradient(180deg, rgba(14, 14, 16, 0.96) 0%, rgba(9, 9, 11, 0.92) 100%);
+}
+
+:where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-section='timeline']::after {
+  content: '';
+  position: absolute;
+  left: clamp(1.5rem, 4vw, 3rem);
+  top: clamp(2.5rem, 5vw, 3.5rem);
+  bottom: clamp(2.5rem, 5vw, 3.5rem);
+  width: 2px;
+  background: linear-gradient(180deg, rgba(229, 9, 20, 0.6) 0%, rgba(229, 9, 20, 0) 100%);
+  opacity: 0.8;
+}
+
+:where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-element='timeline-profile'] {
+  padding-left: clamp(3.5rem, 6vw, 4.5rem);
+  background: linear-gradient(180deg, rgba(18, 18, 22, 0.94) 0%, rgba(12, 12, 16, 0.9) 100%);
+}
+
+:where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-element='timeline-profile']::before {
+  content: '';
+  position: absolute;
+  left: clamp(1.7rem, 4vw, 3.2rem);
+  top: 2.1rem;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid rgba(229, 9, 20, 0.75);
+  background: rgba(229, 9, 20, 0.35);
+  box-shadow: 0 0 20px rgba(229, 9, 20, 0.55);
+}
+
+:where([data-showcase-scope][data-showcase-theme='netflix']) form {
+  background: rgba(12, 12, 14, 0.95);
+  border-radius: var(--netflix-radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: var(--netflix-shadow-card);
+}
+
+:where([data-showcase-scope][data-showcase-theme='netflix']) input,
+:where([data-showcase-scope][data-showcase-theme='netflix']) textarea,
+:where([data-showcase-scope][data-showcase-theme='netflix']) select {
+  width: 100%;
+  background: rgba(16, 16, 18, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--netflix-radius-xs);
+  padding: 0.85rem 1rem;
+  color: #fff;
+  font-family: inherit;
+  transition: border-color var(--netflix-transition-fast), box-shadow var(--netflix-transition-fast);
+}
+
+:where([data-showcase-scope][data-showcase-theme='netflix']) input:focus,
+:where([data-showcase-scope][data-showcase-theme='netflix']) textarea:focus,
+:where([data-showcase-scope][data-showcase-theme='netflix']) select:focus {
+  border-color: rgba(229, 9, 20, 0.65);
+  box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.25);
+  outline: none;
+}
+
+:where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-section] code,
+:where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-section] pre {
+  background: rgba(18, 18, 22, 0.8);
+  border-radius: var(--netflix-radius-xs);
+  padding: 0.35rem 0.65rem;
+  color: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
 :where([data-showcase-scope][data-showcase-theme='netflix']) [class*='text-slate-200/80'] {
-  color: color-mix(in srgb, var(--showcase-color-text-soft) 90%, transparent);
+  color: rgba(235, 235, 235, 0.8);
 }
 
 :where([data-showcase-scope][data-showcase-theme='netflix']) [class*='text-slate-200/90'] {
-  color: color-mix(in srgb, var(--showcase-color-text-body) 95%, transparent);
+  color: rgba(240, 240, 240, 0.92);
 }
 
 :where([data-showcase-scope][data-showcase-theme='netflix']) [class*='text-slate-300/80'],
 :where([data-showcase-scope][data-showcase-theme='netflix']) [class*='text-slate-300/90'] {
-  color: var(--showcase-color-text-muted);
+  color: var(--netflix-color-text-muted);
 }
 
 :where([data-showcase-scope][data-showcase-theme='netflix']) [class*='text-indigo-200/'],
 :where([data-showcase-scope][data-showcase-theme='netflix']) [class*='text-indigo-200'] {
-  color: var(--showcase-color-accent);
+  color: rgba(255, 255, 255, 0.78);
 }
 
 :where([data-showcase-scope][data-showcase-theme='netflix']) [class*='text-sky-300'] {
-  color: var(--showcase-color-accent-strong);
+  color: rgba(229, 9, 20, 0.88);
 }
 
 :where([data-showcase-scope][data-showcase-theme='netflix']) [class*='text-amber-'] {
-  color: var(--showcase-color-accent-alt);
+  color: rgba(255, 200, 120, 0.85);
 }
 
 :where([data-showcase-scope][data-showcase-theme='netflix']) [class*='text-white'] {
-  color: var(--showcase-color-text-strong);
+  color: #fff;
 }
 
-:where([data-showcase-scope][data-showcase-theme='netflix']) [class*='bg-slate-950/'] {
-  background-color: var(--showcase-color-surface-strong);
-}
-
+:where([data-showcase-scope][data-showcase-theme='netflix']) [class*='bg-slate-950/'],
 :where([data-showcase-scope][data-showcase-theme='netflix']) [class*='bg-slate-900/'] {
-  background-color: var(--showcase-color-surface);
+  background-color: rgba(16, 16, 18, 0.9);
 }
 
 :where([data-showcase-scope][data-showcase-theme='netflix']) [class*='bg-white/'] {
-  background-color: color-mix(in srgb, var(--showcase-color-text-strong) 12%, transparent);
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
 :where([data-showcase-scope][data-showcase-theme='netflix']) [class*='bg-indigo-500/'],
 :where([data-showcase-scope][data-showcase-theme='netflix']) [class*='bg-sky-500/'] {
-  background-color: color-mix(in srgb, var(--showcase-color-accent) 25%, transparent);
+  background-color: rgba(229, 9, 20, 0.32);
 }
 
 :where([data-showcase-scope][data-showcase-theme='netflix']) [class*='border-white/'] {
-  border-color: color-mix(in srgb, var(--showcase-color-text-strong) 18%, transparent);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 :where([data-showcase-scope][data-showcase-theme='netflix']) [class*='border-indigo-400/'] {
-  border-color: color-mix(in srgb, var(--showcase-color-accent) 65%, transparent);
+  border-color: rgba(229, 9, 20, 0.45);
 }
 
 :where([data-showcase-scope][data-showcase-theme='netflix']) [class*='border-amber-400/'] {
-  border-color: color-mix(in srgb, var(--showcase-color-accent-alt) 60%, transparent);
+  border-color: rgba(255, 180, 110, 0.45);
 }
 
 :where([data-showcase-scope][data-showcase-theme='netflix']) [class*='shadow-indigo-500/30'] {
-  box-shadow: var(--showcase-shadow-floating);
+  box-shadow: var(--netflix-shadow-floating);
 }
 
-:where([data-showcase-scope][data-showcase-theme='netflix']) [class*='rounded-[28px]'] { border-radius: var(--showcase-radius-md); }
-:where([data-showcase-scope][data-showcase-theme='netflix']) [class*='rounded-[30px]'] { border-radius: var(--showcase-radius-md); }
-:where([data-showcase-scope][data-showcase-theme='netflix']) [class*='rounded-[32px]'] { border-radius: var(--showcase-radius-lg); }
-:where([data-showcase-scope][data-showcase-theme='netflix']) [class*='rounded-[42px]'] { border-radius: calc(var(--showcase-radius-lg) + 10px); }
+:where([data-showcase-scope][data-showcase-theme='netflix']) [class*='rounded-[28px]'],
+:where([data-showcase-scope][data-showcase-theme='netflix']) [class*='rounded-[30px]'],
+:where([data-showcase-scope][data-showcase-theme='netflix']) [class*='rounded-[32px]'],
+:where([data-showcase-scope][data-showcase-theme='netflix']) [class*='rounded-[42px]'] {
+  border-radius: var(--netflix-radius-lg);
+}
 
 :where([data-showcase-scope][data-showcase-theme='netflix']) [class*='bg-[radial-gradient'] {
-  background-image: var(--showcase-overlay-strong);
+  background-image: radial-gradient(circle at 15% 15%, rgba(229, 9, 20, 0.22), transparent 60%);
 }
 
 :where([data-showcase-scope][data-showcase-theme='netflix']) [class*='blur-[120px]'] {
   filter: blur(120px);
 }
 
-:where([data-showcase-scope][data-showcase-theme='netflix']) [class*='from-slate-950'] {
-  --tw-gradient-from: var(--showcase-gradient-from);
-  --tw-gradient-to: transparent;
-  --tw-gradient-stops: var(--tw-gradient-from), var(--showcase-gradient-via), var(--showcase-gradient-to);
+:where([data-showcase-scope][data-showcase-theme='netflix']) [class*='from-slate-950'],
+:where([data-showcase-scope][data-showcase-theme='netflix']) [class*='via-slate-900'],
+:where([data-showcase-scope][data-showcase-theme='netflix']) [class*='to-slate-900'] {
+  --tw-gradient-from: rgba(18, 18, 22, 0.95);
+  --tw-gradient-to: rgba(6, 6, 8, 0.9);
+  --tw-gradient-stops: var(--tw-gradient-from), rgba(12, 12, 16, 0.9), rgba(6, 6, 8, 0.9);
 }
 
-:where([data-showcase-scope][data-showcase-theme='netflix']) [class*='via-slate-900'] {
-  --tw-gradient-stops: var(--showcase-gradient-from), var(--showcase-gradient-via), var(--showcase-gradient-to);
-}
-
-:where([data-showcase-scope][data-showcase-theme='netflix']) [class*='to-slate-950'] {
-  --tw-gradient-to: var(--showcase-gradient-to);
-}
-
-:where([data-showcase-scope][data-showcase-theme='netflix']) [class*='from-indigo-500/'],
-:where([data-showcase-scope][data-showcase-theme='netflix']) [class*='from-sky-500/'] {
-  --tw-gradient-from: color-mix(in srgb, var(--showcase-color-accent) 30%, transparent);
-  --tw-gradient-to: transparent;
-  --tw-gradient-stops: var(--tw-gradient-from), var(--showcase-gradient-via), var(--tw-gradient-to);
-}
-
-:where([data-showcase-scope][data-showcase-theme='netflix']) [class*='to-sky-500/'],
-:where([data-showcase-scope][data-showcase-theme='netflix']) [class*='to-indigo-500/'] {
-  --tw-gradient-to: color-mix(in srgb, var(--showcase-color-accent-strong) 28%, transparent);
-}
-
-:where([data-showcase-scope][data-showcase-theme='netflix']) [class*='focus:border-indigo-300'] {
-  border-color: color-mix(in srgb, var(--showcase-color-accent) 55%, transparent);
-}
-
-:where([data-showcase-scope][data-showcase-theme='netflix']) [class*='focus:ring-indigo-400/40'] {
-  box-shadow: var(--showcase-focus-ring);
-}
-
-:where([data-showcase-scope][data-showcase-theme='netflix']) [class*='placeholder:text-slate-400']::placeholder {
-  color: color-mix(in srgb, var(--showcase-color-text-muted) 70%, transparent);
-}
-
-@media (min-width: 1024px) {
+@media (max-width: 768px) {
   :where([data-showcase-scope][data-showcase-theme='netflix']) {
-    padding: clamp(3.5rem, 6vw, 5rem) clamp(3rem, 6vw, 5.5rem);
+    padding: clamp(2.5rem, 8vw, 4rem) clamp(1.25rem, 8vw, 2rem);
+  }
+
+  :where([data-showcase-scope][data-showcase-theme='netflix']) header[data-showcase-section='hero'] h2 {
+    font-size: clamp(2.4rem, 8vw, 3.6rem);
+  }
+
+  :where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-section],
+  :where([data-showcase-scope][data-showcase-theme='netflix']) header[data-showcase-section='hero'] {
+    padding: clamp(1.9rem, 8vw, 2.75rem);
   }
 }
-/*
- * Thème « Immersion cinéma » – clin d'œil à l'interface Netflix.
- * Fond sombre anthracite, halo rouge vif et cartes rétro-éclairées.
- */
 
-[data-showcase-theme='netflix'] {
-  --showcase-font-family: 'Netflix Sans', 'Helvetica Neue', 'Segoe UI', sans-serif;
-  --showcase-font-heading: 'Netflix Sans', 'Helvetica Neue', 'Segoe UI', sans-serif;
-  --showcase-radius-lg: 12px;
-  --showcase-radius-md: 8px;
-  --showcase-radius-sm: 4px;
-  --showcase-color-background: radial-gradient(circle at 15% 10%, rgba(229, 9, 20, 0.22), transparent 58%),
-    radial-gradient(circle at 90% 8%, rgba(229, 9, 20, 0.18), transparent 55%),
-    linear-gradient(160deg, #060608 0%, #0b0b0f 45%, #111116 100%);
-  --showcase-color-card: linear-gradient(150deg, rgba(14, 14, 20, 0.92), rgba(8, 8, 12, 0.94));
-  --showcase-color-surface: rgba(10, 10, 16, 0.88);
-  --showcase-color-surface-strong: rgba(12, 12, 18, 0.92);
-  --showcase-color-surface-soft: rgba(18, 18, 26, 0.7);
-  --showcase-color-text-strong: #ffffff;
-  --showcase-color-text-body: rgba(235, 235, 241, 0.88);
-  --showcase-color-text-muted: rgba(200, 200, 208, 0.68);
-  --showcase-color-text-soft: rgba(160, 160, 170, 0.52);
-  --showcase-color-accent: #e50914;
-  --showcase-color-accent-strong: #ff3c28;
-  --showcase-color-accent-alt: #f5c518;
-  --showcase-border-soft: rgba(255, 255, 255, 0.08);
-  --showcase-border-strong: rgba(255, 255, 255, 0.16);
-  --showcase-shadow-card: 0 40px 120px rgba(0, 0, 0, 0.65);
-  --showcase-shadow-floating: 0 30px 80px rgba(229, 9, 20, 0.28);
-  --showcase-tag-background: rgba(229, 9, 20, 0.16);
-  --showcase-tag-color: rgba(255, 255, 255, 0.88);
-  --showcase-focus-ring: 0 0 0 3px rgba(229, 9, 20, 0.45);
-  --showcase-backdrop-blur: blur(20px);
-  --showcase-gradient-from: rgba(8, 8, 12, 1);
-  --showcase-gradient-via: rgba(17, 17, 24, 0.9);
-  --showcase-gradient-to: rgba(12, 12, 18, 1);
-  --showcase-overlay-soft: radial-gradient(circle at 20% 20%, rgba(229, 9, 20, 0.35), transparent 70%);
-  --showcase-overlay-strong: radial-gradient(circle at 78% 18%, rgba(229, 9, 20, 0.28), transparent 70%);
-  color-scheme: dark;
-}
-
-[data-showcase-theme='netflix'] [data-showcase-card] {
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 48px 160px rgba(0, 0, 0, 0.6);
-}
-
-[data-showcase-theme='netflix'] [data-showcase-card]::before,
-[data-showcase-theme='netflix'] [data-showcase-card]::after {
-  content: '';
-  position: absolute;
-  inset: -35%;
-  pointer-events: none;
-  background: radial-gradient(circle, rgba(229, 9, 20, 0.22) 0%, transparent 65%);
-  filter: blur(120px);
-  opacity: 0.9;
-  z-index: 0;
-  animation: netflixPulse 18s ease-in-out infinite alternate;
-}
-
-[data-showcase-theme='netflix'] [data-showcase-card]::after {
-  background: radial-gradient(circle, rgba(244, 63, 94, 0.24) 0%, transparent 60%);
-  animation-delay: -6s;
-}
-
-[data-showcase-theme='netflix'] [data-showcase-card] > div:not([data-showcase-overlay]) {
-  position: relative;
-  z-index: 1;
-}
-
-[data-showcase-theme='netflix'] [data-showcase-theme-switcher] {
-  position: relative;
-  border-radius: 12px;
-  clip-path: polygon(0 0, 100% 0, 100% 92%, 0 100%);
-  background: rgba(12, 12, 18, 0.9);
-  border: 1px solid rgba(229, 9, 20, 0.2);
-  box-shadow: 0 32px 90px rgba(0, 0, 0, 0.55);
-  padding: clamp(1rem, 2vw, 1.5rem);
-}
-
-[data-showcase-theme='netflix'] [data-showcase-theme-switcher]::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(120deg, rgba(229, 9, 20, 0.22), rgba(244, 63, 94, 0.2));
-  opacity: 0.5;
-  mix-blend-mode: screen;
-  pointer-events: none;
-}
-
-[data-showcase-theme='netflix'] [data-showcase-theme-switcher] button {
-  border-radius: 8px;
-  border: 1px solid rgba(229, 9, 20, 0.35);
-  background: rgba(229, 9, 20, 0.18);
-  color: rgba(255, 255, 255, 0.82);
-}
-
-[data-showcase-theme='netflix'] [data-showcase-theme-switcher] button[aria-pressed='true'] {
-  background: linear-gradient(135deg, #e50914, #ff3c28);
-  border-color: rgba(255, 255, 255, 0.18);
-  box-shadow: 0 18px 45px rgba(229, 9, 20, 0.45);
-  color: #ffffff;
-}
-
-[data-showcase-theme='netflix'] [data-showcase-theme-switcher] button:not([aria-pressed='true']):hover {
-  background: rgba(229, 9, 20, 0.24);
-  color: #ff3c28;
-}
-
-[data-showcase-theme='netflix'] header[data-showcase-section='hero'] {
-  border-radius: 0;
-  clip-path: polygon(0 0, 100% 0, 100% 88%, 0 100%);
-  padding-bottom: clamp(2.25rem, 5vw, 3.5rem);
-  background: linear-gradient(150deg, rgba(10, 10, 16, 0.96) 0%, rgba(8, 8, 12, 0.95) 45%, rgba(15, 8, 12, 0.92) 100%);
-  border-color: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 48px 140px rgba(0, 0, 0, 0.7);
-}
-
-[data-showcase-theme='netflix'] header[data-showcase-section='hero']::before,
-[data-showcase-theme='netflix'] header[data-showcase-section='hero']::after {
-  content: '';
-  position: absolute;
-  width: 320px;
-  height: 320px;
-  border-radius: 50%;
-  filter: blur(120px);
-  pointer-events: none;
-  opacity: 0.6;
-  z-index: 0;
-}
-
-[data-showcase-theme='netflix'] header[data-showcase-section='hero']::before {
-  background: radial-gradient(circle, rgba(229, 9, 20, 0.32) 0%, transparent 70%);
-  inset: -120px auto auto -140px;
-}
-
-[data-showcase-theme='netflix'] header[data-showcase-section='hero']::after {
-  background: radial-gradient(circle, rgba(244, 63, 94, 0.28) 0%, transparent 70%);
-  inset: auto -130px -160px auto;
-}
-
-[data-showcase-theme='netflix'] header[data-showcase-section='hero'] > * {
-  position: relative;
-  z-index: 1;
-}
-
-[data-showcase-theme='netflix'] [data-showcase-section] {
-  border-radius: 0;
-  clip-path: polygon(0 0, 100% 0, 100% 94%, 0 100%);
-  padding-bottom: clamp(1.75rem, 4vw, 2.5rem);
-  background: rgba(12, 12, 18, 0.9);
-  border-color: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.55);
-}
-
-[data-showcase-theme='netflix'] [data-showcase-section='problem'],
-[data-showcase-theme='netflix'] [data-showcase-section='innovation'],
-[data-showcase-theme='netflix'] [data-showcase-section='team'] {
-  background: linear-gradient(160deg, rgba(12, 12, 18, 0.92), rgba(8, 8, 12, 0.92));
-}
-
-[data-showcase-theme='netflix'] [data-showcase-element],
-[data-showcase-theme='netflix'] [data-showcase-aside] {
-  border-radius: 8px;
-  background: rgba(10, 10, 16, 0.96);
-  border-color: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.6);
-}
-
-[data-showcase-theme='netflix'] [data-showcase-section] h2,
-[data-showcase-theme='netflix'] [data-showcase-section] h3 {
-  color: #ffffff;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-[data-showcase-theme='netflix'] [data-showcase-section] p,
-[data-showcase-theme='netflix'] [data-showcase-section] li {
-  color: rgba(230, 230, 236, 0.85);
-}
-
-[data-showcase-theme='netflix'] [data-showcase-section] ul li::before {
-  color: #e50914;
-  font-weight: 700;
-}
-
-[data-showcase-theme='netflix'] [data-showcase-element='hero-highlight'] {
-  background: linear-gradient(135deg, rgba(229, 9, 20, 0.3), rgba(244, 63, 94, 0.22));
-  border-color: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 20px 60px rgba(229, 9, 20, 0.35);
-}
-
-[data-showcase-theme='netflix'] [data-showcase-element='metric-card'],
-[data-showcase-theme='netflix'] [data-showcase-element='vision-card'],
-[data-showcase-theme='netflix'] [data-showcase-element='solution-card'] {
-  background: linear-gradient(180deg, rgba(12, 12, 18, 0.96), rgba(20, 0, 4, 0.92));
-}
-
-[data-showcase-theme='netflix'] [data-showcase-section] a {
-  color: #ff3c28;
-}
-
-[data-showcase-theme='netflix'] [data-showcase-section] a:hover {
-  color: #ffa49a;
-}
-
-[data-showcase-theme='netflix'] button,
-[data-showcase-theme='netflix'] [data-showcase-section] button {
-  background: linear-gradient(135deg, #e50914, #ff3c28);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  color: #ffffff;
-  letter-spacing: 0.22em;
-  box-shadow: 0 20px 55px rgba(229, 9, 20, 0.4);
-}
-
-[data-showcase-theme='netflix'] button:hover,
-[data-showcase-theme='netflix'] [data-showcase-section] button:hover {
-  transform: translateY(-2px);
-  background: linear-gradient(135deg, #ff3c28, #ff6150);
-}
-
-[data-showcase-theme='netflix'] button:focus-visible,
-[data-showcase-theme='netflix'] [data-showcase-section] button:focus-visible {
-  box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.45);
-}
-
-[data-showcase-theme='netflix'] [data-showcase-section='timeline'] {
-  background: linear-gradient(160deg, rgba(12, 12, 18, 0.94), rgba(25, 8, 12, 0.92));
-}
-
-[data-showcase-theme='netflix'] [data-showcase-element='timeline-profile'] {
-  background: rgba(14, 14, 20, 0.96);
-  border-color: rgba(255, 255, 255, 0.08);
-}
-
-@keyframes netflixPulse {
-  0% {
-    transform: scale(1) translate(0, 0);
-  }
-  50% {
-    transform: scale(1.05) translate(3%, 2%);
-  }
-  100% {
-    transform: scale(1.1) translate(-3%, 3%);
+@supports (backdrop-filter: blur(1rem)) {
+  :where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-section],
+  :where([data-showcase-scope][data-showcase-theme='netflix']) header[data-showcase-section='hero'],
+  :where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-theme-switcher],
+  :where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-card] {
+    backdrop-filter: blur(22px);
   }
 }
