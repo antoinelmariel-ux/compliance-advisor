@@ -16,7 +16,72 @@ import {
   isShowcaseTheme
 } from './constants/showcaseThemes.js';
 
+const THEME_STYLESHEETS = {
+  inspiration: './src/styles/project-showcase-theme-inspiration.css',
+  netflix: './src/styles/project-showcase-theme-netflix.css',
+  amnesty: './src/styles/project-showcase-theme-amnesty.css'
+};
+
 const resolveTheme = (themeId) => (isShowcaseTheme(themeId) ? themeId : DEFAULT_SHOWCASE_THEME);
+
+const usePresentationThemeStylesheet = (themeId) => {
+  useEffect(() => {
+    if (typeof document === 'undefined') {
+      return undefined;
+    }
+
+    const effectiveTheme = resolveTheme(themeId);
+    const href = THEME_STYLESHEETS[effectiveTheme];
+    if (!href) {
+      return undefined;
+    }
+
+    const toAbsoluteHref = (value) => {
+      if (!value) {
+        return '';
+      }
+
+      try {
+        return new URL(value, document.baseURI).href;
+      } catch (error) {
+        return value;
+      }
+    };
+
+    const targetHref = toAbsoluteHref(href);
+    const stylesheetLinks = Array.from(document.querySelectorAll('link[rel="stylesheet"]'));
+    const matchingLink = stylesheetLinks.find((linkElement) => {
+      return toAbsoluteHref(linkElement.getAttribute('href')) === targetHref;
+    }) || null;
+
+    const themedLinks = Array.from(document.querySelectorAll('link[data-presentation-theme="true"]'));
+    themedLinks.forEach((linkElement) => {
+      if (linkElement !== matchingLink) {
+        linkElement.removeAttribute('data-presentation-theme');
+        linkElement.removeAttribute('data-theme');
+      }
+    });
+
+    if (matchingLink) {
+      matchingLink.setAttribute('data-presentation-theme', 'true');
+      matchingLink.setAttribute('data-theme', effectiveTheme);
+      return undefined;
+    }
+
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = href;
+    link.setAttribute('data-presentation-theme', 'true');
+    link.setAttribute('data-theme', effectiveTheme);
+    document.head.appendChild(link);
+
+    return () => {
+      if (link.parentNode) {
+        link.parentNode.removeChild(link);
+      }
+    };
+  }, [themeId]);
+};
 
 const buildPresentationContext = () => {
   if (typeof window === 'undefined') {
@@ -130,6 +195,8 @@ const PresentationPage = () => {
       // Ignore storage errors silently.
     }
   }, [effectiveTheme]);
+
+  usePresentationThemeStylesheet(effectiveTheme);
 
   const activeTheme = useMemo(
     () => SHOWCASE_THEMES.find(theme => theme.id === effectiveTheme) || SHOWCASE_THEMES[0],
