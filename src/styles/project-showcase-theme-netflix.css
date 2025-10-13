@@ -6,9 +6,9 @@
 [data-showcase-theme='netflix'] {
   --showcase-font-family: 'Netflix Sans', 'Helvetica Neue', 'Segoe UI', sans-serif;
   --showcase-font-heading: 'Netflix Sans', 'Helvetica Neue', 'Segoe UI', sans-serif;
-  --showcase-radius-lg: 14px;
-  --showcase-radius-md: 10px;
-  --showcase-radius-sm: 6px;
+  --showcase-radius-lg: 12px;
+  --showcase-radius-md: 8px;
+  --showcase-radius-sm: 4px;
   --showcase-color-background: radial-gradient(circle at 15% 10%, rgba(229, 9, 20, 0.22), transparent 58%),
     radial-gradient(circle at 90% 8%, rgba(229, 9, 20, 0.18), transparent 55%),
     linear-gradient(160deg, #060608 0%, #0b0b0f 45%, #111116 100%);
@@ -69,9 +69,13 @@
 }
 
 [data-showcase-theme='netflix'] [data-showcase-theme-switcher] {
+  position: relative;
+  border-radius: 12px;
+  clip-path: polygon(0 0, 100% 0, 100% 92%, 0 100%);
   background: rgba(12, 12, 18, 0.9);
-  border-color: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(229, 9, 20, 0.2);
+  box-shadow: 0 32px 90px rgba(0, 0, 0, 0.55);
+  padding: clamp(1rem, 2vw, 1.5rem);
 }
 
 [data-showcase-theme='netflix'] [data-showcase-theme-switcher]::after {
@@ -83,6 +87,13 @@
   opacity: 0.5;
   mix-blend-mode: screen;
   pointer-events: none;
+}
+
+[data-showcase-theme='netflix'] [data-showcase-theme-switcher] button {
+  border-radius: 8px;
+  border: 1px solid rgba(229, 9, 20, 0.35);
+  background: rgba(229, 9, 20, 0.18);
+  color: rgba(255, 255, 255, 0.82);
 }
 
 [data-showcase-theme='netflix'] [data-showcase-theme-switcher] button[aria-pressed='true'] {

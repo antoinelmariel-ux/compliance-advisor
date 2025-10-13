@@ -414,9 +414,25 @@ export const ProjectShowcase = ({
   const shouldShowPreview = !isEditing || !canEdit;
   const formId = 'project-showcase-edit-form';
   const isInspirationTheme = selectedTheme === 'inspiration';
+  const isNetflixTheme = selectedTheme === 'netflix';
+  const isAmnestyTheme = selectedTheme === 'amnesty';
 
-  const getThemeClasses = (defaultClasses, inspirationClasses) =>
-    isInspirationTheme ? inspirationClasses : defaultClasses;
+  const getThemeClasses = (defaultClasses, inspirationClasses, themeOverrides) => {
+    if (themeOverrides && typeof themeOverrides === 'object') {
+      const override = themeOverrides[selectedTheme];
+      if (typeof override === 'string') {
+        return override;
+      }
+    }
+
+    return isInspirationTheme ? inspirationClasses : defaultClasses;
+  };
+
+  const combineTransform = (baseTransform, extraTransform) => {
+    const base = typeof baseTransform === 'string' ? baseTransform.trim() : '';
+    const extra = typeof extraTransform === 'string' ? extraTransform.trim() : '';
+    return [base, extra].filter(Boolean).join(' ');
+  };
 
   const handleStartEditing = useCallback(() => {
     setDraftValues(buildDraftValues(editableFields, answers, rawProjectName));
@@ -657,13 +673,136 @@ export const ProjectShowcase = ({
       data-showcase-theme={selectedTheme}
       className={getThemeClasses(
         'relative w-full overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100',
-        'relative w-full overflow-hidden'
+        'relative w-full overflow-hidden',
+        {
+          netflix: 'relative w-full overflow-hidden bg-[#050507] text-white',
+          amnesty: 'relative w-full overflow-hidden bg-[#fff9c2] text-zinc-900'
+        }
       )}
       onMouseMove={handleParallaxMove}
       onMouseLeave={handleParallaxLeave}
       ref={showcaseCardRef}
     >
-      {!isInspirationTheme && (
+      {isNetflixTheme && (
+        <div className="pointer-events-none absolute inset-0 overflow-hidden" data-showcase-overlay>
+          <div
+            aria-hidden="true"
+            data-showcase-layer="glow-far"
+            style={{
+              position: 'absolute',
+              top: '-18%',
+              right: '-12%',
+              width: '58%',
+              height: '70%',
+              background: 'linear-gradient(125deg, rgba(229, 9, 20, 0.48), rgba(15, 8, 12, 0.05))',
+              filter: 'blur(120px)',
+              transform: combineTransform(parallaxLayers.far?.transform, 'skewY(-6deg)')
+            }}
+          />
+          <div
+            aria-hidden="true"
+            data-showcase-layer="glow-mid"
+            style={{
+              position: 'absolute',
+              bottom: '-22%',
+              left: '-18%',
+              width: '60%',
+              height: '65%',
+              background: 'linear-gradient(140deg, rgba(229, 9, 20, 0.4), transparent)',
+              filter: 'blur(110px)',
+              transform: combineTransform(
+                parallaxLayers.mid?.transform,
+                'skewY(-10deg) rotate(-3deg)'
+              )
+            }}
+          />
+          <div
+            aria-hidden="true"
+            data-showcase-layer="glow-near"
+            style={{
+              position: 'absolute',
+              top: '12%',
+              left: '8%',
+              width: '42%',
+              height: '45%',
+              background: 'linear-gradient(160deg, rgba(244, 63, 94, 0.32), transparent)',
+              border: '1px solid rgba(229, 9, 20, 0.2)',
+              transform: combineTransform(parallaxLayers.near?.transform, 'skewX(-12deg)'),
+              boxShadow: '0 0 140px rgba(229, 9, 20, 0.35)',
+              mixBlendMode: 'screen'
+            }}
+          />
+          <div
+            aria-hidden="true"
+            data-showcase-layer="glow-overlay"
+            style={{
+              position: 'absolute',
+              inset: 0,
+              background:
+                'radial-gradient(circle at 12% 18%, rgba(229, 9, 20, 0.28), transparent 60%), radial-gradient(circle at 88% 8%, rgba(244, 63, 94, 0.22), transparent 68%)',
+              mixBlendMode: 'screen'
+            }}
+          />
+        </div>
+      )}
+
+      {isAmnestyTheme && (
+        <div className="pointer-events-none absolute inset-0 overflow-hidden" data-showcase-overlay>
+          <div
+            aria-hidden="true"
+            data-showcase-layer="glow-far"
+            style={{
+              position: 'absolute',
+              top: '-12%',
+              left: '-10%',
+              width: '55%',
+              height: '65%',
+              background: 'linear-gradient(135deg, rgba(255, 237, 0, 0.45), transparent)',
+              filter: 'blur(90px)',
+              transform: combineTransform(parallaxLayers.far?.transform, 'skewY(-12deg)')
+            }}
+          />
+          <div
+            aria-hidden="true"
+            data-showcase-layer="glow-mid"
+            style={{
+              position: 'absolute',
+              bottom: '-18%',
+              right: '-8%',
+              width: '48%',
+              height: '58%',
+              background: 'linear-gradient(120deg, rgba(255, 191, 0, 0.38), transparent)',
+              filter: 'blur(80px)',
+              transform: combineTransform(parallaxLayers.mid?.transform, 'skewX(-10deg)')
+            }}
+          />
+          <div
+            aria-hidden="true"
+            data-showcase-layer="glow-near"
+            style={{
+              position: 'absolute',
+              inset: '18% 12% auto 12%',
+              height: '38%',
+              background:
+                'repeating-linear-gradient(135deg, rgba(18, 18, 18, 0.22) 0px, rgba(18, 18, 18, 0.22) 12px, transparent 12px, transparent 26px)',
+              boxShadow: '0 0 60px rgba(18, 18, 18, 0.22)',
+              mixBlendMode: 'multiply'
+            }}
+          />
+          <div
+            aria-hidden="true"
+            data-showcase-layer="glow-overlay"
+            style={{
+              position: 'absolute',
+              inset: 0,
+              background:
+                'radial-gradient(circle at 25% 18%, rgba(255, 237, 0, 0.35), transparent 65%), radial-gradient(circle at 80% 4%, rgba(255, 191, 0, 0.25), transparent 68%)'
+            }}
+          />
+        </div>
+      )}
+
+      {!isInspirationTheme && !isNetflixTheme && !isAmnestyTheme && (
         <div className="pointer-events-none absolute inset-0 overflow-hidden" data-showcase-overlay>
           <div
             className="absolute -top-48 -left-32 h-80 w-80 rounded-full bg-indigo-500/20 blur-3xl transition-transform duration-300 ease-out"
@@ -696,7 +835,13 @@ export const ProjectShowcase = ({
           data-showcase-theme-switcher
           className={getThemeClasses(
             'mb-8 flex flex-col gap-4 rounded-[28px] border border-white/10 bg-white/5 p-4 sm:flex-row sm:items-center sm:justify-between',
-            'mb-8 flex flex-col gap-4 rounded-[28px] p-4 sm:flex-row sm:items-center sm:justify-between'
+            'mb-8 flex flex-col gap-4 rounded-[28px] p-4 sm:flex-row sm:items-center sm:justify-between',
+            {
+              netflix:
+                'mb-8 flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between',
+              amnesty:
+                'mb-8 flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between'
+            }
           )}
         >
           <div className={getThemeClasses('max-w-xl text-xs text-slate-200/80', 'max-w-xl text-xs')}>
@@ -1351,7 +1496,11 @@ export const ProjectShowcase = ({
         data-showcase-theme={selectedTheme}
         className={getThemeClasses(
           'min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 py-12 px-4 sm:px-8',
-          'min-h-screen bg-[#f5f5f7] py-12 px-4 sm:px-8'
+          'min-h-screen bg-[#f5f5f7] py-12 px-4 sm:px-8',
+          {
+            netflix: 'min-h-screen bg-[#050507] py-12 px-4 sm:px-8',
+            amnesty: 'min-h-screen bg-[#fff9c2] py-12 px-4 sm:px-8'
+          }
         )}
       >
         <div className="mx-auto w-full">{showcaseCard}</div>
@@ -1365,7 +1514,11 @@ export const ProjectShowcase = ({
       data-showcase-theme={selectedTheme}
       className={getThemeClasses(
         'min-h-screen w-full bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 px-4 py-10 sm:px-8',
-        'min-h-screen w-full bg-[#f5f5f7] px-4 py-10 sm:px-8'
+        'min-h-screen w-full bg-[#f5f5f7] px-4 py-10 sm:px-8',
+        {
+          netflix: 'min-h-screen w-full bg-[#050507] px-4 py-10 sm:px-8',
+          amnesty: 'min-h-screen w-full bg-[#fff9c2] px-4 py-10 sm:px-8'
+        }
       )}
       aria-label="Vitrine marketing du projet"
     >
