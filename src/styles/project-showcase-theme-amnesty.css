@@ -6,6 +6,10 @@
 [data-showcase-theme='amnesty'] {
   --showcase-font-family: 'Helvetica Neue', 'Arial', sans-serif;
   --showcase-font-heading: 'Montserrat', 'Helvetica Neue', 'Arial', sans-serif;
+  --showcase-radius-lg: 0px;
+  --showcase-radius-md: 0px;
+  --showcase-radius-sm: 0px;
+  --showcase-notch-size: 42px;
   --showcase-color-background: linear-gradient(180deg, #fffbe6 0%, #ffef66 45%, #ffed00 100%);
   --showcase-color-card: rgba(255, 255, 255, 0.92);
   --showcase-color-surface: rgba(255, 255, 255, 0.9);
@@ -50,6 +54,16 @@
 }
 
 [data-showcase-theme='amnesty'] [data-showcase-card] {
+  border-radius: 0;
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--showcase-notch-size)) 0,
+    100% var(--showcase-notch-size),
+    100% 100%,
+    var(--showcase-notch-size) 100%,
+    0 calc(100% - var(--showcase-notch-size))
+  );
+  overflow: hidden;
   border: 2px solid rgba(18, 18, 18, 0.2);
   box-shadow: 0 28px 90px rgba(18, 18, 18, 0.18);
 }
@@ -80,6 +94,7 @@
 }
 
 [data-showcase-theme='amnesty'] [data-showcase-theme-switcher] button {
+  border-radius: 0;
   text-transform: uppercase;
   letter-spacing: 0.32em;
   font-weight: 700;
@@ -96,6 +111,21 @@
 [data-showcase-theme='amnesty'] [data-showcase-theme-switcher] button:not([aria-pressed='true']):hover {
   background: rgba(18, 18, 18, 0.12);
   color: #121212;
+}
+
+[data-showcase-theme='amnesty'] header[data-showcase-section='hero'],
+[data-showcase-theme='amnesty'] [data-showcase-section],
+[data-showcase-theme='amnesty'] [data-showcase-element],
+[data-showcase-theme='amnesty'] [data-showcase-aside] {
+  border-radius: 0;
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--showcase-notch-size)) 0,
+    100% var(--showcase-notch-size),
+    100% 100%,
+    var(--showcase-notch-size) 100%,
+    0 calc(100% - var(--showcase-notch-size))
+  );
 }
 
 [data-showcase-theme='amnesty'] header[data-showcase-section='hero'] {
@@ -199,6 +229,7 @@
 
 [data-showcase-theme='amnesty'] button,
 [data-showcase-theme='amnesty'] [data-showcase-section] button {
+  border-radius: 0;
   background: #121212;
   color: #ffed00;
   border: 2px solid #121212;
