@@ -43,6 +43,12 @@ const SHOWCASE_THEME_STORAGE_KEY = 'compliance-advisor.showcase-theme';
 
 const SHOWCASE_THEMES = [
   {
+    id: 'inspiration',
+    label: 'Inspiration',
+    shortLabel: 'Inspiration',
+    description: 'Esthétique Apple, morphing organique et gradients lumineux.',
+  },
+  {
     id: 'aurora',
     label: 'Aurora néon',
     shortLabel: 'Aurora',
