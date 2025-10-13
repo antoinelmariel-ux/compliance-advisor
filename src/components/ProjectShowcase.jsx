@@ -1117,7 +1117,7 @@ export const ProjectShowcase = ({
     <section
       data-showcase-scope
       data-showcase-theme={selectedTheme}
-      className="min-h-screen w-full bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 px-4 py-10 sm:px-8"
+      className="w-full px-4 py-10 sm:px-8"
       aria-label="Vitrine marketing du projet"
     >
       <div className="w-full">{showcaseCard}</div>
