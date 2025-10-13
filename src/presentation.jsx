@@ -36,14 +36,36 @@ const usePresentationThemeStylesheet = (themeId) => {
       return undefined;
     }
 
-    const previous = document.querySelector('link[data-presentation-theme="true"]');
-    if (previous) {
-      const previousTheme = previous.getAttribute('data-theme');
-      const previousHref = previous.getAttribute('href');
-      if (previousTheme === effectiveTheme && previousHref === href) {
-        return undefined;
+    const toAbsoluteHref = (value) => {
+      if (!value) {
+        return '';
       }
-      previous.remove();
+
+      try {
+        return new URL(value, document.baseURI).href;
+      } catch (error) {
+        return value;
+      }
+    };
+
+    const targetHref = toAbsoluteHref(href);
+    const stylesheetLinks = Array.from(document.querySelectorAll('link[rel="stylesheet"]'));
+    const matchingLink = stylesheetLinks.find((linkElement) => {
+      return toAbsoluteHref(linkElement.getAttribute('href')) === targetHref;
+    }) || null;
+
+    const themedLinks = Array.from(document.querySelectorAll('link[data-presentation-theme="true"]'));
+    themedLinks.forEach((linkElement) => {
+      if (linkElement !== matchingLink) {
+        linkElement.removeAttribute('data-presentation-theme');
+        linkElement.removeAttribute('data-theme');
+      }
+    });
+
+    if (matchingLink) {
+      matchingLink.setAttribute('data-presentation-theme', 'true');
+      matchingLink.setAttribute('data-theme', effectiveTheme);
+      return undefined;
     }
 
     const link = document.createElement('link');
