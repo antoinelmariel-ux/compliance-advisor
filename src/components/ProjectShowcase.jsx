@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from '../react.js';
 import {
-  Target,
   Rocket,
   Users,
   Calendar,
@@ -66,23 +65,15 @@ const SHOWCASE_THEMES = [
 const SHOWCASE_FIELD_CONFIG = [
   { id: 'projectName', fallbackLabel: 'Nom du projet', fallbackType: 'text' },
   { id: 'projectSlogan', fallbackLabel: 'Slogan ou promesse', fallbackType: 'text' },
-  { id: 'valueProposition', fallbackLabel: 'Proposition de valeur', fallbackType: 'long_text' },
   { id: 'targetAudience', fallbackLabel: 'Audiences principales', fallbackType: 'multi_choice' },
-  { id: 'marketSize', fallbackLabel: 'Taille de marché', fallbackType: 'text' },
-  { id: 'problemInsight', fallbackLabel: 'Insight problème', fallbackType: 'text' },
   { id: 'problemPainPoints', fallbackLabel: 'Pain points', fallbackType: 'long_text' },
-  { id: 'problemTestimonial', fallbackLabel: 'Témoignage', fallbackType: 'long_text' },
   { id: 'solutionDescription', fallbackLabel: 'Description de la solution', fallbackType: 'long_text' },
   { id: 'solutionBenefits', fallbackLabel: 'Bénéfices clés', fallbackType: 'long_text' },
-  { id: 'solutionExperience', fallbackLabel: "Preuve immersive", fallbackType: 'text' },
   { id: 'solutionComparison', fallbackLabel: 'Différenciation', fallbackType: 'long_text' },
-  { id: 'innovationSecret', fallbackLabel: 'Secret sauce', fallbackType: 'long_text' },
   { id: 'innovationProcess', fallbackLabel: 'Processus innovation', fallbackType: 'long_text' },
-  { id: 'tractionSignals', fallbackLabel: 'Signaux de traction', fallbackType: 'long_text' },
   { id: 'visionStatement', fallbackLabel: 'Vision', fallbackType: 'long_text' },
   { id: 'teamLead', fallbackLabel: 'Lead du projet', fallbackType: 'text' },
   { id: 'teamCoreMembers', fallbackLabel: 'Membres clés', fallbackType: 'long_text' },
-  { id: 'teamValues', fallbackLabel: 'Valeurs d\'équipe', fallbackType: 'long_text' },
   { id: 'campaignKickoffDate', fallbackLabel: 'Date de démarrage campagne', fallbackType: 'date' },
   { id: 'launchDate', fallbackLabel: 'Date de lancement', fallbackType: 'date' }
 ];
@@ -279,28 +270,20 @@ const getPrimaryRisk = (analysis) => {
 const REQUIRED_SHOWCASE_QUESTION_IDS = [
   'projectName',
   'projectSlogan',
-  'valueProposition',
   'targetAudience',
-  'marketSize',
-  'problemInsight',
   'problemPainPoints',
-  'problemTestimonial',
   'solutionDescription',
   'solutionBenefits',
-  'solutionExperience',
   'solutionComparison',
-  'innovationSecret',
   'innovationProcess',
-  'tractionSignals',
   'visionStatement',
   'teamLead',
   'teamCoreMembers',
-  'teamValues',
   'campaignKickoffDate',
   'launchDate'
 ];
 
-const buildHeroHighlights = ({ targetAudience, marketSize, runway, tractionSignalsCount }) => {
+const buildHeroHighlights = ({ targetAudience, runway }) => {
   const highlights = [];
 
   if (hasText(targetAudience)) {
@@ -312,28 +295,12 @@ const buildHeroHighlights = ({ targetAudience, marketSize, runway, tractionSigna
     });
   }
 
-  if (hasText(marketSize)) {
-    highlights.push({
-      id: 'market',
-      label: 'Potentiel de marché',
-      value: marketSize,
-      caption: 'La taille ou la dynamique qui crédibilise l\'opportunité.'
-    });
-  }
-
   if (runway) {
     highlights.push({
       id: 'runway',
       label: 'Runway avant lancement',
       value: `${runway.weeksLabel} (${runway.daysLabel})`,
       caption: `Du ${runway.startLabel} au ${runway.endLabel}.`
-    });
-  } else if (tractionSignalsCount > 0) {
-    highlights.push({
-      id: 'traction',
-      label: 'Signaux de traction',
-      value: `${tractionSignalsCount} preuve${tractionSignalsCount > 1 ? 's' : ''}`,
-      caption: 'Retours ou chiffres prêts à être mis en lumière.'
     });
   }
 
@@ -502,28 +469,19 @@ export const ProjectShowcase = ({
   }, [questions]);
 
   const slogan = getFormattedAnswer(questions, answers, 'projectSlogan');
-  const valueProposition = getFormattedAnswer(questions, answers, 'valueProposition');
   const targetAudience = getFormattedAnswer(questions, answers, 'targetAudience');
-  const marketSize = getFormattedAnswer(questions, answers, 'marketSize');
-
-  const problemInsight = getFormattedAnswer(questions, answers, 'problemInsight');
   const problemPainPoints = parseListAnswer(getRawAnswer(answers, 'problemPainPoints'));
-  const problemTestimonial = getFormattedAnswer(questions, answers, 'problemTestimonial');
 
   const solutionDescription = getFormattedAnswer(questions, answers, 'solutionDescription');
   const solutionBenefits = parseListAnswer(getRawAnswer(answers, 'solutionBenefits'));
-  const solutionExperience = getFormattedAnswer(questions, answers, 'solutionExperience');
   const solutionComparison = getFormattedAnswer(questions, answers, 'solutionComparison');
 
-  const innovationSecret = getFormattedAnswer(questions, answers, 'innovationSecret');
   const innovationProcess = getFormattedAnswer(questions, answers, 'innovationProcess');
 
-  const tractionSignals = parseListAnswer(getRawAnswer(answers, 'tractionSignals'));
   const visionStatement = getFormattedAnswer(questions, answers, 'visionStatement');
 
   const teamLead = getFormattedAnswer(questions, answers, 'teamLead');
   const teamCoreMembers = parseListAnswer(getRawAnswer(answers, 'teamCoreMembers'));
-  const teamValues = parseListAnswer(getRawAnswer(answers, 'teamValues'));
 
   const runway = useMemo(() => computeRunway(answers), [answers]);
   const timelineSummary = useMemo(() => computeTimelineSummary(timelineDetails), [timelineDetails]);
@@ -578,11 +536,9 @@ export const ProjectShowcase = ({
     () =>
       buildHeroHighlights({
         targetAudience,
-        marketSize,
-        runway,
-        tractionSignalsCount: tractionSignals.length
+        runway
       }),
-    [targetAudience, marketSize, runway, tractionSignals.length]
+    [targetAudience, runway]
   );
 
   useEffect(() => {
@@ -721,11 +677,6 @@ export const ProjectShowcase = ({
                   {renderTextWithLinks(slogan)}
                 </p>
               )}
-              {hasText(valueProposition) && (
-                <p className="mt-6 max-w-2xl text-base leading-relaxed text-slate-200/80 sm:text-lg">
-                  {renderTextWithLinks(valueProposition)}
-                </p>
-              )}
             </div>
             <div className="flex flex-wrap items-center gap-3 self-start lg:self-auto">
               <button
@@ -769,7 +720,7 @@ export const ProjectShowcase = ({
                     const isDate = type === 'date';
                     const helperText = isMulti
                       ? 'Indiquez une audience par ligne.'
-                      : ['problemPainPoints', 'solutionBenefits', 'tractionSignals', 'teamCoreMembers', 'teamValues'].includes(fieldId)
+                      : ['problemPainPoints', 'solutionBenefits', 'teamCoreMembers'].includes(fieldId)
                         ? 'Utilisez une ligne par élément pour une meilleure mise en forme.'
                         : null;
 
@@ -867,23 +818,8 @@ export const ProjectShowcase = ({
                 <div className="max-w-3xl">
                   <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80">Le problème</p>
                   <h3 className="mt-3 text-3xl font-bold text-white">Pourquoi ce projet doit exister</h3>
-                  {hasText(problemInsight) && (
-                    <p className="mt-5 text-base font-semibold text-indigo-200 sm:text-lg">
-                      {renderTextWithLinks(problemInsight)}
-                    </p>
-                  )}
                   {renderList(problemPainPoints)}
                 </div>
-                {hasText(problemTestimonial) && (
-                  <aside
-                    data-showcase-aside="testimonial"
-                    className="rounded-3xl border border-white/10 bg-gradient-to-br from-indigo-500/20 via-transparent to-sky-500/10 p-6 text-sm leading-relaxed text-slate-200 backdrop-blur-xl"
-                    style={{ boxShadow: neoCardShadow }}
-                  >
-                    <Target className="mb-4 h-8 w-8 text-sky-300" />
-                    <p>{renderTextWithLinks(problemTestimonial)}</p>
-                  </aside>
-                )}
               </div>
             </section>
 
@@ -923,18 +859,6 @@ export const ProjectShowcase = ({
                       {renderList(solutionBenefits)}
                     </div>
                   )}
-                  {hasText(solutionExperience) && (
-                    <div
-                      data-showcase-element="solution-card"
-                      className="rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-200 backdrop-blur-xl"
-                      style={{ boxShadow: neoCardShadow }}
-                    >
-                      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/90">Preuve immersive</p>
-                      <p className="mt-3 text-sm leading-relaxed text-slate-200/90">
-                        {renderTextWithLinks(solutionExperience)}
-                      </p>
-                    </div>
-                  )}
                   {hasText(solutionComparison) && (
                     <div
                       data-showcase-element="solution-card"
@@ -951,22 +875,17 @@ export const ProjectShowcase = ({
               </div>
             </section>
 
-            <section
-              data-showcase-section="innovation"
-              className="mt-14 rounded-[32px] border border-white/10 bg-white/5 p-8 sm:p-12 text-slate-100 backdrop-blur-xl"
-              style={{ boxShadow: neoCardShadow }}
-            >
-              <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-                <div>
-                  <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80">Innovation</p>
-                  <h3 className="mt-3 text-2xl font-bold text-white">Ce qui rend l'approche unique</h3>
-                  {hasText(innovationSecret) && (
-                    <p className="mt-4 text-sm leading-relaxed text-slate-200/90">
-                      {renderTextWithLinks(innovationSecret)}
-                    </p>
-                  )}
-                </div>
-                {hasText(innovationProcess) && (
+            {hasText(innovationProcess) && (
+              <section
+                data-showcase-section="innovation"
+                className="mt-14 rounded-[32px] border border-white/10 bg-white/5 p-8 sm:p-12 text-slate-100 backdrop-blur-xl"
+                style={{ boxShadow: neoCardShadow }}
+              >
+                <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+                  <div>
+                    <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80">Innovation</p>
+                    <h3 className="mt-3 text-2xl font-bold text-white">Ce qui rend l'approche unique</h3>
+                  </div>
                   <div
                     data-showcase-element="innovation-card"
                     className="rounded-3xl border border-white/10 bg-white/5 p-6 text-sm leading-relaxed text-slate-200 backdrop-blur-xl"
@@ -975,9 +894,9 @@ export const ProjectShowcase = ({
                     <Compass className="mb-4 h-7 w-7 text-sky-300" />
                     {renderTextWithLinks(innovationProcess)}
                   </div>
-                )}
-              </div>
-            </section>
+                </div>
+              </section>
+            )}
 
             <section
               data-showcase-section="evidence"
@@ -989,18 +908,7 @@ export const ProjectShowcase = ({
                   <div>
                     <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80">Potentiel & impact</p>
                     <h3 className="mt-3 text-3xl font-bold text-white">Les preuves qui donnent envie d'y croire</h3>
-                    <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-                      {hasText(marketSize) && (
-                        <div
-                          data-showcase-element="metric-card"
-                          className="rounded-3xl border border-white/10 bg-white/5 p-5 text-sm text-slate-200 backdrop-blur-xl"
-                          style={{ boxShadow: neoCardShadow }}
-                        >
-                          <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/70">Taille d'opportunité</p>
-                          <p className="mt-2 text-2xl font-bold text-white">{marketSize}</p>
-                          <p className="mt-2 text-xs text-slate-300/80">Projection marché ou segment prioritaire.</p>
-                        </div>
-                      )}
+                    <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
                       {timelineSummary && (
                         <div
                           data-showcase-element="metric-card"
@@ -1025,16 +933,6 @@ export const ProjectShowcase = ({
                       </div>
                     </div>
                   </div>
-                  {tractionSignals.length > 0 && (
-                    <div
-                      data-showcase-element="traction-card"
-                      className="rounded-3xl border border-white/10 bg-gradient-to-br from-sky-500/20 via-transparent to-indigo-500/20 p-6 text-slate-100 backdrop-blur-xl"
-                      style={{ boxShadow: neoCardShadow }}
-                    >
-                      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200">Signaux de traction</p>
-                      {renderList(tractionSignals)}
-                    </div>
-                  )}
                   {hasText(visionStatement) && (
                     <div
                       data-showcase-element="vision-card"
@@ -1083,22 +981,6 @@ export const ProjectShowcase = ({
                     <div>
                       <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-200/90">Collectif moteur</p>
                       {renderList(teamCoreMembers)}
-                    </div>
-                  )}
-                  {teamValues.length > 0 && (
-                    <div>
-                      <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-200/90">Nos valeurs de collaboration</p>
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {teamValues.map((value, index) => (
-                          <span
-                            key={`${value}-${index}`}
-                            className="inline-flex items-center rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-semibold text-indigo-100 backdrop-blur"
-                            style={{ boxShadow: neoCardShadow }}
-                          >
-                            {value}
-                          </span>
-                        ))}
-                      </div>
                     </div>
                   )}
                 </div>
