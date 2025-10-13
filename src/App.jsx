@@ -3,6 +3,7 @@ import { QuestionnaireScreen } from './components/QuestionnaireScreen.jsx';
 import { SynthesisReport } from './components/SynthesisReport.jsx';
 import { HomeScreen } from './components/HomeScreen.jsx';
 import { BackOffice } from './components/BackOffice.jsx';
+import { ProjectShowcase } from './components/ProjectShowcase.jsx';
 import { CheckCircle } from './components/icons.js';
 import { MandatoryQuestionsSummary } from './components/MandatoryQuestionsSummary.jsx';
 import { initialQuestions } from './data/questions.js';
@@ -14,7 +15,7 @@ import { analyzeAnswers } from './utils/rules.js';
 import { extractProjectName } from './utils/projects.js';
 import { createDemoProject } from './data/demoProject.js';
 
-const APP_VERSION = 'v1.0.8';
+const APP_VERSION = 'v1.0.9';
 
 const isAnswerProvided = (value) => {
   if (Array.isArray(value)) {
@@ -115,6 +116,7 @@ export const App = () => {
   const [activeProjectId, setActiveProjectId] = useState(null);
   const [isHighVisibility, setIsHighVisibility] = useState(false);
   const [validationError, setValidationError] = useState(null);
+  const [showcaseProjectContext, setShowcaseProjectContext] = useState(null);
 
   const [questions, setQuestions] = useState(initialQuestions);
   const [rules, setRules] = useState(initialRules);
@@ -486,6 +488,38 @@ export const App = () => {
     setActiveProjectId(prev => (prev === projectId ? null : prev));
   }, []);
 
+  const handleShowProjectShowcase = useCallback((projectId) => {
+    if (!projectId) {
+      return;
+    }
+
+    const project = projects.find(item => item.id === projectId);
+    if (!project) {
+      return;
+    }
+
+    const projectAnswers = project.answers || {};
+    const visibleQuestions = questions.filter(question => shouldShowQuestion(question, projectAnswers));
+    const projectAnalysis = project.analysis
+      || (Object.keys(projectAnswers).length > 0 ? analyzeAnswers(projectAnswers, rules) : null);
+    const relevantTeams = teams.filter(team => (projectAnalysis?.teams || []).includes(team.id));
+    const timelineDetails = projectAnalysis?.timeline?.details || [];
+    const derivedProjectName = project.projectName || extractProjectName(projectAnswers, questions);
+
+    setShowcaseProjectContext({
+      projectName: derivedProjectName,
+      answers: projectAnswers,
+      analysis: projectAnalysis,
+      relevantTeams,
+      questions: visibleQuestions.length > 0 ? visibleQuestions : questions,
+      timelineDetails
+    });
+  }, [projects, questions, rules, teams, shouldShowQuestion]);
+
+  const handleCloseProjectShowcase = useCallback(() => {
+    setShowcaseProjectContext(null);
+  }, []);
+
   const upsertProject = useCallback((entry) => {
     return prevProjects => {
       if (!entry || !entry.id) {
@@ -718,6 +752,7 @@ export const App = () => {
               onStartNewProject={handleCreateNewProject}
               onOpenProject={handleOpenProject}
               onDeleteProject={handleDeleteProject}
+              onShowProjectShowcase={handleShowProjectShowcase}
             />
           ) : screen === 'questionnaire' ? (
             <QuestionnaireScreen
@@ -769,6 +804,18 @@ export const App = () => {
           Compliance Advisor · Version {APP_VERSION}
         </p>
       </footer>
+
+      {showcaseProjectContext && (
+        <ProjectShowcase
+          projectName={showcaseProjectContext.projectName}
+          onClose={handleCloseProjectShowcase}
+          analysis={showcaseProjectContext.analysis}
+          relevantTeams={showcaseProjectContext.relevantTeams}
+          questions={showcaseProjectContext.questions}
+          answers={showcaseProjectContext.answers}
+          timelineDetails={showcaseProjectContext.timelineDetails}
+        />
+      )}
     </div>
   );
 };

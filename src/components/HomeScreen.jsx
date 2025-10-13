@@ -9,7 +9,7 @@ import {
   Calendar,
   CheckCircle,
   Eye,
-  Trash2,
+  Sparkles,
   AlertTriangle,
   Edit,
   Save
@@ -65,7 +65,13 @@ const computeProgress = (project) => {
   return Math.round((answeredCount / project.totalQuestions) * 100);
 };
 
-export const HomeScreen = ({ projects = [], onStartNewProject, onOpenProject, onDeleteProject }) => {
+export const HomeScreen = ({
+  projects = [],
+  onStartNewProject,
+  onOpenProject,
+  onDeleteProject,
+  onShowProjectShowcase
+}) => {
   const hasProjects = projects.length > 0;
 
   const sortedProjects = useMemo(() => {
@@ -257,28 +263,13 @@ export const HomeScreen = ({ projects = [], onStartNewProject, onOpenProject, on
                         {isDraft ? <Edit className="w-4 h-4 mr-2" /> : <Eye className="w-4 h-4 mr-2" />}
                         {isDraft ? 'Continuer le questionnaire' : 'Consulter la synthèse'}
                       </button>
-                      <button
-                        type="button"
-                        onClick={onStartNewProject}
-                        className="inline-flex items-center px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-all hv-button hv-focus-ring"
-                      >
-                        <Plus className="w-4 h-4 mr-2" /> Nouveau projet
-                      </button>
-                      {onDeleteProject && (
+                      {onShowProjectShowcase && (
                         <button
                           type="button"
-                          onClick={() => {
-                            if (typeof window !== 'undefined') {
-                              const confirmation = window.confirm('Supprimer ce projet enregistré ?');
-                              if (!confirmation) {
-                                return;
-                              }
-                            }
-                            onDeleteProject(project.id);
-                          }}
-                          className="inline-flex items-center px-4 py-2 bg-red-50 border border-red-200 text-red-600 rounded-lg font-semibold hover:bg-red-100 transition-all hv-button"
+                          onClick={() => onShowProjectShowcase(project.id)}
+                          className="inline-flex items-center px-4 py-2 bg-white border border-indigo-200 text-indigo-600 rounded-lg font-semibold hover:bg-indigo-50 transition-all hv-button hv-focus-ring"
                         >
-                          <Trash2 className="w-4 h-4 mr-2" /> Supprimer
+                          <Sparkles className="w-4 h-4 mr-2" /> Vitrine du projet
                         </button>
                       )}
                     </div>
