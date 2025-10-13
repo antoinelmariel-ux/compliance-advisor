@@ -398,6 +398,11 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
   };
 
   const deleteQuestion = (id) => {
+    const target = questions.find((question) => question.id === id);
+    if (target && target.showcase) {
+      return;
+    }
+
     setQuestions(questions.filter((question) => question.id !== id));
   };
 
@@ -551,6 +556,13 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
                 const conditionSummary = buildConditionSummary(question, questions);
                 const guidance = question.guidance || {};
                 const tips = formatGuidanceTips(guidance);
+                const isShowcaseQuestion = Boolean(question && question.showcase);
+                const deleteButtonClasses = isShowcaseQuestion
+                  ? 'p-2 text-gray-300 bg-gray-100 cursor-not-allowed rounded hv-button'
+                  : 'p-2 text-red-600 hover:bg-red-50 rounded hv-button';
+                const deleteButtonTitle = isShowcaseQuestion
+                  ? 'Cette question alimente la vitrine showcase et ne peut pas être supprimée.'
+                  : `Supprimer la question ${question.id}`;
 
                 return (
                   <React.Fragment key={question.id}>
@@ -607,9 +619,12 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
                         </button>
                         <button
                           type="button"
-                          onClick={() => deleteQuestion(question.id)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded hv-button"
-                          aria-label={`Supprimer la question ${question.id}`}
+                          onClick={isShowcaseQuestion ? undefined : () => deleteQuestion(question.id)}
+                          className={deleteButtonClasses}
+                          aria-label={deleteButtonTitle}
+                          aria-disabled={isShowcaseQuestion}
+                          disabled={isShowcaseQuestion}
+                          title={deleteButtonTitle}
                         >
                           <Trash2 className="w-5 h-5" />
                         </button>
