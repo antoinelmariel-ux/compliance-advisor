@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aura — Illuminer chaque lancement produit</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+            background: #000;
+            color: #f5f5f7;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        nav .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: #f5f5f7;
+            text-decoration: none;
+            font-size: 14px;
+            transition: opacity 0.3s;
+        }
+
+        .nav-links a:hover {
+            opacity: 0.7;
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(0, 113, 227, 0.3) 0%, rgba(0, 0, 0, 0) 70%);
+            border-radius: 50%;
+            filter: blur(60px);
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.2); opacity: 0.8; }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            font-size: clamp(48px, 8vw, 96px);
+            font-weight: 700;
+            letter-spacing: -2px;
+            margin-bottom: 20px;
+            background: linear-gradient(to right, #fff, #999);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero .tagline {
+            font-size: clamp(24px, 3vw, 32px);
+            font-weight: 300;
+            color: #86868b;
+            margin-bottom: 40px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 8px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            font-size: 14px;
+            color: #0071e3;
+            margin-bottom: 20px;
+        }
+
+        /* Section générique */
+        section {
+            padding: 120px 0;
+            position: relative;
+        }
+
+        .section-title {
+            font-size: clamp(40px, 5vw, 64px);
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .section-subtitle {
+            font-size: clamp(18px, 2vw, 24px);
+            color: #86868b;
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto 80px;
+        }
+
+        /* Problem Section */
+        .problem {
+            background: linear-gradient(to bottom, #000 0%, #1a1a1a 100%);
+        }
+
+        .problem-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            margin-top: 60px;
+        }
+
+        .problem-card {
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s, border-color 0.3s;
+        }
+
+        .problem-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(0, 113, 227, 0.5);
+        }
+
+        .problem-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+
+        /* Solution Section */
+        .solution {
+            background: #000;
+        }
+
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 60px;
+        }
+
+        .benefit-card {
+            text-align: center;
+            padding: 40px 30px;
+        }
+
+        .benefit-number {
+            font-size: 56px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #0071e3, #00c853);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .benefit-label {
+            font-size: 18px;
+            color: #86868b;
+        }
+
+        /* Innovation Section */
+        .innovation {
+            background: linear-gradient(to bottom, #000 0%, #0a0a0a 100%);
+        }
+
+        .steps {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            margin-top: 60px;
+        }
+
+        .step {
+            display: flex;
+            align-items: flex-start;
+            gap: 30px;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 3px solid #0071e3;
+            border-radius: 16px;
+            transition: background 0.3s;
+        }
+
+        .step:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .step-number {
+            min-width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #0071e3, #00a8e8);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .step-content h3 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .step-content p {
+            color: #86868b;
+            line-height: 1.8;
+        }
+
+        /* Vision Section */
+        .vision {
+            background: #000;
+            text-align: center;
+            padding: 150px 0;
+        }
+
+        .vision-quote {
+            font-size: clamp(28px, 4vw, 48px);
+            font-weight: 300;
+            line-height: 1.4;
+            max-width: 900px;
+            margin: 0 auto;
+            color: #f5f5f7;
+        }
+
+        .vision-year {
+            font-size: 20px;
+            color: #0071e3;
+            margin-top: 30px;
+            font-weight: 600;
+        }
+
+        /* Stats Section */
+        .stats {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+            padding: 100px 0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 60px;
+            text-align: center;
+        }
+
+        .stat-item h3 {
+            font-size: 64px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff, #999);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .stat-item p {
+            font-size: 18px;
+            color: #86868b;
+        }
+
+        /* Team Section */
+        .team {
+            background: #000;
+        }
+
+        .team-lead {
+            text-align: center;
+            margin-bottom: 80px;
+            padding: 60px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .team-lead h3 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .team-lead .role {
+            color: #0071e3;
+            font-size: 18px;
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        .team-member {
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .team-member:hover {
+            transform: translateY(-5px);
+        }
+
+        .team-member h4 {
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+
+        .team-member .role {
+            color: #86868b;
+            font-size: 14px;
+        }
+
+        .allies {
+            margin-top: 80px;
+        }
+
+        .allies h3 {
+            font-size: 28px;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .allies-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .ally-tag {
+            padding: 20px;
+            background: rgba(0, 113, 227, 0.1);
+            border: 1px solid rgba(0, 113, 227, 0.3);
+            border-radius: 12px;
+            text-align: center;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .ally-tag:hover {
+            background: rgba(0, 113, 227, 0.2);
+            transform: scale(1.05);
+        }
+
+        /* Timeline Section */
+        .timeline-section {
+            background: linear-gradient(to bottom, #000 0%, #1a1a1a 100%);
+        }
+
+        .timeline {
+            position: relative;
+            padding: 60px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, #0071e3, rgba(0, 113, 227, 0.1));
+        }
+
+        .timeline-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 60px;
+            position: relative;
+        }
+
+        .timeline-content {
+            width: 45%;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+        }
+
+        .timeline-item:nth-child(even) .timeline-content {
+            margin-left: auto;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 20px;
+            background: #0071e3;
+            border-radius: 50%;
+            border: 4px solid #000;
+            z-index: 1;
+        }
+
+        .timeline-date {
+            font-size: 18px;
+            color: #0071e3;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .timeline-title {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .timeline-desc {
+            color: #86868b;
+            font-size: 14px;
+        }
+
+        /* Alert Section */
+        .alert {
+            background: #000;
+            padding: 80px 0;
+        }
+
+        .alert-box {
+            padding: 50px;
+            background: rgba(255, 59, 48, 0.1);
+            border: 2px solid rgba(255, 59, 48, 0.3);
+            border-radius: 24px;
+            text-align: center;
+        }
+
+        .alert-title {
+            font-size: 32px;
+            color: #ff3b30;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .alert-content {
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.8;
+        }
+
+        .alert-content h4 {
+            font-size: 20px;
+            margin: 20px 0 10px;
+        }
+
+        .alert-content p {
+            color: #86868b;
+        }
+
+        .mitigation {
+            margin-top: 30px;
+            padding: 30px;
+            background: rgba(52, 199, 89, 0.1);
+            border: 1px solid rgba(52, 199, 89, 0.3);
+            border-radius: 16px;
+        }
+
+        .mitigation h4 {
+            color: #34c759;
+        }
+
+        /* Footer */
+        footer {
+            background: #000;
+            padding: 80px 0 40px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        .footer-content {
+            margin-bottom: 40px;
+        }
+
+        .footer-content h3 {
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 16px 40px;
+            background: #0071e3;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        .cta-button:hover {
+            background: #0077ed;
+        }
+
+        .footer-bottom {
+            color: #86868b;
+            font-size: 14px;
+            padding-top: 40px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .timeline::before {
+                left: 30px;
+            }
+
+            .timeline-content {
+                width: calc(100% - 80px);
+                margin-left: 60px !important;
+            }
+
+            .timeline-dot {
+                left: 30px;
+            }
+
+            section {
+                padding: 80px 0;
+            }
+        }
+
+        /* Scroll animations */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s, transform 0.8s;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="container">
+            <div class="logo">Aura</div>
+            <ul class="nav-links">
+                <li><a href="#problem">Problème</a></li>
+                <li><a href="#solution">Solution</a></li>
+                <li><a href="#innovation">Innovation</a></li>
+                <li><a href="#team">Équipe</a></li>
+                <li><a href="#timeline">Timeline</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="badge">Campagne Aura</div>
+            <h1>Illuminer chaque<br>lancement produit</h1>
+            <p class="tagline">Une expérience immersive qui transforme<br>le storytelling en engagement mesurable</p>
+        </div>
+    </section>
+
+    <!-- Problem Section -->
+    <section id="problem" class="problem">
+        <div class="container">
+            <h2 class="section-title fade-in">Les défis actuels</h2>
+            <p class="section-subtitle fade-in">Des obstacles qui freinent l'impact de vos lancements</p>
+            
+            <div class="problem-grid">
+                <div class="problem-card fade-in">
+                    <div class="problem-icon">⏱</div>
+                    <h3>Temps perdu</h3>
+                    <p>Les équipes perdent 3 semaines à aligner leur message sur plusieurs canaux, retardant les lancements critiques.</p>
+                </div>
+                <div class="problem-card fade-in">
+                    <div class="problem-icon">📊</div>
+                    <h3>Preuves dispersées</h3>
+                    <p>Les preuves clients sont dispersées et difficiles à valoriser au moment crucial du lancement.</p>
+                </div>
+                <div class="problem-card fade-in">
+                    <div class="problem-icon">🤝</div>
+                    <h3>Partenaires sous-équipés</h3>
+                    <p>Les partenaires ne disposent pas des bons outils pour activer efficacement leur réseau.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Solution Section -->
+    <section id="solution" class="solution">
+        <div class="container">
+            <h2 class="section-title fade-in">La solution Aura</h2>
+            <p class="section-subtitle fade-in">Une narration immersive combinant démonstrations live, contenus interactifs et preuves sociales activables par chaque équipe locale.</p>
+            
+            <div class="benefits-grid">
+                <div class="benefit-card fade-in">
+                    <div class="benefit-number">+35%</div>
+                    <p class="benefit-label">d'intention d'achat mesurée<br>lors des tests pré-lancement</p>
+                </div>
+                <div class="benefit-card fade-in">
+                    <div class="benefit-number">4 sem.</div>
+                    <p class="benefit-label">Bibliothèque d'assets<br>localisés livrée</p>
+                </div>
+                <div class="benefit-card fade-in">
+                    <div class="benefit-number">Multi-pays</div>
+                    <p class="benefit-label">Plan média orchestré avec<br>les partenaires retail</p>
+                </div>
+            </div>
+
+            <div style="margin-top: 80px; padding: 60px; background: rgba(255, 255, 255, 0.03); border-radius: 24px; text-align: center;">
+                <h3 style="font-size: 28px; margin-bottom: 20px;">Différenciation</h3>
+                <p style="font-size: 18px; color: #86868b; max-width: 800px; margin: 0 auto; line-height: 1.8;">
+                    Contrairement aux campagnes précédentes, Aura intègre dès le départ les besoins des partenaires et un plan de preuves dynamique, évitant les validations tardives.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Innovation Section -->
+    <section id="innovation" class="innovation">
+        <div class="container">
+            <h2 class="section-title fade-in">Innovation méthodologique</h2>
+            <p class="section-subtitle fade-in">Une approche en trois temps pour un impact maximal</p>
+            
+            <div class="steps">
+                <div class="step fade-in">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Sprint storytelling de 5 jours</h3>
+                        <p>Un cadre intensif pour définir le pitch et aligner toutes les parties prenantes sur une narration cohérente et percutante.</p>
+                    </div>
+                </div>
+                <div class="step fade-in">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Production collaborative des assets</h3>
+                        <p>Des validations hebdomadaires pour garantir la qualité et l'alignement tout au long du processus de création.</p>
+                    </div>
+                </div>
+                <div class="step fade-in">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Activation omnicanale pilotée</h3>
+                        <p>Un cockpit partagé centralise le pilotage et l'orchestration de tous les canaux d'activation.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Vision Section -->
+    <section class="vision">
+        <div class="container">
+            <p class="vision-quote fade-in">
+                "En 2025, chaque lancement majeur du groupe proposera une expérience Aura pour générer engagement, confiance et ventes durables."
+            </p>
+            <p class="vision-year fade-in">Vision 2025</p>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-item fade-in">
+                    <h3>13 sem.</h3>
+                    <p>Runway avant lancement</p>
+                </div>
+                <div class="stat-item fade-in">
+                    <h3>91 j.</h3>
+                    <p>Pour activer les relais</p>
+                </div>
+                <div class="stat-item fade-in">
+                    <h3>Élevée</h3>
+                    <p>Complexité estimée</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Team Section -->
+    <section id="team" class="team">
+        <div class="container">
+            <h2 class="section-title fade-in">L'équipe</h2>
+            <p class="section-subtitle fade-in">Une équipe pluridisciplinaire et des alliés stratégiques</p>
+            
+            <div class="team-lead fade-in">
+                <h3>Clara Dupont</h3>
+                <p class="role">Lead du projet — Head of Narrative Design</p>
+            </div>
+
+            <h3 style="font-size: 28px; margin-bottom: 40px; text-align: center;">Collectif moteur</h3>
+            <div class="team-grid">
+                <div class="team-member fade-in">
+                    <h4>Lina Morel</h4>
+                    <p class="role">Product marketing lead</p>
+                </div>
+                <div class="team-member fade-in">
+                    <h4>Hugo Martin</h4>
+                    <p class="role">Data & Growth strategist</p>
+                </div>
+                <div class="team-member fade-in">
+                    <h4>Noémie Laurent</h4>
+                    <p class="role">Partnerships manager</p>
+                </div>
+            </div>
+
+            <div class="allies">
+                <h3>Alliés activés</h3>
+                <div class="allies-grid">
+                    <div class="ally-tag fade-in">
+                        <strong>Storytelling & Brand</strong><br>
+                        <small>Narration marketing, tonalité éditoriale</small>
+                    </div>
+                    <div class="ally-tag fade-in">
+                        <strong>Relations Presse</strong><br>
+                        <small>Diffusion médiatique, social media</small>
+                    </div>
+                    <div class="ally-tag fade-in">
+                        <strong>Growth & Impact</strong><br>
+                        <small>Données marché, KPIs business</small>
+                    </div>
+                    <div class="ally-tag fade-in">
+                        <strong>Partenariats</strong><br>
+                        <small>Alliances business, co-marketing</small>
+                    </div>
+                    <div class="ally-tag fade-in">
+                        <strong>Produit & Expérience</strong><br>
+                        <small>Démonstrations, scénarios d'usage</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Timeline Section -->
+    <section id="timeline" class="timeline-section">
+        <div class="container">
+            <h2 class="section-title fade-in">Timeline du projet</h2>
+            <p class="section-subtitle fade-in">Du 15 janvier au 15 avril 2024 — 13 semaines pour transformer la vision en réalité</p>
+            
+            <div class="timeline">
+                <div class="timeline-item fade-in">
+                    <div class="timeline-content">
+                        <p class="timeline-date">Semaine 1-4</p>
+                        <h3 class="timeline-title">Narratif prêt</h3>
+                        <p class="timeline-desc">Construction de la narration et des assets essentiels avec Storytelling & Brand et Produit & Expérience (≥ 4 sem.)</p>
+                    </div>
+                    <div class="timeline-dot"></div>
+                </div>
+                
+                <div class="timeline-item fade-in">
+                    <div class="timeline-content">
+                        <p class="timeline-date">Semaine 5-10</p>
+                        <h3 class="timeline-title">Diffusion grand public</h3>
+                        <p class="timeline-desc">Orchestration de la communication externe avec buffer supplémentaire (≥ 6 sem.)</p>
+                    </div>
+                    <div class="timeline-dot"></div>
+                </div>
+                
+                <div class="timeline-item fade-in">
+                    <div class="timeline-content">
+                        <p class="timeline-date">Semaine 6-13</p>
+                        <h3 class="timeline-title">Roadshow investisseurs</h3>
+                        <p class="timeline-desc">Consolidation des éléments financiers et partenariaux (≥ 7 sem.)</p>
+                    </div>
+                    <div class="timeline-dot"></div>
+                </div>
+                
+                <div class="timeline-item fade-in">
+                    <div class="timeline-content">
+                        <p class="timeline-date">15 avril 2024</p>
+                        <h3 class="timeline-title">Lancement</h3>
+                        <p class="timeline-desc">Activation complète de la campagne Aura</p>
+                    </div>
+                    <div class="timeline-dot"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Alert Section -->
+    <section class="alert">
+        <div class="container">
+            <div class="alert-box fade-in">
+                <h3 class="alert-title">Point de vigilance prioritaire</h3>
+                <div class="alert-content">
+                    <h4>Dossier investisseurs incomplet (Critique)</h4>
+                    <p>Sans indicateurs solides, la crédibilité business peut être questionnée lors du pitch. Cette lacune pourrait compromettre la confiance des investisseurs et ralentir le déploiement.</p>
+                    
+                    <div class="mitigation">
+                        <h4>Plan de mitigation</h4>
+                        <p>Préparer un one-pager financier et valider les hypothèses clés avec l'équipe growth pour solidifier le dossier avant les présentations.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content fade-in">
+                <h3>Prêt à illuminer votre prochain lancement ?</h3>
+                <a href="#" class="cta-button">Découvrir Aura</a>
+            </div>
+            <div class="footer-bottom">
+                <p>Campagne Aura © 2024 — Tous droits réservés</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
