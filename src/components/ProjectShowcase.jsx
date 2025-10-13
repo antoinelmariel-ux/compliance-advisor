@@ -11,12 +11,6 @@ import {
 } from './icons.js';
 import { formatAnswer } from '../utils/questions.js';
 import { renderTextWithLinks } from '../utils/linkify.js';
-import {
-  DEFAULT_SHOWCASE_THEME,
-  SHOWCASE_THEME_STORAGE_KEY,
-  SHOWCASE_THEMES,
-  isShowcaseTheme
-} from '../constants/showcaseThemes.js';
 
 const findQuestionById = (questions, id) => {
   if (!Array.isArray(questions)) {
@@ -44,6 +38,32 @@ const getRawAnswer = (answers, id) => {
 };
 
 const hasText = (value) => typeof value === 'string' && value.trim().length > 0;
+
+const SHOWCASE_THEME_STORAGE_KEY = 'compliance-advisor.showcase-theme';
+
+const SHOWCASE_THEMES = [
+  {
+    id: 'inspiration',
+    label: 'Inspiration',
+    shortLabel: 'Inspiration',
+    description:
+      'Style Apple clair : typographie SF Pro, surfaces immaculées et accents bleus subtils.',
+  },
+  {
+    id: 'netflix',
+    label: 'Immersion cinéma',
+    shortLabel: 'Netflix',
+    description:
+      'Ambiance Netflix : fond cinématographique sombre, rouge signature et halos lumineux.',
+  },
+  {
+    id: 'amnesty',
+    label: 'Engagement Amnesty',
+    shortLabel: 'Amnesty',
+    description:
+      "Contrastes noir/jaune inspirés d’Amnesty International, typographie militante et badges manifestes.",
+  },
+];
 
 const SHOWCASE_FIELD_CONFIG = [
   { id: 'projectName', fallbackLabel: 'Nom du projet', fallbackType: 'text' },
@@ -316,10 +336,7 @@ export const ProjectShowcase = ({
   answers,
   timelineDetails,
   renderInStandalone = false,
-  onUpdateAnswers,
-  selectedTheme: selectedThemeProp,
-  onThemeChange,
-  showThemeControls = true
+  onUpdateAnswers
 }) => {
   const closeButtonRef = useRef(null);
   const showcaseCardRef = useRef(null);
@@ -337,11 +354,8 @@ export const ProjectShowcase = ({
     [questions]
   );
 
-  const fallbackTheme = DEFAULT_SHOWCASE_THEME;
-  const [internalTheme, setInternalTheme] = useState(() => {
-    if (isShowcaseTheme(selectedThemeProp)) {
-      return selectedThemeProp;
-    }
+  const [selectedTheme, setSelectedTheme] = useState(() => {
+    const fallbackTheme = SHOWCASE_THEMES[0]?.id || 'inspiration';
 
     if (typeof window === 'undefined' || typeof window.localStorage === 'undefined') {
       return fallbackTheme;
@@ -349,7 +363,7 @@ export const ProjectShowcase = ({
 
     try {
       const storedTheme = window.localStorage.getItem(SHOWCASE_THEME_STORAGE_KEY);
-      if (isShowcaseTheme(storedTheme)) {
+      if (typeof storedTheme === 'string' && SHOWCASE_THEMES.some(theme => theme.id === storedTheme)) {
         return storedTheme;
       }
     } catch (error) {
@@ -359,19 +373,12 @@ export const ProjectShowcase = ({
     return fallbackTheme;
   });
 
-  const isControlledTheme = isShowcaseTheme(selectedThemeProp);
-  const selectedTheme = isControlledTheme ? selectedThemeProp : internalTheme;
-
   const activeTheme = useMemo(
     () => SHOWCASE_THEMES.find(theme => theme.id === selectedTheme) || SHOWCASE_THEMES[0],
     [selectedTheme]
   );
 
   useEffect(() => {
-    if (isControlledTheme) {
-      return;
-    }
-
     if (typeof window === 'undefined' || typeof window.localStorage === 'undefined') {
       return;
     }
@@ -381,22 +388,15 @@ export const ProjectShowcase = ({
     } catch (error) {
       // Silently ignore storage issues.
     }
-  }, [isControlledTheme, selectedTheme]);
+  }, [selectedTheme]);
 
   const handleThemeChange = useCallback((nextThemeId) => {
-    if (!isShowcaseTheme(nextThemeId)) {
+    if (!SHOWCASE_THEMES.some(theme => theme.id === nextThemeId)) {
       return;
     }
 
-    if (isControlledTheme) {
-      if (typeof onThemeChange === 'function') {
-        onThemeChange(nextThemeId);
-      }
-      return;
-    }
-
-    setInternalTheme(nextThemeId);
-  }, [isControlledTheme, onThemeChange]);
+    setSelectedTheme(nextThemeId);
+  }, []);
 
   const [isEditing, setIsEditing] = useState(false);
   const [draftValues, setDraftValues] = useState(() =>
@@ -831,66 +831,64 @@ export const ProjectShowcase = ({
       )}
 
       <div className={getThemeClasses('relative px-6 pt-10 pb-16 sm:px-14 sm:pt-16 sm:pb-20', 'relative px-6 pt-10 pb-16 sm:px-14 sm:pt-16 sm:pb-20')}>
-        {showThemeControls && (
-          <div
-            data-showcase-theme-switcher
-            className={getThemeClasses(
-              'mb-8 flex flex-col gap-4 rounded-[28px] border border-white/10 bg-white/5 p-4 sm:flex-row sm:items-center sm:justify-between',
-              'mb-8 flex flex-col gap-4 rounded-[28px] p-4 sm:flex-row sm:items-center sm:justify-between',
-              {
-                netflix:
-                  'mb-8 flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between',
-                amnesty:
-                  'mb-8 flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between'
-              }
-            )}
-          >
-            <div className={getThemeClasses('max-w-xl text-xs text-slate-200/80', 'max-w-xl text-xs')}>
+        <div
+          data-showcase-theme-switcher
+          className={getThemeClasses(
+            'mb-8 flex flex-col gap-4 rounded-[28px] border border-white/10 bg-white/5 p-4 sm:flex-row sm:items-center sm:justify-between',
+            'mb-8 flex flex-col gap-4 rounded-[28px] p-4 sm:flex-row sm:items-center sm:justify-between',
+            {
+              netflix:
+                'mb-8 flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between',
+              amnesty:
+                'mb-8 flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between'
+            }
+          )}
+        >
+          <div className={getThemeClasses('max-w-xl text-xs text-slate-200/80', 'max-w-xl text-xs')}>
+            <p
+              className={getThemeClasses(
+                'text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80',
+                'text-[0.65rem] font-semibold uppercase tracking-[0.4em]'
+              )}
+            >
+              Style de présentation
+            </p>
+            {activeTheme?.description && (
               <p
                 className={getThemeClasses(
-                  'text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80',
-                  'text-[0.65rem] font-semibold uppercase tracking-[0.4em]'
+                  'mt-2 text-[0.7rem] leading-relaxed text-slate-300/80',
+                  'mt-2 text-[0.75rem] leading-relaxed'
                 )}
               >
-                Style de présentation
+                {activeTheme.description}
               </p>
-              {activeTheme?.description && (
-                <p
-                  className={getThemeClasses(
-                    'mt-2 text-[0.7rem] leading-relaxed text-slate-300/80',
-                    'mt-2 text-[0.75rem] leading-relaxed'
-                  )}
-                >
-                  {activeTheme.description}
-                </p>
-              )}
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {SHOWCASE_THEMES.map(theme => {
-                const isActiveTheme = theme.id === selectedTheme;
-                return (
-                  <button
-                    key={theme.id}
-                    type="button"
-                    onClick={() => handleThemeChange(theme.id)}
-                    className={getThemeClasses(
-                      `inline-flex items-center justify-center rounded-full border px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.3em] transition focus:outline-none focus:ring-2 focus:ring-indigo-400/40 ${
-                        isActiveTheme
-                          ? 'border-white/20 bg-white/15 text-white shadow-lg shadow-indigo-500/30'
-                          : 'border-white/10 bg-transparent text-slate-200/80 hover:bg-white/10'
-                      }`,
-                      'inline-flex items-center justify-center rounded-full px-4 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.3em] transition focus:outline-none'
-                    )}
-                    aria-pressed={isActiveTheme}
-                    title={theme.description}
-                  >
-                    {theme.shortLabel}
-                  </button>
-                );
-              })}
-            </div>
+            )}
           </div>
-        )}
+          <div className="flex flex-wrap gap-2">
+            {SHOWCASE_THEMES.map(theme => {
+              const isActiveTheme = theme.id === selectedTheme;
+              return (
+                <button
+                  key={theme.id}
+                  type="button"
+                  onClick={() => handleThemeChange(theme.id)}
+                  className={getThemeClasses(
+                    `inline-flex items-center justify-center rounded-full border px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.3em] transition focus:outline-none focus:ring-2 focus:ring-indigo-400/40 ${
+                      isActiveTheme
+                        ? 'border-white/20 bg-white/15 text-white shadow-lg shadow-indigo-500/30'
+                        : 'border-white/10 bg-transparent text-slate-200/80 hover:bg-white/10'
+                    }`,
+                    'inline-flex items-center justify-center rounded-full px-4 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.3em] transition focus:outline-none'
+                  )}
+                  aria-pressed={isActiveTheme}
+                  title={theme.description}
+                >
+                  {theme.shortLabel}
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
         <header
           data-showcase-section="hero"

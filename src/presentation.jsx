@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useCallback, useState } from './react.js';
+import React, { useMemo, useEffect, useCallback } from './react.js';
 import { ReactDOM } from './react.js';
 import { ProjectShowcase } from './components/ProjectShowcase.jsx';
 import { loadPersistedState } from './utils/storage.js';
@@ -9,57 +9,6 @@ import { shouldShowQuestion } from './utils/questions.js';
 import { analyzeAnswers } from './utils/rules.js';
 import { extractProjectName } from './utils/projects.js';
 import { createDemoProject } from './data/demoProject.js';
-import {
-  DEFAULT_SHOWCASE_THEME,
-  SHOWCASE_THEME_STORAGE_KEY,
-  SHOWCASE_THEMES,
-  isShowcaseTheme
-} from './constants/showcaseThemes.js';
-
-const THEME_STYLESHEETS = {
-  inspiration: './src/styles/project-showcase-theme-inspiration.css',
-  netflix: './src/styles/project-showcase-theme-netflix.css',
-  amnesty: './src/styles/project-showcase-theme-amnesty.css'
-};
-
-const resolveTheme = (themeId) => (isShowcaseTheme(themeId) ? themeId : DEFAULT_SHOWCASE_THEME);
-
-const usePresentationThemeStylesheet = (themeId) => {
-  useEffect(() => {
-    if (typeof document === 'undefined') {
-      return undefined;
-    }
-
-    const effectiveTheme = resolveTheme(themeId);
-    const href = THEME_STYLESHEETS[effectiveTheme];
-    if (!href) {
-      return undefined;
-    }
-
-    const previous = document.querySelector('link[data-presentation-theme="true"]');
-    if (previous) {
-      const previousTheme = previous.getAttribute('data-theme');
-      const previousHref = previous.getAttribute('href');
-      if (previousTheme === effectiveTheme && previousHref === href) {
-        return undefined;
-      }
-      previous.remove();
-    }
-
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = href;
-    link.setAttribute('data-presentation-theme', 'true');
-    link.setAttribute('data-theme', effectiveTheme);
-    document.head.appendChild(link);
-
-    return () => {
-      if (link.parentNode) {
-        link.parentNode.removeChild(link);
-      }
-    };
-  }, [themeId]);
-};
 
 const buildPresentationContext = () => {
   if (typeof window === 'undefined') {
@@ -143,51 +92,6 @@ const buildPresentationContext = () => {
 const PresentationPage = () => {
   const context = useMemo(buildPresentationContext, []);
 
-  const [selectedTheme, setSelectedTheme] = useState(() => {
-    if (typeof window === 'undefined' || typeof window.localStorage === 'undefined') {
-      return DEFAULT_SHOWCASE_THEME;
-    }
-
-    try {
-      const storedTheme = window.localStorage.getItem(SHOWCASE_THEME_STORAGE_KEY);
-      if (isShowcaseTheme(storedTheme)) {
-        return storedTheme;
-      }
-    } catch (error) {
-      // Ignore storage errors and fall back to the default theme.
-    }
-
-    return DEFAULT_SHOWCASE_THEME;
-  });
-
-  const effectiveTheme = resolveTheme(selectedTheme);
-
-  useEffect(() => {
-    if (typeof window === 'undefined' || typeof window.localStorage === 'undefined') {
-      return;
-    }
-
-    try {
-      window.localStorage.setItem(SHOWCASE_THEME_STORAGE_KEY, effectiveTheme);
-    } catch (error) {
-      // Ignore storage errors silently.
-    }
-  }, [effectiveTheme]);
-
-  usePresentationThemeStylesheet(effectiveTheme);
-
-  const activeTheme = useMemo(
-    () => SHOWCASE_THEMES.find(theme => theme.id === effectiveTheme) || SHOWCASE_THEMES[0],
-    [effectiveTheme]
-  );
-
-  const handleThemeChange = useCallback((nextThemeId) => {
-    if (!isShowcaseTheme(nextThemeId)) {
-      return;
-    }
-    setSelectedTheme(nextThemeId);
-  }, []);
-
   useEffect(() => {
     if (context.status !== 'ready') {
       return;
@@ -236,31 +140,6 @@ const PresentationPage = () => {
           <h1 className="presentation-title">Présentation du projet</h1>
           <p className="presentation-subtitle">{context.projectName}</p>
         </div>
-        <div className="presentation-theme-controls" role="group" aria-label="Choix du style de présentation">
-          <div className="presentation-theme-info">
-            <p className="presentation-theme-label">Style de présentation</p>
-            {activeTheme?.description && (
-              <p className="presentation-theme-description">{activeTheme.description}</p>
-            )}
-          </div>
-          <div className="presentation-theme-buttons">
-            {SHOWCASE_THEMES.map(theme => {
-              const isActive = theme.id === effectiveTheme;
-              return (
-                <button
-                  key={theme.id}
-                  type="button"
-                  className={`presentation-theme-button${isActive ? ' is-active' : ''}`}
-                  onClick={() => handleThemeChange(theme.id)}
-                  aria-pressed={isActive}
-                  title={theme.description}
-                >
-                  {theme.shortLabel}
-                </button>
-              );
-            })}
-          </div>
-        </div>
         <div className="presentation-actions">
           <button type="button" className="presentation-button" onClick={handleClose}>
             Revenir à l'application
@@ -284,9 +163,6 @@ const PresentationPage = () => {
           timelineDetails={context.timelineDetails}
           onClose={handleClose}
           renderInStandalone
-          selectedTheme={effectiveTheme}
-          onThemeChange={handleThemeChange}
-          showThemeControls={false}
         />
       </main>
     </div>
