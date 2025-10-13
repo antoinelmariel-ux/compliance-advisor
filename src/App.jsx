@@ -3,7 +3,6 @@ import { QuestionnaireScreen } from './components/QuestionnaireScreen.jsx';
 import { SynthesisReport } from './components/SynthesisReport.jsx';
 import { HomeScreen } from './components/HomeScreen.jsx';
 import { BackOffice } from './components/BackOffice.jsx';
-import { ProjectShowcase } from './components/ProjectShowcase.jsx';
 import { CheckCircle } from './components/icons.js';
 import { MandatoryQuestionsSummary } from './components/MandatoryQuestionsSummary.jsx';
 import { initialQuestions } from './data/questions.js';
@@ -15,7 +14,7 @@ import { analyzeAnswers } from './utils/rules.js';
 import { extractProjectName } from './utils/projects.js';
 import { createDemoProject } from './data/demoProject.js';
 
-const APP_VERSION = 'v1.0.25';
+const APP_VERSION = 'v1.0.26';
 
 
 const isAnswerProvided = (value) => {
@@ -117,14 +116,11 @@ export const App = () => {
   const [activeProjectId, setActiveProjectId] = useState(null);
   const [isHighVisibility, setIsHighVisibility] = useState(false);
   const [validationError, setValidationError] = useState(null);
-  const [showcaseProjectContext, setShowcaseProjectContext] = useState(null);
-
   const [questions, setQuestions] = useState(initialQuestions);
   const [rules, setRules] = useState(initialRules);
   const [teams, setTeams] = useState(initialTeams);
   const [isHydrated, setIsHydrated] = useState(false);
   const persistTimeoutRef = useRef(null);
-  const previousScreenRef = useRef(null);
 
   useEffect(() => {
     const savedState = loadPersistedState();
@@ -168,6 +164,32 @@ export const App = () => {
     setIsHydrated(true);
   }, []);
 
+  const buildPersistPayload = useCallback(() => ({
+    mode,
+    screen,
+    currentQuestionIndex,
+    answers,
+    analysis,
+    questions,
+    rules,
+    teams,
+    isHighVisibility,
+    projects,
+    activeProjectId
+  }), [
+    mode,
+    screen,
+    currentQuestionIndex,
+    answers,
+    analysis,
+    questions,
+    rules,
+    teams,
+    isHighVisibility,
+    projects,
+    activeProjectId
+  ]);
+
   useEffect(() => {
     return () => {
       if (persistTimeoutRef.current) {
@@ -185,19 +207,7 @@ export const App = () => {
     }
 
     persistTimeoutRef.current = setTimeout(() => {
-      persistState({
-        mode,
-        screen,
-        currentQuestionIndex,
-        answers,
-        analysis,
-        questions,
-        rules,
-        teams,
-        isHighVisibility,
-        projects,
-        activeProjectId
-      });
+      persistState(buildPersistPayload());
       persistTimeoutRef.current = null;
     }, 200);
 
@@ -207,20 +217,7 @@ export const App = () => {
         persistTimeoutRef.current = null;
       }
     };
-  }, [
-    mode,
-    screen,
-    currentQuestionIndex,
-    answers,
-    analysis,
-    questions,
-    rules,
-    teams,
-    isHighVisibility,
-    projects,
-    activeProjectId,
-    isHydrated
-  ]);
+  }, [buildPersistPayload, isHydrated]);
 
   useEffect(() => {
     if (typeof document === 'undefined') return;
@@ -490,45 +487,26 @@ export const App = () => {
     setActiveProjectId(prev => (prev === projectId ? null : prev));
   }, []);
 
-  const handleShowProjectShowcase = useCallback((projectId) => {
-    if (!projectId) {
+  const handleOpenPresentation = useCallback((projectId) => {
+    const targetId = projectId || activeProjectId;
+    if (!targetId) {
       return;
     }
 
-    const project = projects.find(item => item.id === projectId);
-    if (!project) {
+    if (typeof window === 'undefined') {
       return;
     }
 
-    const projectAnswers = project.answers || {};
-    const visibleQuestions = questions.filter(question => shouldShowQuestion(question, projectAnswers));
-    const projectAnalysis = project.analysis
-      || (Object.keys(projectAnswers).length > 0 ? analyzeAnswers(projectAnswers, rules) : null);
-    const relevantTeams = teams.filter(team => (projectAnalysis?.teams || []).includes(team.id));
-    const timelineDetails = projectAnalysis?.timeline?.details || [];
-    const derivedProjectName = project.projectName || extractProjectName(projectAnswers, questions);
+    persistState(buildPersistPayload());
 
-    setShowcaseProjectContext({
-      projectName: derivedProjectName,
-      answers: projectAnswers,
-      analysis: projectAnalysis,
-      relevantTeams,
-      questions: visibleQuestions.length > 0 ? visibleQuestions : questions,
-      timelineDetails
-    });
-    previousScreenRef.current = screen;
-    setScreen('showcase');
-  }, [projects, questions, rules, teams, screen, shouldShowQuestion]);
-
-  const handleCloseProjectShowcase = useCallback(() => {
-    setShowcaseProjectContext(null);
-    if (previousScreenRef.current) {
-      setScreen(previousScreenRef.current);
-    } else {
-      setScreen('home');
+    try {
+      const url = new URL('./presentation.html', window.location.href);
+      url.searchParams.set('projectId', targetId);
+      window.open(url.toString(), '_blank', 'noopener,noreferrer');
+    } catch (error) {
+      console.error('Impossible d\'ouvrir la page de présentation :', error);
     }
-    previousScreenRef.current = null;
-  }, []);
+  }, [activeProjectId, buildPersistPayload]);
 
   const upsertProject = useCallback((entry) => {
     return prevProjects => {
@@ -762,7 +740,7 @@ export const App = () => {
               onStartNewProject={handleCreateNewProject}
               onOpenProject={handleOpenProject}
               onDeleteProject={handleDeleteProject}
-              onShowProjectShowcase={handleShowProjectShowcase}
+              onOpenPresentation={handleOpenPresentation}
             />
           ) : screen === 'questionnaire' ? (
             <QuestionnaireScreen
@@ -795,19 +773,8 @@ export const App = () => {
               onUpdateAnswers={handleUpdateAnswers}
               onSubmitProject={handleSubmitProject}
               isExistingProject={Boolean(activeProjectId)}
+              onOpenPresentation={() => handleOpenPresentation(activeProjectId)}
             />
-          ) : screen === 'showcase' ? (
-            showcaseProjectContext ? (
-              <ProjectShowcase
-                projectName={showcaseProjectContext.projectName}
-                onClose={handleCloseProjectShowcase}
-                analysis={showcaseProjectContext.analysis}
-                relevantTeams={showcaseProjectContext.relevantTeams}
-                questions={showcaseProjectContext.questions}
-                answers={showcaseProjectContext.answers}
-                timelineDetails={showcaseProjectContext.timelineDetails}
-              />
-            ) : null
           ) : null
         ) : (
           <BackOffice

@@ -1,8 +1,7 @@
-import React, { useState, useCallback, useEffect, useRef } from '../react.js';
+import React, { useCallback } from '../react.js';
 import { FileText, Calendar, Users, AlertTriangle, Send, Sparkles, CheckCircle } from './icons.js';
 import { formatAnswer } from '../utils/questions.js';
 import { renderTextWithLinks } from '../utils/linkify.js';
-import { ProjectShowcase } from './ProjectShowcase.jsx';
 import { extractProjectName } from '../utils/projects.js';
 
 const escapeHtml = (value) => {
@@ -495,10 +494,9 @@ export const SynthesisReport = ({
   onBack,
   onUpdateAnswers,
   onSubmitProject,
-  isExistingProject
+  isExistingProject,
+  onOpenPresentation
 }) => {
-  const [isShowcaseFallbackOpen, setIsShowcaseFallbackOpen] = useState(false);
-  const showcaseFallbackRef = useRef(null);
   const relevantTeams = teams.filter(team => (analysis?.teams || []).includes(team.id));
 
   const priorityColors = {
@@ -528,50 +526,11 @@ export const SynthesisReport = ({
 
   const projectName = extractProjectName(answers, questions);
 
-  const scrollShowcaseIntoView = useCallback(() => {
-    const node = showcaseFallbackRef.current;
-
-    if (node) {
-      if (typeof node.scrollIntoView === 'function') {
-        node.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        return;
-      }
+  const handleOpenPresentation = useCallback(() => {
+    if (typeof onOpenPresentation === 'function') {
+      onOpenPresentation();
     }
-
-    if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  }, [showcaseFallbackRef]);
-
-  useEffect(() => {
-    if (!isShowcaseFallbackOpen) {
-      return;
-    }
-
-    if (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function') {
-      window.requestAnimationFrame(() => {
-        scrollShowcaseIntoView();
-      });
-    } else {
-      scrollShowcaseIntoView();
-    }
-  }, [isShowcaseFallbackOpen, scrollShowcaseIntoView]);
-
-  const handleOpenShowcase = useCallback(() => {
-    setIsShowcaseFallbackOpen(true);
-
-    if (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function') {
-      window.requestAnimationFrame(() => {
-        scrollShowcaseIntoView();
-      });
-    } else {
-      scrollShowcaseIntoView();
-    }
-  }, [scrollShowcaseIntoView]);
-
-  const handleCloseShowcase = useCallback(() => {
-    setIsShowcaseFallbackOpen(false);
-  }, []);
+  }, [onOpenPresentation]);
 
   const handleSaveProject = useCallback(() => {
     if (!onSubmitProject) {
@@ -733,14 +692,16 @@ export const SynthesisReport = ({
                 <Send className="w-4 h-4 mr-2" />
                 Soumettre par e-mail
               </button>
-              <button
-                type="button"
-                onClick={handleOpenShowcase}
-                className="px-4 py-2 bg-white border border-indigo-200 text-indigo-600 hover:bg-indigo-50 rounded-lg font-medium transition-all flex items-center justify-center hv-button hv-focus-ring w-full sm:w-auto text-sm sm:text-base"
-              >
-                <Sparkles className="w-4 h-4 mr-2" />
-                Vitrine du projet
-              </button>
+              {onOpenPresentation && (
+                <button
+                  type="button"
+                  onClick={handleOpenPresentation}
+                  className="px-4 py-2 bg-white border border-indigo-200 text-indigo-600 hover:bg-indigo-50 rounded-lg font-medium transition-all flex items-center justify-center hv-button hv-focus-ring w-full sm:w-auto text-sm sm:text-base"
+                >
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Présentation
+                </button>
+              )}
               <button
                 type="button"
                 onClick={onRestart}
@@ -944,20 +905,6 @@ export const SynthesisReport = ({
           </section>
         </div>
       </div>
-      {isShowcaseFallbackOpen && (
-        <div ref={showcaseFallbackRef}>
-          <ProjectShowcase
-            projectName={projectName}
-            onClose={handleCloseShowcase}
-            analysis={analysis}
-            relevantTeams={relevantTeams}
-            questions={questions}
-            answers={answers}
-            timelineDetails={timelineDetails}
-            onUpdateAnswers={onUpdateAnswers}
-          />
-        </div>
-      )}
     </div>
   );
 };
