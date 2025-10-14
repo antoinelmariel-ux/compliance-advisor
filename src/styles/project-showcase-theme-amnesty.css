@@ -121,24 +121,29 @@
 
 :where([data-showcase-scope][data-showcase-theme='amnesty']) [data-showcase-card] {
   position: relative;
-  margin: 0 auto;
-  max-width: 1180px;
+  margin: 0;
+  width: 100%;
+  max-width: none;
   border-radius: 0;
   background: var(--showcase-color-card);
   border: none;
-  box-shadow: var(--showcase-shadow-card);
+  box-shadow: none;
   overflow: hidden;
   color: inherit;
   isolation: isolate;
-  clip-path: polygon(
-    0 0,
-    calc(100% - var(--showcase-notch-size)) 0,
-    100% var(--showcase-notch-size),
-    100% 100%,
-    var(--showcase-notch-size) 100%,
-    0 calc(100% - var(--showcase-notch-size))
-  );
+  clip-path: none;
   transform: translateZ(0);
+}
+
+:where([data-showcase-scope][data-showcase-theme='amnesty']) .animate-on-scroll {
+  opacity: 0;
+  transform: translateY(56px);
+  transition: opacity 480ms ease, transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+:where([data-showcase-scope][data-showcase-theme='amnesty']) .animate-on-scroll.is-visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 :where([data-showcase-scope][data-showcase-theme='amnesty']) [data-showcase-card] > div:not([data-showcase-overlay]) {
@@ -169,18 +174,11 @@
   border-radius: 0;
   background: rgba(255, 255, 255, 0.88);
   border: none;
-  box-shadow: 0 20px 60px rgba(18, 18, 18, 0.16);
+  box-shadow: none;
   display: flex;
   flex-direction: column;
   gap: 1.1rem;
-  clip-path: polygon(
-    0 0,
-    calc(100% - var(--showcase-notch-size)) 0,
-    100% var(--showcase-notch-size),
-    100% 100%,
-    var(--showcase-notch-size) 100%,
-    0 calc(100% - var(--showcase-notch-size))
-  );
+  clip-path: none;
 }
 
 :where([data-showcase-scope][data-showcase-theme='amnesty']) [data-showcase-theme-switcher] p {
