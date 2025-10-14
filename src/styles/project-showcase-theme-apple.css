@@ -1,7 +1,7 @@
 /*
- * Thème « Apple » – interprétation lumineuse inspirée des campagnes Apple.
- * Surfaces immaculées, typographie SF Pro et halos bleus légèrement irisés.
- * Le style intègre désormais les fondations du showcase et une parallaxe douce.
+ * Thème « Apple » – interprétation immersive inspirée des keynotes Apple.
+ * Atmosphère nocturne, halos spectrales et verre dépoli accentuent la profondeur.
+ * Le style s'appuie sur les fondations du showcase avec parallaxe et orbes cinétiques.
  */
 
 [data-showcase-theme='apple'] {
@@ -10,35 +10,35 @@
   --showcase-radius-lg: 46px;
   --showcase-radius-md: 34px;
   --showcase-radius-sm: 22px;
-  --showcase-color-background: radial-gradient(circle at 12% 20%, rgba(90, 200, 250, 0.18), transparent 48%),
-    radial-gradient(circle at 82% 0%, rgba(10, 132, 255, 0.14), transparent 50%),
-    linear-gradient(180deg, #f5f5f7 0%, #f2f4f7 35%, #ffffff 100%);
-  --showcase-color-card: rgba(255, 255, 255, 0.9);
-  --showcase-color-surface: color-mix(in srgb, #ffffff 85%, rgba(242, 244, 247, 0.75));
-  --showcase-color-surface-strong: color-mix(in srgb, #ffffff 92%, rgba(239, 242, 245, 0.85));
-  --showcase-color-surface-soft: rgba(255, 255, 255, 0.6);
-  --showcase-color-text-strong: #1d1d1f;
-  --showcase-color-text-body: rgba(29, 29, 31, 0.82);
-  --showcase-color-text-muted: rgba(60, 60, 67, 0.6);
-  --showcase-color-text-soft: rgba(99, 99, 102, 0.45);
-  --showcase-color-accent: #0a84ff;
-  --showcase-color-accent-strong: #0077ed;
+  --showcase-color-background: radial-gradient(circle at 18% 20%, rgba(88, 156, 255, 0.25), transparent 55%),
+    radial-gradient(circle at 78% 16%, rgba(0, 113, 227, 0.28), transparent 62%),
+    linear-gradient(180deg, #02030a 0%, #040519 32%, #02010c 100%);
+  --showcase-color-card: rgba(8, 12, 26, 0.86);
+  --showcase-color-surface: rgba(8, 12, 26, 0.7);
+  --showcase-color-surface-strong: rgba(12, 18, 36, 0.78);
+  --showcase-color-surface-soft: rgba(10, 16, 30, 0.52);
+  --showcase-color-text-strong: #f5f7ff;
+  --showcase-color-text-body: rgba(235, 238, 255, 0.86);
+  --showcase-color-text-muted: rgba(180, 192, 226, 0.78);
+  --showcase-color-text-soft: rgba(148, 162, 206, 0.58);
+  --showcase-color-accent: #6aa8ff;
+  --showcase-color-accent-strong: #0071e3;
   --showcase-color-accent-alt: #5ac8fa;
-  --showcase-border-soft: rgba(120, 120, 128, 0.16);
-  --showcase-border-strong: rgba(120, 120, 128, 0.28);
-  --showcase-shadow-card: 0 24px 80px rgba(15, 23, 42, 0.08);
-  --showcase-shadow-floating: 0 18px 50px rgba(15, 23, 42, 0.1);
-  --showcase-tag-background: rgba(10, 132, 255, 0.08);
-  --showcase-tag-color: rgba(29, 29, 31, 0.8);
-  --showcase-focus-ring: 0 0 0 3px rgba(10, 132, 255, 0.35);
-  --showcase-backdrop-blur: blur(26px);
-  --showcase-gradient-from: rgba(255, 255, 255, 0.9);
-  --showcase-gradient-via: rgba(255, 255, 255, 0.65);
-  --showcase-gradient-to: rgba(242, 244, 247, 0.4);
-  --showcase-overlay-soft: radial-gradient(circle at 20% 25%, rgba(10, 132, 255, 0.12), transparent 70%);
-  --showcase-overlay-strong: radial-gradient(circle at 78% 18%, rgba(180, 206, 255, 0.35), transparent 65%);
-  --showcase-parallax-speed: 32s;
-  color-scheme: light;
+  --showcase-border-soft: rgba(148, 180, 255, 0.24);
+  --showcase-border-strong: rgba(102, 132, 255, 0.42);
+  --showcase-shadow-card: 0 50px 160px rgba(1, 7, 30, 0.55);
+  --showcase-shadow-floating: 0 30px 90px rgba(2, 10, 36, 0.45);
+  --showcase-tag-background: rgba(38, 88, 204, 0.32);
+  --showcase-tag-color: rgba(236, 243, 255, 0.92);
+  --showcase-focus-ring: 0 0 0 3px rgba(74, 138, 255, 0.5);
+  --showcase-backdrop-blur: blur(32px);
+  --showcase-gradient-from: rgba(8, 12, 30, 0.95);
+  --showcase-gradient-via: rgba(4, 10, 26, 0.76);
+  --showcase-gradient-to: rgba(2, 6, 18, 0.62);
+  --showcase-overlay-soft: radial-gradient(circle at 16% 32%, rgba(90, 200, 250, 0.2), transparent 70%);
+  --showcase-overlay-strong: radial-gradient(circle at 82% 26%, rgba(120, 122, 255, 0.35), transparent 70%);
+  --showcase-parallax-speed: 36s;
+  color-scheme: dark;
 }
 
 :where([data-showcase-scope][data-showcase-theme='apple']) {
@@ -126,6 +126,7 @@
   background: var(--showcase-color-card);
   border: 1px solid var(--showcase-border-soft);
   box-shadow: var(--showcase-shadow-card);
+  backdrop-filter: var(--showcase-backdrop-blur);
   overflow: hidden;
   color: inherit;
   isolation: isolate;
@@ -136,7 +137,8 @@
   position: relative;
   z-index: 1;
   padding: clamp(2.5rem, 6vw, 4rem) clamp(1.5rem, 5vw, 3.75rem);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(18px);
+  background: linear-gradient(180deg, rgba(6, 10, 24, 0.72), rgba(4, 8, 20, 0.35));
 }
 
 :where([data-showcase-scope][data-showcase-theme='apple']) [data-showcase-overlay] {
@@ -144,8 +146,9 @@
   inset: 0;
   pointer-events: none;
   background: var(--showcase-overlay-soft);
-  filter: blur(90px);
-  opacity: 0.8;
+  filter: blur(120px);
+  opacity: 0.65;
+  mix-blend-mode: screen;
   z-index: 0;
   animation: appleParallax var(--showcase-parallax-speed) ease-in-out infinite alternate;
 }
@@ -207,9 +210,10 @@
   gap: clamp(1.5rem, 4vw, 2.5rem);
   border-radius: 58px;
   padding: clamp(2.5rem, 6vw, 4.25rem);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(244, 246, 249, 0.88) 100%);
-  border: 1px solid var(--showcase-border-soft);
-  box-shadow: 0 28px 70px rgba(15, 23, 42, 0.12);
+  background: linear-gradient(160deg, rgba(18, 24, 46, 0.88), rgba(10, 16, 34, 0.76));
+  border: 1px solid var(--showcase-border-strong);
+  box-shadow: var(--showcase-shadow-card);
+  backdrop-filter: var(--showcase-backdrop-blur);
   transform: translateZ(40px);
 }
 
@@ -362,8 +366,10 @@
 :where([data-showcase-scope][data-showcase-theme='apple']) header[data-showcase-section='hero'] {
   position: relative;
   border-radius: var(--showcase-radius-md);
-  background: var(--showcase-color-surface);
+  background: linear-gradient(160deg, var(--showcase-color-surface-strong), rgba(6, 10, 28, 0.6));
   border: 1px solid var(--showcase-border-soft);
+  box-shadow: var(--showcase-shadow-floating);
+  backdrop-filter: var(--showcase-backdrop-blur);
   padding: clamp(1.75rem, 4vw, 2.75rem);
   overflow: hidden;
 }
@@ -383,7 +389,7 @@
 :where([data-showcase-scope][data-showcase-theme='apple']) [data-showcase-element='solution-card'],
 :where([data-showcase-scope][data-showcase-theme='apple']) [data-showcase-element='timeline-profile'],
 :where([data-showcase-scope][data-showcase-theme='apple']) [data-showcase-aside] {
-  background: var(--showcase-color-surface-strong);
+  background: linear-gradient(145deg, rgba(18, 26, 54, 0.82), rgba(10, 16, 34, 0.68));
   border-radius: var(--showcase-radius-sm);
   border: 1px solid var(--showcase-border-soft);
   box-shadow: var(--showcase-shadow-floating);
@@ -570,17 +576,19 @@
 }
 
 :where([data-showcase-scope][data-showcase-theme='apple'])::before {
-  background: radial-gradient(circle at 18% 30%, rgba(180, 206, 255, 0.32), transparent 68%);
-  filter: blur(70px);
-  opacity: 0.8;
+  background: radial-gradient(circle at 18% 30%, rgba(76, 138, 255, 0.42), transparent 68%);
+  filter: blur(110px);
+  opacity: 0.75;
   transform: translateZ(-120px);
+  mix-blend-mode: screen;
 }
 
 :where([data-showcase-scope][data-showcase-theme='apple'])::after {
-  background: radial-gradient(circle at 82% 70%, rgba(74, 144, 226, 0.22), transparent 70%);
-  filter: blur(110px);
-  opacity: 0.6;
+  background: radial-gradient(circle at 82% 70%, rgba(120, 90, 255, 0.32), transparent 70%);
+  filter: blur(140px);
+  opacity: 0.55;
   transform: translateZ(-140px);
+  mix-blend-mode: screen;
 }
 
 :where([data-showcase-scope][data-showcase-theme='apple']) > * {
@@ -594,16 +602,16 @@
   position: absolute;
   inset: -30%;
   pointer-events: none;
-  background: radial-gradient(circle, rgba(180, 206, 255, 0.28) 0%, transparent 70%);
-  filter: blur(120px);
-  opacity: 0.7;
+  background: radial-gradient(circle, rgba(70, 132, 255, 0.32) 0%, transparent 72%);
+  filter: blur(140px);
+  opacity: 0.65;
   animation: appleOrb 24s ease-in-out infinite alternate;
   z-index: 0;
 }
 
 :where([data-showcase-scope][data-showcase-theme='apple']) [data-showcase-card]::after {
-  background: radial-gradient(circle, rgba(90, 200, 250, 0.24) 0%, transparent 65%);
-  animation-delay: -8s;
+  background: radial-gradient(circle, rgba(90, 200, 250, 0.26) 0%, transparent 68%);
+  animation-delay: -10s;
 }
 
 :where([data-showcase-scope][data-showcase-theme='apple']) [data-showcase-theme-switcher]::before {
@@ -632,12 +640,12 @@
 }
 
 :where([data-showcase-scope][data-showcase-theme='apple']) header[data-showcase-section='hero']::before {
-  background: radial-gradient(circle, rgba(10, 132, 255, 0.28) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(36, 122, 255, 0.38) 0%, transparent 70%);
   inset: -140px auto auto -120px;
 }
 
 :where([data-showcase-scope][data-showcase-theme='apple']) header[data-showcase-section='hero']::after {
-  background: radial-gradient(circle, rgba(120, 122, 255, 0.22) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(120, 112, 255, 0.3) 0%, transparent 70%);
   inset: auto -140px -160px auto;
   animation-delay: -12s;
 }
@@ -650,22 +658,22 @@
 :where([data-showcase-scope][data-showcase-theme='apple']) [data-showcase-section='problem'],
 :where([data-showcase-scope][data-showcase-theme='apple']) [data-showcase-section='innovation'],
 :where([data-showcase-scope][data-showcase-theme='apple']) [data-showcase-section='team'] {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(244, 246, 249, 0.9));
+  background: linear-gradient(180deg, rgba(12, 18, 40, 0.82), rgba(8, 12, 28, 0.68));
 }
 
 :where([data-showcase-scope][data-showcase-theme='apple']) [data-showcase-section] h2,
 :where([data-showcase-scope][data-showcase-theme='apple']) [data-showcase-section] h3 {
-  color: #1d1d1f;
+  color: var(--showcase-color-text-strong);
 }
 
 :where([data-showcase-scope][data-showcase-theme='apple']) [data-showcase-section] p,
 :where([data-showcase-scope][data-showcase-theme='apple']) [data-showcase-section] li {
-  color: rgba(44, 44, 46, 0.78);
+  color: var(--showcase-color-text-body);
 }
 
 :where([data-showcase-scope][data-showcase-theme='apple']) [data-showcase-element='hero-highlight'] {
-  background: linear-gradient(135deg, rgba(90, 200, 250, 0.12), rgba(10, 132, 255, 0.18));
-  border-color: rgba(10, 132, 255, 0.22);
+  background: linear-gradient(145deg, rgba(90, 200, 250, 0.22), rgba(58, 140, 255, 0.28));
+  border-color: rgba(108, 168, 255, 0.45);
   transform: translateZ(20px);
 }
 
@@ -675,25 +683,26 @@
   color: #ffffff;
   text-transform: uppercase;
   letter-spacing: 0.18em;
-  box-shadow: 0 16px 36px rgba(10, 132, 255, 0.25);
+  box-shadow: 0 20px 48px rgba(10, 132, 255, 0.32);
 }
 
 :where([data-showcase-scope][data-showcase-theme='apple']) [data-showcase-section] button:hover {
-  background: linear-gradient(135deg, #0a84ff, #4a90e2);
+  background: linear-gradient(135deg, #1f90ff, #6ab8ff);
   transform: translateY(-2px);
+  box-shadow: 0 24px 54px rgba(15, 126, 255, 0.45);
 }
 
 :where([data-showcase-scope][data-showcase-theme='apple']) [data-showcase-section] button:focus-visible {
-  box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.35);
+  box-shadow: 0 0 0 3px rgba(90, 180, 255, 0.6);
 }
 
 :where([data-showcase-scope][data-showcase-theme='apple']) [data-showcase-aside='testimonial'] {
-  background: rgba(255, 255, 255, 0.94);
-  border-color: rgba(120, 120, 128, 0.18);
+  background: linear-gradient(150deg, rgba(14, 20, 44, 0.82), rgba(6, 12, 30, 0.7));
+  border-color: rgba(120, 160, 255, 0.26);
 }
 
 :where([data-showcase-scope][data-showcase-theme='apple']) [data-showcase-aside='testimonial'] svg {
-  color: #0a84ff;
+  color: var(--showcase-color-accent);
 }
 
 @keyframes appleOrb {
