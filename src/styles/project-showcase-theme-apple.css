@@ -1,13 +1,12 @@
 /* ================================================
-   AURA PROJECT SHOWCASE - Apple Theme
-   Système de design Apple Keynote pour présentation de projet
+   AURA PROJECT SHOWCASE - Apple Theme (Enhanced)
+   Effets de parallaxe et animations d'apparition au scroll
    ================================================ */
 
 /* ================================================
-   Variables & Design Tokens - Apple Theme
+   Variables & Design Tokens
    ================================================ */
 :root {
-    /* Apple Colors */
     --apple-background: #f5f5f7;
     --apple-surface: #ffffff;
     --apple-text-primary: #1d1d1f;
@@ -15,21 +14,15 @@
     --apple-text-tertiary: #86868b;
     --apple-accent: #0071e3;
     --apple-accent-hover: #0077ed;
-    --apple-blue-light: #c7d7ff;
-    --apple-blue-lighter: #9ad6ff;
     
-    /* Glassmorphism */
     --glass-bg: rgba(255, 255, 255, 0.8);
     --glass-border: rgba(255, 255, 255, 0.18);
-    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
     
-    /* Shadows */
     --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
     --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.06);
     --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.1);
     --shadow-xl: 0 16px 64px rgba(0, 0, 0, 0.12);
     
-    /* Spacing */
     --space-xs: 0.5rem;
     --space-sm: 1rem;
     --space-md: 1.5rem;
@@ -38,16 +31,15 @@
     --space-2xl: 4rem;
     --space-3xl: 6rem;
     
-    /* Radius */
     --radius-sm: 0.75rem;
     --radius-md: 1rem;
     --radius-lg: 1.5rem;
     --radius-xl: 2rem;
     
-    /* Transitions */
     --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-base: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-spring: 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -62,7 +54,6 @@
         
         --glass-bg: rgba(29, 29, 31, 0.8);
         --glass-border: rgba(255, 255, 255, 0.08);
-        --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
     }
 }
 
@@ -79,12 +70,127 @@
 }
 
 /* ================================================
+   PARALLAX MULTI-LAYERS SYSTEM
+   ================================================ */
+[data-showcase-scope] {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+}
+
+/* Parallax Layer 1 - Deep background (slowest) */
+[data-showcase-scope]::before {
+    content: '';
+    position: fixed;
+    top: -20%;
+    left: -20%;
+    width: 140%;
+    height: 140%;
+    background: 
+        radial-gradient(ellipse at 20% 30%, rgba(199, 215, 255, 0.5) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 70%, rgba(154, 214, 255, 0.4) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(102, 126, 234, 0.15) 0%, transparent 60%);
+    animation: deepParallax 40s ease-in-out infinite;
+    pointer-events: none;
+    will-change: transform;
+    z-index: 0;
+    transform-style: preserve-3d;
+}
+
+/* Parallax Layer 2 - Mid orbs (medium speed) */
+[data-showcase-scope]::after {
+    content: '';
+    position: fixed;
+    inset: -10%;
+    background-image: 
+        radial-gradient(circle at 15% 20%, rgba(0, 113, 227, 0.2) 0%, transparent 35%),
+        radial-gradient(circle at 85% 80%, rgba(0, 195, 255, 0.18) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(102, 126, 234, 0.12) 0%, transparent 45%);
+    animation: midParallax 30s ease-in-out infinite alternate;
+    pointer-events: none;
+    will-change: transform;
+    z-index: 1;
+    transform-style: preserve-3d;
+}
+
+/* Parallax Layer 3 - Floating particles (fastest) */
+.presentation-content::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+        radial-gradient(circle 3px at 20% 30%, rgba(0, 113, 227, 0.4), transparent),
+        radial-gradient(circle 2px at 60% 70%, rgba(0, 195, 255, 0.4), transparent),
+        radial-gradient(circle 2px at 50% 50%, rgba(102, 126, 234, 0.3), transparent),
+        radial-gradient(circle 1px at 80% 10%, rgba(0, 113, 227, 0.5), transparent),
+        radial-gradient(circle 3px at 90% 60%, rgba(154, 214, 255, 0.4), transparent),
+        radial-gradient(circle 2px at 30% 80%, rgba(199, 215, 255, 0.3), transparent);
+    background-size: 200% 200%, 300% 300%, 250% 250%, 280% 280%, 220% 220%, 260% 260%;
+    background-position: 0% 0%, 100% 100%, 50% 50%, 80% 20%, 30% 80%, 60% 40%;
+    animation: particlesFloat 70s linear infinite;
+    pointer-events: none;
+    opacity: 0.5;
+    z-index: 0;
+    transform-style: preserve-3d;
+}
+
+@keyframes deepParallax {
+    0%, 100% { 
+        transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+        opacity: 0.6;
+    }
+    25% { 
+        transform: translate3d(4%, -5%, 0) scale(1.08) rotate(2deg);
+        opacity: 0.7;
+    }
+    50% { 
+        transform: translate3d(-3%, 4%, 0) scale(1.12) rotate(-2deg);
+        opacity: 0.85;
+    }
+    75% { 
+        transform: translate3d(5%, 2%, 0) scale(1.05) rotate(1deg);
+        opacity: 0.75;
+    }
+}
+
+@keyframes midParallax {
+    0% { 
+        transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+        opacity: 0.5;
+    }
+    100% { 
+        transform: translate3d(-8%, 10%, 0) scale(1.2) rotate(3deg);
+        opacity: 0.9;
+    }
+}
+
+@keyframes particlesFloat {
+    0% { 
+        background-position: 0% 0%, 100% 100%, 50% 50%, 80% 20%, 30% 80%, 60% 40%;
+    }
+    25% {
+        background-position: 50% 30%, 70% 60%, 30% 70%, 60% 40%, 50% 60%, 40% 60%;
+    }
+    50% { 
+        background-position: 100% 100%, 0% 0%, 25% 75%, 60% 40%, 50% 60%, 30% 80%;
+    }
+    75% {
+        background-position: 60% 80%, 40% 30%, 70% 40%, 30% 70%, 80% 30%, 50% 50%;
+    }
+    100% { 
+        background-position: 0% 0%, 100% 100%, 50% 50%, 80% 20%, 30% 80%, 60% 40%;
+    }
+}
+
+/* ================================================
    Layout Structure
    ================================================ */
 .presentation-layout {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    position: relative;
+    z-index: 2;
 }
 
 .presentation-header {
@@ -100,6 +206,18 @@
     justify-content: space-between;
     align-items: center;
     gap: var(--space-lg);
+    animation: headerSlideDown 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes headerSlideDown {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
 
 .presentation-title {
@@ -108,17 +226,55 @@
     letter-spacing: -0.02em;
     color: var(--apple-text-primary);
     margin: 0;
+    animation: titleReveal 1s 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes titleReveal {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+        filter: blur(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+    }
 }
 
 .presentation-subtitle {
     font-size: 0.9375rem;
     color: var(--apple-text-secondary);
     margin: 0.25rem 0 0;
+    animation: subtitleReveal 1s 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes subtitleReveal {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
 .presentation-actions {
     display: flex;
     gap: var(--space-sm);
+    animation: actionsReveal 1s 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes actionsReveal {
+    from {
+        opacity: 0;
+        transform: scale(0.8) rotate(-5deg);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+    }
 }
 
 .presentation-button {
@@ -131,47 +287,42 @@
     border-radius: var(--radius-sm);
     cursor: pointer;
     transition: all var(--transition-base);
+    position: relative;
+    overflow: hidden;
+}
+
+.presentation-button::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--apple-accent);
+    transform: translateX(-100%);
+    transition: transform var(--transition-base);
+    z-index: -1;
+}
+
+.presentation-button:hover::before {
+    transform: translateX(0);
 }
 
 .presentation-button:hover {
-    background: var(--apple-accent);
     color: white;
-    transform: translateY(-2px);
+    transform: translateY(-3px);
     box-shadow: var(--shadow-md);
 }
 
 .presentation-content {
     flex: 1;
     padding: var(--space-lg);
-}
-
-/* ================================================
-   Showcase Container & Background Effects
-   ================================================ */
-[data-showcase-scope] {
     position: relative;
-    isolation: isolate;
-}
-
-[data-showcase-scope]::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: 
-        radial-gradient(circle at 20% 30%, rgba(199, 215, 255, 0.4) 0%, transparent 50%),
-        radial-gradient(circle at 80% 70%, rgba(154, 214, 255, 0.3) 0%, transparent 50%);
-    animation: pulseGlow 20s ease-in-out infinite;
-    pointer-events: none;
-}
-
-@keyframes pulseGlow {
-    0%, 100% { opacity: 0.6; transform: scale(1); }
-    50% { opacity: 0.8; transform: scale(1.05); }
+    z-index: 2;
 }
 
 /* ================================================
-   Showcase Card
+   SCROLL-TRIGGERED ANIMATIONS
    ================================================ */
+
+/* Showcase Card - Entrance with 3D effect */
 [data-showcase-card] {
     position: relative;
     max-width: 1400px;
@@ -183,6 +334,24 @@
     border-radius: var(--radius-xl);
     box-shadow: var(--shadow-xl);
     overflow: hidden;
+    
+    /* Scroll-triggered animation */
+    animation: cardEntrance 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 20%;
+}
+
+@keyframes cardEntrance {
+    from {
+        opacity: 0;
+        transform: translateY(100px) scale(0.9) rotateX(15deg);
+        filter: blur(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1) rotateX(0deg);
+        filter: blur(0);
+    }
 }
 
 [data-showcase-overlay] {
@@ -193,6 +362,12 @@
     height: 200px;
     background: linear-gradient(180deg, rgba(0, 113, 227, 0.03) 0%, transparent 100%);
     pointer-events: none;
+    animation: overlayPulse 3s ease-in-out infinite;
+}
+
+@keyframes overlayPulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
 }
 
 [data-showcase-body] {
@@ -202,12 +377,27 @@
 }
 
 /* ================================================
-   Theme Switcher
+   Theme Switcher - Parallax effect
    ================================================ */
 [data-showcase-theme-switcher] {
     text-align: center;
     padding-bottom: var(--space-xl);
     border-bottom: 1px solid var(--glass-border);
+    
+    animation: sectionSlideUp 1s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 25%;
+}
+
+@keyframes sectionSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
 
 [data-showcase-theme-switcher] h2 {
@@ -239,11 +429,27 @@
     border-radius: var(--radius-sm);
     cursor: pointer;
     transition: all var(--transition-base);
+    position: relative;
+    overflow: hidden;
+}
+
+[data-theme-option]::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--apple-accent) 0%, #00c3ff 100%);
+    transform: translateY(100%);
+    transition: transform var(--transition-spring);
 }
 
 [data-theme-option]:hover {
     border-color: var(--apple-accent);
     color: var(--apple-accent);
+    transform: translateY(-3px);
+}
+
+[data-theme-option]:hover::before {
+    transform: translateY(0);
 }
 
 [data-theme-option][aria-pressed="true"] {
@@ -253,11 +459,33 @@
     box-shadow: var(--shadow-md);
 }
 
+[data-theme-option][aria-pressed="true"]::before {
+    transform: translateY(0);
+}
+
 /* ================================================
-   Section Styles
+   Sections - Staggered Parallax Entrance
    ================================================ */
 [data-showcase-section] {
     scroll-margin-top: 100px;
+    
+    /* Scroll-triggered animation */
+    animation: sectionReveal 1s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 30%;
+}
+
+@keyframes sectionReveal {
+    from {
+        opacity: 0;
+        transform: translateY(80px) scale(0.95) rotateX(10deg);
+        filter: blur(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1) rotateX(0deg);
+        filter: blur(0);
+    }
 }
 
 [data-showcase-section] > h2 {
@@ -269,20 +497,48 @@
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    position: relative;
+}
+
+[data-showcase-section] > h2::after {
+    content: '';
+    position: absolute;
+    bottom: -0.5rem;
+    left: 0;
+    width: 60px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--apple-accent) 0%, transparent 100%);
+    border-radius: 2px;
+    animation: underlineGrow 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 30%;
+}
+
+@keyframes underlineGrow {
+    from {
+        width: 0;
+        opacity: 0;
+    }
+    to {
+        width: 60px;
+        opacity: 1;
+    }
 }
 
 /* ================================================
-   Hero Section
+   Hero Section - Multi-layer Parallax
    ================================================ */
 [data-showcase-section="hero"] {
     display: grid;
     gap: var(--space-2xl);
+    perspective: 1000px;
 }
 
 [data-role="hero-header"] {
     text-align: center;
     max-width: 900px;
     margin: 0 auto;
+    transform-style: preserve-3d;
 }
 
 [data-role="eyebrow"] {
@@ -296,6 +552,21 @@
     background: rgba(0, 113, 227, 0.08);
     border-radius: 999px;
     margin-bottom: var(--space-md);
+    
+    animation: eyebrowZoom 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 20%;
+}
+
+@keyframes eyebrowZoom {
+    from {
+        opacity: 0;
+        transform: scale(0.5) rotate(10deg);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+    }
 }
 
 [data-field="project-name"] {
@@ -308,6 +579,23 @@
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    
+    animation: titleMagic 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 25%;
+}
+
+@keyframes titleMagic {
+    from {
+        opacity: 0;
+        transform: translateY(60px) scale(0.8) rotateX(20deg);
+        filter: blur(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1) rotateX(0deg);
+        filter: blur(0);
+    }
 }
 
 [data-field="project-slogan"] {
@@ -315,6 +603,23 @@
     font-weight: 400;
     color: var(--apple-text-secondary);
     line-height: 1.5;
+    
+    animation: sloganFloat 1s 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 30%;
+}
+
+@keyframes sloganFloat {
+    from {
+        opacity: 0;
+        transform: translateY(40px);
+        filter: blur(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+        filter: blur(0);
+    }
 }
 
 [data-role="hero-highlights"] {
@@ -330,12 +635,37 @@
     border: 1px solid var(--glass-border);
     border-radius: var(--radius-lg);
     text-align: center;
-    transition: all var(--transition-base);
+    transition: all var(--transition-spring);
+    
+    /* Scroll-triggered staggered animation */
+    animation: highlightPop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 35%;
+}
+
+[data-showcase-element="hero-highlight"]:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+[data-showcase-element="hero-highlight"]:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+@keyframes highlightPop {
+    from {
+        opacity: 0;
+        transform: translateY(50px) scale(0.8) rotate(-5deg);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1) rotate(0deg);
+    }
 }
 
 [data-showcase-element="hero-highlight"]:hover {
-    transform: translateY(-4px);
+    transform: translateY(-8px) scale(1.02);
     box-shadow: var(--shadow-lg);
+    border-color: var(--apple-accent);
 }
 
 [data-showcase-element="hero-highlight"] h3[data-role="label"] {
@@ -361,7 +691,7 @@
 }
 
 /* ================================================
-   Tag Lists
+   Tag Lists - Wave Animation
    ================================================ */
 [data-role="tag-list"] {
     display: flex;
@@ -379,16 +709,39 @@
     background: rgba(0, 113, 227, 0.08);
     border: 1px solid rgba(0, 113, 227, 0.15);
     border-radius: var(--radius-sm);
-    transition: all var(--transition-base);
+    transition: all var(--transition-spring);
+    
+    /* Staggered wave animation */
+    animation: tagWave 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 30%;
+}
+
+[data-role="tag-list"] li:nth-child(1) { animation-delay: 0.05s; }
+[data-role="tag-list"] li:nth-child(2) { animation-delay: 0.1s; }
+[data-role="tag-list"] li:nth-child(3) { animation-delay: 0.15s; }
+[data-role="tag-list"] li:nth-child(4) { animation-delay: 0.2s; }
+[data-role="tag-list"] li:nth-child(5) { animation-delay: 0.25s; }
+
+@keyframes tagWave {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
 
 [data-role="tag-list"] li:hover {
-    background: rgba(0, 113, 227, 0.12);
-    transform: translateY(-2px);
+    background: rgba(0, 113, 227, 0.15);
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: var(--shadow-sm);
 }
 
 /* ================================================
-   Problem & Solution Sections
+   Problem & Solution - Slide In Animation
    ================================================ */
 [data-field="problem-pain-points"],
 [data-field="solution-benefits"] {
@@ -409,7 +762,32 @@
     position: relative;
     font-size: 1rem;
     line-height: 1.7;
-    transition: all var(--transition-base);
+    transition: all var(--transition-spring);
+    
+    /* Slide from left animation */
+    animation: slideInLeft 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 30%;
+}
+
+[data-field="problem-pain-points"] li:nth-child(1),
+[data-field="solution-benefits"] li:nth-child(1) { animation-delay: 0.1s; }
+
+[data-field="problem-pain-points"] li:nth-child(2),
+[data-field="solution-benefits"] li:nth-child(2) { animation-delay: 0.2s; }
+
+[data-field="problem-pain-points"] li:nth-child(3),
+[data-field="solution-benefits"] li:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-80px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
 [data-field="problem-pain-points"] li::before,
@@ -423,16 +801,30 @@
     height: 8px;
     border-radius: 50%;
     background: var(--apple-accent);
+    box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.2);
+    animation: dotPulse 2s ease-in-out infinite;
+}
+
+@keyframes dotPulse {
+    0%, 100% { 
+        box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.2);
+        transform: translateY(-50%) scale(1);
+    }
+    50% { 
+        box-shadow: 0 0 0 8px rgba(0, 113, 227, 0.1);
+        transform: translateY(-50%) scale(1.1);
+    }
 }
 
 [data-field="problem-pain-points"] li:hover,
 [data-field="solution-benefits"] li:hover {
-    background: rgba(0, 113, 227, 0.08);
-    transform: translateX(4px);
+    background: rgba(0, 113, 227, 0.1);
+    transform: translateX(8px);
+    border-left-width: 5px;
 }
 
 /* ================================================
-   Split Layout (2-3 columns)
+   Split Layout
    ================================================ */
 [data-role="split-layout"] {
     display: grid;
@@ -441,7 +833,7 @@
 }
 
 /* ================================================
-   Cards (Solution, Vision, Team, etc.)
+   Cards - 3D Flip & Parallax
    ================================================ */
 [data-showcase-element="solution-card"],
 [data-showcase-element="vision-card"],
@@ -455,16 +847,38 @@
     border: 1px solid var(--glass-border);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-md);
-    transition: all var(--transition-base);
+    transition: all var(--transition-spring);
     position: relative;
     overflow: hidden;
+    transform-style: preserve-3d;
+    
+    /* Scroll-triggered 3D entrance */
+    animation: card3DEntrance 1s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 25%;
 }
 
-[data-showcase-element="solution-card"]::before,
-[data-showcase-element="vision-card"]::before,
-[data-showcase-element="team-card"]::before,
-[data-showcase-element="timeline-profile"]::before,
-[data-showcase-element="metric-card"]::before {
+/* Staggered delays for cards in grid */
+[data-showcase-element]:nth-child(1) { animation-delay: 0.1s; }
+[data-showcase-element]:nth-child(2) { animation-delay: 0.2s; }
+[data-showcase-element]:nth-child(3) { animation-delay: 0.3s; }
+[data-showcase-element]:nth-child(4) { animation-delay: 0.4s; }
+[data-showcase-element]:nth-child(5) { animation-delay: 0.5s; }
+
+@keyframes card3DEntrance {
+    from {
+        opacity: 0;
+        transform: translateY(60px) scale(0.85) rotateX(15deg) rotateY(-10deg);
+        filter: blur(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1) rotateX(0deg) rotateY(0deg);
+        filter: blur(0);
+    }
+}
+
+[data-showcase-element]::before {
     content: '';
     position: absolute;
     top: 0;
@@ -476,20 +890,12 @@
     transition: opacity var(--transition-base);
 }
 
-[data-showcase-element="solution-card"]:hover,
-[data-showcase-element="vision-card"]:hover,
-[data-showcase-element="team-card"]:hover,
-[data-showcase-element="timeline-profile"]:hover,
-[data-showcase-element="metric-card"]:hover {
-    transform: translateY(-6px);
+[data-showcase-element]:hover {
+    transform: translateY(-12px) scale(1.02) rotateX(2deg);
     box-shadow: var(--shadow-xl);
 }
 
-[data-showcase-element="solution-card"]:hover::before,
-[data-showcase-element="vision-card"]:hover::before,
-[data-showcase-element="team-card"]:hover::before,
-[data-showcase-element="timeline-profile"]:hover::before,
-[data-showcase-element="metric-card"]:hover::before {
+[data-showcase-element]:hover::before {
     opacity: 1;
 }
 
@@ -498,6 +904,7 @@
     font-weight: 600;
     color: var(--apple-text-primary);
     margin-bottom: var(--space-md);
+    position: relative;
 }
 
 [data-showcase-element] p {
@@ -506,7 +913,7 @@
 }
 
 /* ================================================
-   Team Profiles Grid
+   Team Profiles
    ================================================ */
 [data-role="team-grid"] {
     display: grid;
@@ -519,12 +926,29 @@
     background: rgba(0, 113, 227, 0.04);
     border: 1px solid rgba(0, 113, 227, 0.1);
     border-radius: var(--radius-md);
-    transition: all var(--transition-base);
+    transition: all var(--transition-spring);
+    
+    /* Fade in animation */
+    animation: fadeInScale 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 30%;
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
 [data-showcase-aside="team-profile"]:hover {
-    background: rgba(0, 113, 227, 0.06);
-    border-color: rgba(0, 113, 227, 0.2);
+    background: rgba(0, 113, 227, 0.08);
+    border-color: rgba(0, 113, 227, 0.25);
+    transform: scale(1.03);
 }
 
 [data-showcase-aside="team-profile"] h4 {
@@ -547,7 +971,7 @@
 }
 
 /* ================================================
-   Timeline Lists
+   Timeline
    ================================================ */
 [data-role="timeline-list"] {
     list-style: none;
@@ -565,6 +989,28 @@
     background: rgba(0, 113, 227, 0.05);
     border-radius: var(--radius-sm);
     font-size: 0.9375rem;
+    transition: all var(--transition-spring);
+    
+    /* Timeline reveal animation */
+    animation: timelineSlide 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 30%;
+}
+
+@keyframes timelineSlide {
+    from {
+        opacity: 0;
+        transform: translateX(-50px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+[data-role="timeline-list"] li:hover {
+    background: rgba(0, 113, 227, 0.1);
+    transform: translateX(8px) scale(1.02);
 }
 
 [data-role="timeline-list"] li span:first-child {
@@ -577,10 +1023,26 @@
 }
 
 /* ================================================
-   Primary Risk Card
+   Risk Handling
    ================================================ */
 [data-element="primary-risk"] {
     border-color: rgba(255, 69, 58, 0.3);
+    animation: riskPulse 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 25%;
+}
+
+@keyframes riskPulse {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+        box-shadow: 0 0 0 0 rgba(255, 69, 58, 0.5);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+        box-shadow: 0 0 0 10px rgba(255, 69, 58, 0);
+    }
 }
 
 [data-element="primary-risk"]::before {
@@ -598,11 +1060,22 @@
     background: #ff3b30;
     border-radius: var(--radius-sm);
     margin-bottom: var(--space-sm);
+    animation: badgeBounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 30%;
 }
 
-/* ================================================
-   Risk List
-   ================================================ */
+@keyframes badgeBounce {
+    from {
+        opacity: 0;
+        transform: scale(0) rotate(-180deg);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+    }
+}
+
 [data-role="risk-list"] {
     list-style: none;
     padding: 0;
@@ -616,12 +1089,33 @@
     background: rgba(255, 69, 58, 0.05);
     border-left: 3px solid #ff3b30;
     border-radius: var(--radius-sm);
-    transition: all var(--transition-base);
+    transition: all var(--transition-spring);
+    
+    /* Risk slide animation */
+    animation: riskSlide 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 30%;
+}
+
+[data-role="risk-list"] li:nth-child(1) { animation-delay: 0.1s; }
+[data-role="risk-list"] li:nth-child(2) { animation-delay: 0.2s; }
+[data-role="risk-list"] li:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes riskSlide {
+    from {
+        opacity: 0;
+        transform: translateX(60px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
 [data-role="risk-list"] li:hover {
-    background: rgba(255, 69, 58, 0.08);
-    transform: translateX(4px);
+    background: rgba(255, 69, 58, 0.1);
+    transform: translateX(-6px);
+    border-left-width: 5px;
 }
 
 [data-role="risk-title"] {
@@ -650,13 +1144,28 @@
 }
 
 /* ================================================
-   Actions Section
+   Actions
    ================================================ */
 [data-role="actions"] {
     display: flex;
     justify-content: center;
     gap: var(--space-md);
     padding-top: var(--space-xl);
+    
+    animation: actionsFloat 1s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 30%;
+}
+
+@keyframes actionsFloat {
+    from {
+        opacity: 0;
+        transform: translateY(40px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
 
 [data-action] {
@@ -669,12 +1178,27 @@
     border-radius: var(--radius-md);
     cursor: pointer;
     box-shadow: var(--shadow-md);
-    transition: all var(--transition-base);
+    transition: all var(--transition-spring);
+    position: relative;
+    overflow: hidden;
+}
+
+[data-action]::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #00c3ff 0%, var(--apple-accent) 100%);
+    opacity: 0;
+    transition: opacity var(--transition-base);
 }
 
 [data-action]:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-lg);
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: var(--shadow-xl);
+}
+
+[data-action]:hover::before {
+    opacity: 1;
 }
 
 /* ================================================
@@ -732,43 +1256,10 @@
         gap: var(--space-xl);
     }
     
-    [data-showcase-element="hero-highlight"],
-    [data-showcase-element="solution-card"],
-    [data-showcase-element="vision-card"],
-    [data-showcase-element="team-card"] {
+    [data-showcase-element] {
         padding: var(--space-md);
     }
 }
-
-/* ================================================
-   Animations
-   ================================================ */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes shimmer {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
-}
-
-/* Stagger animations for cards */
-[data-showcase-element] {
-    animation: fadeInUp 0.6s var(--transition-slow) both;
-}
-
-[data-showcase-element]:nth-child(1) { animation-delay: 0.1s; }
-[data-showcase-element]:nth-child(2) { animation-delay: 0.2s; }
-[data-showcase-element]:nth-child(3) { animation-delay: 0.3s; }
-[data-showcase-element]:nth-child(4) { animation-delay: 0.4s; }
-[data-showcase-element]:nth-child(5) { animation-delay: 0.5s; }
 
 /* ================================================
    Accessibility
