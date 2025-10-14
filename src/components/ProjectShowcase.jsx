@@ -1,22 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from '../react.js';
-import {
-  Rocket,
-  Users,
-  Calendar,
-  AlertTriangle,
-  Close,
-  CheckCircle,
-  Edit,
-  Compass
-} from './icons.js';
-import {
-  AppleShowcaseContainer,
-  NetflixShowcaseContainer,
-  AmnestyShowcaseContainer
-} from './themes/ThemeContainers.jsx';
-
+import React, { useCallback, useEffect, useMemo, useState } from '../react.js';
 import { formatAnswer } from '../utils/questions.js';
-import { renderTextWithLinks } from '../utils/linkify.js';
 
 const findQuestionById = (questions, id) => {
   if (!Array.isArray(questions)) {
@@ -51,124 +34,38 @@ const SHOWCASE_THEMES = [
   {
     id: 'apple',
     label: 'Apple Keynote',
-    shortLabel: 'Apple',
     description:
-      'Esprit Apple Keynote : lumière diffuse, typographie SF Pro et halo bleu précis.',
-    component: AppleShowcaseContainer,
+      'Esprit Apple Keynote : lumière diffuse, typographie SF Pro et halo bleu précis.'
   },
   {
     id: 'netflix',
     label: 'Immersion cinéma',
-    shortLabel: 'Netflix',
     description:
-      'Ambiance Netflix : fond cinématographique sombre, rouge signature et halos lumineux.',
-    component: NetflixShowcaseContainer,
+      'Ambiance Netflix : fond cinématographique sombre, rouge signature et halos lumineux.'
   },
   {
     id: 'amnesty',
     label: 'Engagement Amnesty',
-    shortLabel: 'Amnesty',
     description:
-      "Contrastes noir/jaune inspirés d’Amnesty International, typographie militante et badges manifestes.",
-    component: AmnestyShowcaseContainer,
-  },
+      "Contrastes noir/jaune inspirés d’Amnesty International, typographie militante et badges manifestes."
+  }
 ];
 
-const THEME_CONTAINERS = {
-  apple: AppleShowcaseContainer,
-  netflix: NetflixShowcaseContainer,
-  amnesty: AmnestyShowcaseContainer
-};
-
-
-const SHOWCASE_FIELD_CONFIG = [
-  { id: 'projectName', fallbackLabel: 'Nom du projet', fallbackType: 'text' },
-  { id: 'projectSlogan', fallbackLabel: 'Slogan ou promesse', fallbackType: 'text' },
-  { id: 'targetAudience', fallbackLabel: 'Audiences principales', fallbackType: 'multi_choice' },
-  { id: 'problemPainPoints', fallbackLabel: 'Pain points', fallbackType: 'long_text' },
-  { id: 'solutionDescription', fallbackLabel: 'Description de la solution', fallbackType: 'long_text' },
-  { id: 'solutionBenefits', fallbackLabel: 'Bénéfices clés', fallbackType: 'long_text' },
-  { id: 'solutionComparison', fallbackLabel: 'Différenciation', fallbackType: 'long_text' },
-  { id: 'innovationProcess', fallbackLabel: 'Processus innovation', fallbackType: 'long_text' },
-  { id: 'visionStatement', fallbackLabel: 'Vision', fallbackType: 'long_text' },
-  { id: 'teamLead', fallbackLabel: 'Lead du projet', fallbackType: 'text' },
-  { id: 'teamCoreMembers', fallbackLabel: 'Membres clés', fallbackType: 'long_text' },
-  { id: 'campaignKickoffDate', fallbackLabel: 'Date de démarrage campagne', fallbackType: 'date' },
-  { id: 'launchDate', fallbackLabel: 'Date de lancement', fallbackType: 'date' }
+const REQUIRED_SHOWCASE_QUESTION_IDS = [
+  'projectName',
+  'projectSlogan',
+  'targetAudience',
+  'problemPainPoints',
+  'solutionDescription',
+  'solutionBenefits',
+  'solutionComparison',
+  'innovationProcess',
+  'visionStatement',
+  'teamLead',
+  'teamCoreMembers',
+  'campaignKickoffDate',
+  'launchDate'
 ];
-
-const formatValueForDraft = (type, rawValue) => {
-  if (rawValue === null || rawValue === undefined) {
-    return '';
-  }
-
-  if (type === 'multi_choice') {
-    if (Array.isArray(rawValue)) {
-      return rawValue.join('\n');
-    }
-    return String(rawValue);
-  }
-
-  if (type === 'date') {
-    const parsed = rawValue instanceof Date ? rawValue : new Date(rawValue);
-    if (Number.isNaN(parsed.getTime())) {
-      return String(rawValue);
-    }
-    return parsed.toISOString().slice(0, 10);
-  }
-
-  return String(rawValue);
-};
-
-const formatValueForUpdate = (type, draftValue) => {
-  if (type === 'multi_choice') {
-    if (typeof draftValue !== 'string') {
-      return [];
-    }
-
-    return draftValue
-      .split(/\r?\n|·|•|;|,/)
-      .map(entry => entry.replace(/^[-•\s]+/, '').trim())
-      .filter(entry => entry.length > 0);
-  }
-
-  if (type === 'date') {
-    if (typeof draftValue !== 'string') {
-      return null;
-    }
-    const trimmed = draftValue.trim();
-    return trimmed.length > 0 ? trimmed : null;
-  }
-
-  if (typeof draftValue !== 'string') {
-    return '';
-  }
-
-  return draftValue;
-};
-
-const buildDraftValues = (fields, answers, fallbackProjectName) => {
-  const draft = {};
-
-  fields.forEach(field => {
-    const question = field.question;
-    const fieldType = question?.type || field.fallbackType || 'text';
-    const rawValue = getRawAnswer(answers, field.id);
-    if (rawValue === undefined || rawValue === null) {
-      draft[field.id] = '';
-    } else {
-      draft[field.id] = formatValueForDraft(fieldType, rawValue);
-    }
-  });
-
-  if (typeof fallbackProjectName === 'string' && fallbackProjectName.trim().length > 0) {
-    if (!hasText(draft.projectName)) {
-      draft.projectName = fallbackProjectName.trim();
-    }
-  }
-
-  return draft;
-};
 
 const parseListAnswer = (value) => {
   if (!value) {
@@ -176,15 +73,15 @@ const parseListAnswer = (value) => {
   }
 
   if (Array.isArray(value)) {
-    return value.filter(item => hasText(String(item)));
+    return value
+      .map(entry => (typeof entry === 'string' ? entry.trim() : String(entry)))
+      .filter(item => item.length > 0);
   }
 
-  const normalized = String(value)
+  return String(value)
     .split(/\r?\n|·|•|;|,/)
     .map(entry => entry.replace(/^[-•\s]+/, '').trim())
     .filter(entry => entry.length > 0);
-
-  return normalized;
 };
 
 const formatDate = (value) => {
@@ -254,8 +151,9 @@ const computeTimelineSummary = (timelineDetails) => {
   const days = Math.round(diff.diffInDays);
 
   return {
-    ruleName: detailWithDiff.ruleName,
-    satisfied: detailWithDiff.satisfied,
+    ruleId: detailWithDiff.ruleId || null,
+    ruleName: detailWithDiff.ruleName || null,
+    satisfied: Boolean(detailWithDiff.satisfied),
     weeks,
     days,
     profiles: Array.isArray(detailWithDiff.profiles) ? detailWithDiff.profiles : []
@@ -286,22 +184,6 @@ const getPrimaryRisk = (analysis) => {
   }, null);
 };
 
-const REQUIRED_SHOWCASE_QUESTION_IDS = [
-  'projectName',
-  'projectSlogan',
-  'targetAudience',
-  'problemPainPoints',
-  'solutionDescription',
-  'solutionBenefits',
-  'solutionComparison',
-  'innovationProcess',
-  'visionStatement',
-  'teamLead',
-  'teamCoreMembers',
-  'campaignKickoffDate',
-  'launchDate'
-];
-
 const buildHeroHighlights = ({ targetAudience, runway }) => {
   const highlights = [];
 
@@ -310,7 +192,7 @@ const buildHeroHighlights = ({ targetAudience, runway }) => {
       id: 'audience',
       label: 'Audience principale',
       value: targetAudience,
-      caption: 'Les personas qui verront la promesse en premier.'
+      caption: "Les personas qui verront la promesse en premier."
     });
   }
 
@@ -326,22 +208,77 @@ const buildHeroHighlights = ({ targetAudience, runway }) => {
   return highlights;
 };
 
-const renderList = (items) => {
-  if (!Array.isArray(items) || items.length === 0) {
-    return null;
+const sanitizeForScript = (payload) => {
+  try {
+    return JSON.stringify(payload, null, 2).replace(/</g, '\\u003c');
+  } catch (error) {
+    return '{}';
   }
-
-  return (
-    <ul className="mt-4 space-y-2 text-sm leading-relaxed text-slate-200/90">
-      {items.map((item, index) => (
-        <li key={`${item}-${index}`} className="flex items-start gap-3">
-          <CheckCircle className="mt-0.5 h-4 w-4 text-sky-300" />
-          <span className="flex-1">{renderTextWithLinks(item)}</span>
-        </li>
-      ))}
-    </ul>
-  );
 };
+
+const buildShowcasePayload = ({
+  selectedTheme,
+  safeProjectName,
+  slogan,
+  targetAudienceList,
+  heroHighlights,
+  problemPainPoints,
+  solutionDescription,
+  solutionBenefits,
+  solutionComparison,
+  innovationProcess,
+  visionStatement,
+  teamLead,
+  teamCoreMembersList,
+  normalizedTeams,
+  runway,
+  timelineSummary,
+  timelineDetails,
+  complexity,
+  analysis,
+  primaryRisk,
+  missingShowcaseQuestions
+}) => ({
+  theme: selectedTheme,
+  projectName: safeProjectName,
+  slogan: hasText(slogan) ? slogan : null,
+  audience: {
+    summary: targetAudienceList.join(', ') || null,
+    items: targetAudienceList
+  },
+  highlights: heroHighlights,
+  sections: {
+    problem: { painPoints: problemPainPoints },
+    solution: {
+      description: hasText(solutionDescription) ? solutionDescription : null,
+      benefits: solutionBenefits,
+      comparison: hasText(solutionComparison) ? solutionComparison : null
+    },
+    innovation: {
+      process: hasText(innovationProcess) ? innovationProcess : null,
+      vision: hasText(visionStatement) ? visionStatement : null
+    },
+    team: {
+      lead: hasText(teamLead) ? teamLead : null,
+      coreMembers: teamCoreMembersList,
+      relevantTeams: normalizedTeams
+    },
+    timeline: {
+      runway,
+      summary: timelineSummary,
+      details: timelineDetails
+    },
+    analysis: {
+      complexity: complexity || null,
+      summary: hasText(analysis?.summary) ? analysis.summary : null,
+      primaryRisk,
+      risks: Array.isArray(analysis?.risks) ? analysis.risks : [],
+      opportunities: Array.isArray(analysis?.opportunities) ? analysis.opportunities : [],
+      raw: analysis || null
+    }
+  },
+  missingQuestions: missingShowcaseQuestions
+});
 
 export const ProjectShowcase = ({
   projectName,
@@ -350,25 +287,11 @@ export const ProjectShowcase = ({
   relevantTeams,
   questions,
   answers,
-  timelineDetails,
-  renderInStandalone = false,
-  onUpdateAnswers
+  timelineDetails = [],
+  renderInStandalone = false
 }) => {
-  const closeButtonRef = useRef(null);
-  const showcaseCardRef = useRef(null);
   const rawProjectName = typeof projectName === 'string' ? projectName.trim() : '';
   const safeProjectName = rawProjectName.length > 0 ? rawProjectName : 'Votre projet';
-  const normalizedTeams = Array.isArray(relevantTeams) ? relevantTeams : [];
-  const complexity = analysis?.complexity || 'Modérée';
-
-  const editableFields = useMemo(
-    () =>
-      SHOWCASE_FIELD_CONFIG.map(config => ({
-        ...config,
-        question: findQuestionById(questions, config.id)
-      })),
-    [questions]
-  );
 
   const [selectedTheme, setSelectedTheme] = useState(() => {
     const fallbackTheme = SHOWCASE_THEMES[0]?.id || 'apple';
@@ -383,14 +306,14 @@ export const ProjectShowcase = ({
         return storedTheme;
       }
     } catch (error) {
-      // Ignore storage errors (quota, privacy mode, etc.) and fall back to the default theme.
+      // Ignorer les erreurs d'accès au stockage.
     }
 
     return fallbackTheme;
   });
 
   const activeTheme = useMemo(
-    () => SHOWCASE_THEMES.find(theme => theme.id === selectedTheme) || SHOWCASE_THEMES[0],
+    () => SHOWCASE_THEMES.find(theme => theme.id === selectedTheme) || SHOWCASE_THEMES[0] || null,
     [selectedTheme]
   );
 
@@ -402,7 +325,7 @@ export const ProjectShowcase = ({
     try {
       window.localStorage.setItem(SHOWCASE_THEME_STORAGE_KEY, selectedTheme);
     } catch (error) {
-      // Silently ignore storage issues.
+      // Ignorer les erreurs d'accès au stockage.
     }
   }, [selectedTheme]);
 
@@ -414,1103 +337,382 @@ export const ProjectShowcase = ({
     setSelectedTheme(nextThemeId);
   }, []);
 
-  const [isEditing, setIsEditing] = useState(false);
-  const [draftValues, setDraftValues] = useState(() =>
-    buildDraftValues(editableFields, answers, rawProjectName)
-  );
-
-  useEffect(() => {
-    if (isEditing) {
-      return;
-    }
-    setDraftValues(buildDraftValues(editableFields, answers, rawProjectName));
-  }, [answers, editableFields, isEditing, rawProjectName]);
-
-  const canEdit = typeof onUpdateAnswers === 'function';
-  const shouldShowPreview = !isEditing || !canEdit;
-  const formId = 'project-showcase-edit-form';
-  const isAppleTheme = selectedTheme === 'apple';
-  const isNetflixTheme = selectedTheme === 'netflix';
-  const isAmnestyTheme = selectedTheme === 'amnesty';
-
-  const getThemeClasses = (defaultClasses, appleClasses, themeOverrides) => {
-    if (themeOverrides && typeof themeOverrides === 'object') {
-      const override = themeOverrides[selectedTheme];
-      if (typeof override === 'string') {
-        return override;
-      }
+  const normalizedTeams = useMemo(() => {
+    if (!Array.isArray(relevantTeams)) {
+      return [];
     }
 
-    return isAppleTheme ? appleClasses : defaultClasses;
-  };
-
-  const combineTransform = (baseTransform, extraTransform) => {
-    const base = typeof baseTransform === 'string' ? baseTransform.trim() : '';
-    const extra = typeof extraTransform === 'string' ? extraTransform.trim() : '';
-    return [base, extra].filter(Boolean).join(' ');
-  };
-
-  const handleStartEditing = useCallback(() => {
-    setDraftValues(buildDraftValues(editableFields, answers, rawProjectName));
-    setIsEditing(true);
-  }, [answers, editableFields, rawProjectName]);
-
-  const handleCancelEditing = useCallback(() => {
-    setDraftValues(buildDraftValues(editableFields, answers, rawProjectName));
-    setIsEditing(false);
-  }, [answers, editableFields, rawProjectName]);
-
-  const handleFieldChange = useCallback((fieldId, value) => {
-    setDraftValues(prev => ({
-      ...prev,
-      [fieldId]: value
+    return relevantTeams.map(team => ({
+      id: team.id || null,
+      name: team.name || '',
+      contact: team.contact || '',
+      expertise: team.expertise || ''
     }));
-  }, []);
-
-  const handleSubmitEdit = useCallback(
-    (event) => {
-      event.preventDefault();
-      if (!canEdit) {
-        setIsEditing(false);
-        return;
-      }
-
-      const updates = {};
-
-      editableFields.forEach(field => {
-        const { id } = field;
-        if (!id) {
-          return;
-        }
-
-        const type = field.question?.type || field.fallbackType || 'text';
-        const previousValue = formatValueForDraft(type, getRawAnswer(answers, id) ?? '');
-        const nextValue = draftValues[id] ?? '';
-
-        if (previousValue === nextValue) {
-          return;
-        }
-
-        updates[id] = formatValueForUpdate(type, nextValue);
-      });
-
-      if (Object.keys(updates).length > 0) {
-        onUpdateAnswers(updates);
-      }
-
-      setIsEditing(false);
-    },
-    [answers, canEdit, draftValues, editableFields, onUpdateAnswers]
-  );
-
-  const missingShowcaseQuestions = useMemo(() => {
-    const available = new Set(Array.isArray(questions) ? questions.map(question => question?.id).filter(Boolean) : []);
-    return REQUIRED_SHOWCASE_QUESTION_IDS.filter(id => !available.has(id));
-  }, [questions]);
+  }, [relevantTeams]);
 
   const slogan = getFormattedAnswer(questions, answers, 'projectSlogan');
-  const targetAudience = getFormattedAnswer(questions, answers, 'targetAudience');
-  const problemPainPoints = parseListAnswer(getRawAnswer(answers, 'problemPainPoints'));
-
+  const targetAudienceList = useMemo(
+    () => parseListAnswer(getRawAnswer(answers, 'targetAudience')),
+    [answers]
+  );
+  const targetAudience = targetAudienceList.join(', ');
+  const problemPainPoints = useMemo(
+    () => parseListAnswer(getRawAnswer(answers, 'problemPainPoints')),
+    [answers]
+  );
   const solutionDescription = getFormattedAnswer(questions, answers, 'solutionDescription');
-  const solutionBenefits = parseListAnswer(getRawAnswer(answers, 'solutionBenefits'));
+  const solutionBenefits = useMemo(
+    () => parseListAnswer(getRawAnswer(answers, 'solutionBenefits')),
+    [answers]
+  );
   const solutionComparison = getFormattedAnswer(questions, answers, 'solutionComparison');
-
   const innovationProcess = getFormattedAnswer(questions, answers, 'innovationProcess');
-
   const visionStatement = getFormattedAnswer(questions, answers, 'visionStatement');
-
   const teamLead = getFormattedAnswer(questions, answers, 'teamLead');
-  const teamCoreMembers = parseListAnswer(getRawAnswer(answers, 'teamCoreMembers'));
+  const teamCoreMembersList = useMemo(
+    () => parseListAnswer(getRawAnswer(answers, 'teamCoreMembers')),
+    [answers]
+  );
 
   const runway = useMemo(() => computeRunway(answers), [answers]);
   const timelineSummary = useMemo(() => computeTimelineSummary(timelineDetails), [timelineDetails]);
   const primaryRisk = useMemo(() => getPrimaryRisk(analysis), [analysis]);
-  const [parallaxOffset, setParallaxOffset] = useState({ x: 0, y: 0 });
-
-  const handleParallaxMove = useCallback((event) => {
-    const bounds = event.currentTarget.getBoundingClientRect();
-    const offsetX = (event.clientX - bounds.left) / bounds.width - 0.5;
-    const offsetY = (event.clientY - bounds.top) / bounds.height - 0.5;
-
-    setParallaxOffset({
-      x: Math.max(-0.5, Math.min(0.5, offsetX)),
-      y: Math.max(-0.5, Math.min(0.5, offsetY))
-    });
-  }, []);
-
-  const handleParallaxLeave = useCallback(() => {
-    setParallaxOffset({ x: 0, y: 0 });
-  }, []);
-
-  const heroTitleStyle = useMemo(
-    () => ({
-      backgroundImage: 'linear-gradient(120deg, #a855f7, #6366f1, #0ea5e9)',
-      backgroundSize: '200% 200%',
-      backgroundPosition: `${50 + parallaxOffset.x * 30}% ${50 + parallaxOffset.y * 30}%`,
-      WebkitBackgroundClip: 'text',
-      color: 'transparent',
-      textShadow: '0 25px 60px rgba(79, 70, 229, 0.45)',
-      transform: `translate3d(${parallaxOffset.x * 10}px, ${parallaxOffset.y * 16}px, 0)`,
-      transition: 'background-position 0.25s ease, transform 0.25s ease'
-    }),
-    [parallaxOffset]
-  );
-
-  const parallaxLayers = useMemo(
-    () => ({
-      far: {
-        transform: `translate3d(${parallaxOffset.x * 12}px, ${parallaxOffset.y * 12}px, 0)`
-      },
-      mid: {
-        transform: `translate3d(${parallaxOffset.x * 20}px, ${parallaxOffset.y * 20}px, 0)`
-      },
-      near: {
-        transform: `translate3d(${parallaxOffset.x * 32}px, ${parallaxOffset.y * 32}px, 0)`
-      }
-    }),
-    [parallaxOffset]
-  );
-
   const heroHighlights = useMemo(
-    () =>
-      buildHeroHighlights({
-        targetAudience,
-        runway
-      }),
+    () => buildHeroHighlights({ targetAudience, runway }),
     [targetAudience, runway]
   );
+  const complexity = analysis?.complexity || null;
 
-  useEffect(() => {
-    if (missingShowcaseQuestions.length === 0) {
-      return;
-    }
-
-    if (typeof console !== 'undefined' && typeof console.warn === 'function') {
-      console.warn(
-        '[ProjectShowcase] Les questions suivantes sont absentes alors que la vitrine les attend :',
-        missingShowcaseQuestions.join(', ')
-      );
-    }
-  }, [missingShowcaseQuestions]);
-
-  useEffect(() => {
-    if (renderInStandalone || typeof document === 'undefined') {
-      return undefined;
-    }
-
-    const handleKeyDown = (event) => {
-      if (event.key === 'Escape') {
-        onClose?.();
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [onClose, renderInStandalone]);
-
-  useEffect(() => {
-    if (renderInStandalone) {
-      return;
-    }
-
-    if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    if (closeButtonRef.current && typeof closeButtonRef.current.focus === 'function') {
-      closeButtonRef.current.focus();
-    }
-  }, [renderInStandalone]);
-
-  useEffect(() => {
-    if (typeof document === 'undefined') {
-      return undefined;
-    }
-
-    const rootElement = showcaseCardRef.current;
-    if (!rootElement) {
-      return undefined;
-    }
-
-    const sections = Array.from(
-      rootElement.querySelectorAll(
-        "[data-showcase-section], header[data-showcase-section='hero']"
-      )
+  const missingShowcaseQuestions = useMemo(() => {
+    const available = new Set(
+      Array.isArray(questions)
+        ? questions.map(question => question?.id).filter(Boolean)
+        : []
     );
+    return REQUIRED_SHOWCASE_QUESTION_IDS.filter(id => !available.has(id));
+  }, [questions]);
 
-    const removeVisibility = () => {
-      sections.forEach(section => section.classList.remove('is-visible'));
-    };
-
-    if (selectedTheme !== 'apple') {
-      removeVisibility();
-      return undefined;
-    }
-
-    sections.forEach(section => {
-      section.classList.add('is-visible');
-    });
-
-    if (typeof IntersectionObserver !== 'function') {
-      return () => {
-        removeVisibility();
-      };
-    }
-
-    const observer = new IntersectionObserver(
-      entries => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('is-visible');
-          }
-        });
-      },
-      { threshold: 0.1 }
-    );
-
-    sections.forEach(section => observer.observe(section));
-
-    return () => {
-      observer.disconnect();
-      removeVisibility();
-    };
-  }, [selectedTheme]);
-
-  const neoCardShadow = '18px 18px 45px rgba(15, 23, 42, 0.55), -18px -18px 45px rgba(148, 163, 184, 0.12)';
-  const neoInsetShadow = 'inset 8px 8px 16px rgba(15, 23, 42, 0.45), inset -8px -8px 16px rgba(148, 163, 184, 0.15)';
-
-  const showcaseCard = (
-    <div
-      data-showcase-card
-      data-showcase-theme={selectedTheme}
-      className={getThemeClasses(
-        'relative w-full overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100',
-        'relative w-full overflow-hidden',
-        {
-          netflix: 'relative w-full overflow-hidden bg-[#050507] text-white',
-          amnesty: 'relative w-full overflow-hidden bg-[#fff9c2] text-zinc-900'
-        }
-      )}
-      onMouseMove={handleParallaxMove}
-      onMouseLeave={handleParallaxLeave}
-      ref={showcaseCardRef}
-    >
-      {isNetflixTheme && (
-        <div className="pointer-events-none absolute inset-0 overflow-hidden" data-showcase-overlay>
-          <div
-            aria-hidden="true"
-            data-showcase-layer="glow-far"
-            style={{
-              position: 'absolute',
-              top: '-18%',
-              right: '-12%',
-              width: '58%',
-              height: '70%',
-              background: 'linear-gradient(125deg, rgba(229, 9, 20, 0.48), rgba(15, 8, 12, 0.05))',
-              filter: 'blur(120px)',
-              transform: combineTransform(parallaxLayers.far?.transform, 'skewY(-6deg)')
-            }}
-          />
-          <div
-            aria-hidden="true"
-            data-showcase-layer="glow-mid"
-            style={{
-              position: 'absolute',
-              bottom: '-22%',
-              left: '-18%',
-              width: '60%',
-              height: '65%',
-              background: 'linear-gradient(140deg, rgba(229, 9, 20, 0.4), transparent)',
-              filter: 'blur(110px)',
-              transform: combineTransform(
-                parallaxLayers.mid?.transform,
-                'skewY(-10deg) rotate(-3deg)'
-              )
-            }}
-          />
-          <div
-            aria-hidden="true"
-            data-showcase-layer="glow-near"
-            style={{
-              position: 'absolute',
-              top: '12%',
-              left: '8%',
-              width: '42%',
-              height: '45%',
-              background: 'linear-gradient(160deg, rgba(244, 63, 94, 0.32), transparent)',
-              border: '1px solid rgba(229, 9, 20, 0.2)',
-              transform: combineTransform(parallaxLayers.near?.transform, 'skewX(-12deg)'),
-              boxShadow: '0 0 140px rgba(229, 9, 20, 0.35)',
-              mixBlendMode: 'screen'
-            }}
-          />
-          <div
-            aria-hidden="true"
-            data-showcase-layer="glow-overlay"
-            style={{
-              position: 'absolute',
-              inset: 0,
-              background:
-                'radial-gradient(circle at 12% 18%, rgba(229, 9, 20, 0.28), transparent 60%), radial-gradient(circle at 88% 8%, rgba(244, 63, 94, 0.22), transparent 68%)',
-              mixBlendMode: 'screen'
-            }}
-          />
-        </div>
-      )}
-
-      {isAmnestyTheme && (
-        <div className="pointer-events-none absolute inset-0 overflow-hidden" data-showcase-overlay>
-          <div
-            aria-hidden="true"
-            data-showcase-layer="glow-far"
-            style={{
-              position: 'absolute',
-              top: '-12%',
-              left: '-10%',
-              width: '55%',
-              height: '65%',
-              background: 'linear-gradient(135deg, rgba(255, 237, 0, 0.45), transparent)',
-              filter: 'blur(90px)',
-              transform: combineTransform(parallaxLayers.far?.transform, 'skewY(-12deg)')
-            }}
-          />
-          <div
-            aria-hidden="true"
-            data-showcase-layer="glow-mid"
-            style={{
-              position: 'absolute',
-              bottom: '-18%',
-              right: '-8%',
-              width: '48%',
-              height: '58%',
-              background: 'linear-gradient(120deg, rgba(255, 191, 0, 0.38), transparent)',
-              filter: 'blur(80px)',
-              transform: combineTransform(parallaxLayers.mid?.transform, 'skewX(-10deg)')
-            }}
-          />
-          <div
-            aria-hidden="true"
-            data-showcase-layer="glow-near"
-            style={{
-              position: 'absolute',
-              inset: '18% 12% auto 12%',
-              height: '38%',
-              background:
-                'repeating-linear-gradient(135deg, rgba(18, 18, 18, 0.22) 0px, rgba(18, 18, 18, 0.22) 12px, transparent 12px, transparent 26px)',
-              boxShadow: '0 0 60px rgba(18, 18, 18, 0.22)',
-              mixBlendMode: 'multiply'
-            }}
-          />
-          <div
-            aria-hidden="true"
-            data-showcase-layer="glow-overlay"
-            style={{
-              position: 'absolute',
-              inset: 0,
-              background:
-                'radial-gradient(circle at 25% 18%, rgba(255, 237, 0, 0.35), transparent 65%), radial-gradient(circle at 80% 4%, rgba(255, 191, 0, 0.25), transparent 68%)'
-            }}
-          />
-        </div>
-      )}
-
-      {!isAppleTheme && !isNetflixTheme && !isAmnestyTheme && (
-        <div className="pointer-events-none absolute inset-0 overflow-hidden" data-showcase-overlay>
-          <div
-            className="absolute -top-48 -left-32 h-80 w-80 rounded-full bg-indigo-500/20 blur-3xl transition-transform duration-300 ease-out"
-            style={parallaxLayers.far}
-            aria-hidden="true"
-            data-showcase-layer="glow-far"
-          />
-          <div
-            className="absolute -bottom-40 -right-24 h-96 w-96 rounded-full bg-sky-500/25 blur-[120px] transition-transform duration-500 ease-out"
-            style={parallaxLayers.mid}
-            aria-hidden="true"
-            data-showcase-layer="glow-mid"
-          />
-          <div
-            className="absolute top-1/2 left-1/2 h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/10 bg-white/5 backdrop-blur-xl transition-transform duration-300 ease-out"
-            style={parallaxLayers.near}
-            aria-hidden="true"
-            data-showcase-layer="glow-near"
-          />
-          <div
-            className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.12),_transparent_60%)]"
-            aria-hidden="true"
-            data-showcase-layer="glow-overlay"
-          />
-        </div>
-      )}
-
-      <div className={getThemeClasses('relative px-6 pt-10 pb-16 sm:px-14 sm:pt-16 sm:pb-20', 'relative px-6 pt-10 pb-16 sm:px-14 sm:pt-16 sm:pb-20')}>
-        <div
-          data-showcase-theme-switcher
-          className={getThemeClasses(
-            'mb-8 flex flex-col gap-4 rounded-[28px] border border-white/10 bg-white/5 p-4 sm:flex-row sm:items-center sm:justify-between',
-            'mb-8 flex flex-col gap-4 rounded-[28px] p-4 sm:flex-row sm:items-center sm:justify-between',
-            {
-              netflix:
-                'mb-8 flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between',
-              amnesty:
-                'mb-8 flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between'
-            }
-          )}
-        >
-          <div className={getThemeClasses('max-w-xl text-xs text-slate-200/80', 'max-w-xl text-xs')}>
-            <p
-              className={getThemeClasses(
-                'text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80',
-                'text-[0.65rem] font-semibold uppercase tracking-[0.4em]'
-              )}
-            >
-              Style de présentation
-            </p>
-            {activeTheme?.description && (
-              <p
-                className={getThemeClasses(
-                  'mt-2 text-[0.7rem] leading-relaxed text-slate-300/80',
-                  'mt-2 text-[0.75rem] leading-relaxed'
-                )}
-              >
-                {activeTheme.description}
-              </p>
-            )}
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {SHOWCASE_THEMES.map(theme => {
-              const isActiveTheme = theme.id === selectedTheme;
-              return (
-                <button
-                  key={theme.id}
-                  type="button"
-                  onClick={() => handleThemeChange(theme.id)}
-                  className={getThemeClasses(
-                    `inline-flex items-center justify-center rounded-full border px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.3em] transition focus:outline-none focus:ring-2 focus:ring-indigo-400/40 ${
-                      isActiveTheme
-                        ? 'border-white/20 bg-white/15 text-white shadow-lg shadow-indigo-500/30'
-                        : 'border-white/10 bg-transparent text-slate-200/80 hover:bg-white/10'
-                    }`,
-                    'inline-flex items-center justify-center rounded-full px-4 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.3em] transition focus:outline-none'
-                  )}
-                  aria-pressed={isActiveTheme}
-                  title={theme.description}
-                >
-                  {theme.shortLabel}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        <header
-          data-showcase-section="hero"
-          className={getThemeClasses(
-            'rounded-[32px] border border-white/10 bg-white/5 p-8 sm:p-12 backdrop-blur-xl',
-            'rounded-[32px] p-8 sm:p-12'
-          )}
-          style={
-            isAppleTheme
-              ? undefined
-              : { boxShadow: '20px 20px 60px rgba(2, 6, 23, 0.45), -18px -18px 50px rgba(148, 163, 184, 0.12)' }
-          }
-        >
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-          <div className="max-w-3xl">
-            {shouldShowPreview ? (
-              <>
-                <h2
-                  className="mt-6 text-5xl font-black leading-tight sm:text-6xl sm:leading-[1.05]"
-                  style={heroTitleStyle}
-                >
-                  {safeProjectName}
-                </h2>
-                {hasText(slogan) && (
-                  <p
-                    className={getThemeClasses(
-                      'mt-5 text-2xl font-semibold text-indigo-200 sm:text-3xl',
-                      'mt-5 text-2xl font-semibold sm:text-3xl'
-                    )}
-                    style={
-                      isAppleTheme
-                        ? undefined
-                        : { textShadow: '0 12px 40px rgba(79, 70, 229, 0.4)' }
-                    }
-                  >
-                    {renderTextWithLinks(slogan)}
-                  </p>
-                )}
-              </>
-            ) : (
-              <>
-                <p
-                  className={getThemeClasses(
-                    'mt-6 text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200',
-                    'mt-6 text-[0.65rem] font-semibold uppercase tracking-[0.45em]'
-                  )}
-                >
-                  Mode édition
-                </p>
-                <h2
-                  className={getThemeClasses(
-                    'mt-4 text-4xl font-bold text-white sm:text-5xl',
-                    'mt-4 text-4xl font-bold sm:text-5xl'
-                  )}
-                >
-                  Personnalisez la vitrine du projet
-                </h2>
-                <p
-                  className={getThemeClasses('mt-3 text-sm text-slate-300/80', 'mt-3 text-sm')}
-                >
-                  Modifiez les informations via le formulaire ci-dessous. L'aperçu est temporairement masqué pendant l'édition.
-                </p>
-              </>
-            )}
-          </div>
-          <div className="flex flex-wrap items-center gap-3 self-start lg:self-auto">
-            <button
-              type="button"
-              onClick={onClose}
-              className={getThemeClasses(
-                'inline-flex items-center justify-center rounded-full border border-white/10 bg-white/10 p-3 text-slate-200 transition hover:bg-white/20',
-                'inline-flex items-center justify-center rounded-full p-3 transition'
-              )}
-              aria-label="Fermer la vitrine du projet"
-              ref={renderInStandalone ? undefined : closeButtonRef}
-            >
-                <Close className="h-4 w-4" />
-              </button>
-              </div>
-            </div>
-
-            {isEditing && canEdit && (
-              <form
-                id={formId}
-                onSubmit={handleSubmitEdit}
-                className={getThemeClasses(
-                  'mt-10 space-y-6 rounded-[28px] border border-white/15 bg-slate-900/60 p-6 sm:p-8 text-slate-100 backdrop-blur-xl',
-                  'mt-10 space-y-6 rounded-[28px] p-6 sm:p-8'
-                )}
-                style={isAppleTheme ? undefined : { boxShadow: neoCardShadow }}
-              >
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <p
-                      className={getThemeClasses(
-                        'text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200',
-                        'text-[0.65rem] font-semibold uppercase tracking-[0.45em]'
-                      )}
-                    >
-                      Mode édition actif
-                    </p>
-                    <h3
-                      className={getThemeClasses(
-                        'mt-1 text-lg font-semibold text-white',
-                        'mt-1 text-lg font-semibold'
-                      )}
-                    >
-                      Ajustez les informations présentées dans la vitrine
-                    </h3>
-                  </div>
-                  <p className={getThemeClasses('text-xs text-slate-300/80 sm:max-w-xs', 'text-xs sm:max-w-xs')}>
-                    Chaque modification sera appliquée aux réponses du questionnaire correspondant.
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  {editableFields.map(field => {
-                    const fieldId = field.id;
-                    const question = field.question;
-                    const type = question?.type || field.fallbackType || 'text';
-                    const label = question?.question || field.fallbackLabel || fieldId;
-                    const value = draftValues[fieldId] ?? '';
-                    const isLong = type === 'long_text';
-                    const isMulti = type === 'multi_choice';
-                    const isDate = type === 'date';
-                    const helperText = isMulti
-                      ? 'Indiquez une audience par ligne.'
-                      : ['problemPainPoints', 'solutionBenefits', 'teamCoreMembers'].includes(fieldId)
-                        ? 'Utilisez une ligne par élément pour une meilleure mise en forme.'
-                        : null;
-
-                    return (
-                      <div key={fieldId} className={`${isLong || isMulti ? 'sm:col-span-2' : ''}`}>
-                        <label
-                          htmlFor={`showcase-edit-${fieldId}`}
-                          className={getThemeClasses(
-                            'block text-[0.65rem] font-semibold uppercase tracking-[0.4em] text-indigo-200/80',
-                            'block text-[0.65rem] font-semibold uppercase tracking-[0.4em]'
-                          )}
-                        >
-                          {label}
-                        </label>
-                        {isDate ? (
-                          <input
-                            id={`showcase-edit-${fieldId}`}
-                            type="date"
-                            value={value}
-                            onChange={event => handleFieldChange(fieldId, event.target.value)}
-                            className={getThemeClasses(
-                              'mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-400/40',
-                              'mt-2 w-full rounded-xl px-3 py-2 text-sm focus:outline-none'
-                            )}
-                            style={isAppleTheme ? undefined : { boxShadow: neoInsetShadow }}
-                          />
-                        ) : isLong || isMulti ? (
-                          <textarea
-                            id={`showcase-edit-${fieldId}`}
-                            value={value}
-                            onChange={event => handleFieldChange(fieldId, event.target.value)}
-                            rows={isMulti ? 4 : 5}
-                            className={getThemeClasses(
-                              'mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-400/40',
-                              'mt-2 w-full rounded-xl px-3 py-2 text-sm focus:outline-none'
-                            )}
-                            style={isAppleTheme ? undefined : { boxShadow: neoInsetShadow }}
-                          />
-                        ) : (
-                          <input
-                            id={`showcase-edit-${fieldId}`}
-                            type="text"
-                            value={value}
-                            onChange={event => handleFieldChange(fieldId, event.target.value)}
-                            className={getThemeClasses(
-                              'mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-400/40',
-                              'mt-2 w-full rounded-xl px-3 py-2 text-sm focus:outline-none'
-                            )}
-                            style={isAppleTheme ? undefined : { boxShadow: neoInsetShadow }}
-                          />
-                        )}
-                        {helperText && (
-                            <p className={getThemeClasses('mt-2 text-xs text-slate-400', 'mt-2 text-xs')}>
-                              {helperText}
-                            </p>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
-                    <button
-                      type="button"
-                      onClick={handleCancelEditing}
-                      className={getThemeClasses(
-                        'inline-flex items-center justify-center rounded-full border border-white/15 bg-white/5 px-5 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-slate-200 transition hover:bg-white/10',
-                        'inline-flex items-center justify-center rounded-full px-5 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.45em] transition'
-                      )}
-                    >
-                      Annuler
-                    </button>
-                    <button
-                      type="submit"
-                      className={getThemeClasses(
-                        'inline-flex items-center justify-center rounded-full border border-indigo-400/60 bg-gradient-to-r from-indigo-500 via-sky-500 to-cyan-400 px-5 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-white shadow-lg shadow-indigo-500/30 transition hover:brightness-110',
-                        'inline-flex items-center justify-center rounded-full px-5 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.45em] transition'
-                      )}
-                    >
-                      <CheckCircle className="mr-2 h-4 w-4" />
-                      Enregistrer les modifications
-                    </button>
-                  </div>
-                </form>
-              )}
-
-              {shouldShowPreview && heroHighlights.length > 0 && (
-                <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-3">
-                  {heroHighlights.map(highlight => (
-                    <div
-                      key={highlight.id}
-                      data-showcase-element="hero-highlight"
-                      className={getThemeClasses(
-                        'rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-200 backdrop-blur-xl',
-                        'rounded-3xl p-6 text-sm'
-                      )}
-                      style={isAppleTheme ? undefined : { boxShadow: neoCardShadow }}
-                    >
-                      <p
-                        className={getThemeClasses(
-                          'text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/90',
-                          'text-[0.65rem] font-semibold uppercase tracking-[0.45em]'
-                        )}
-                      >
-                        {highlight.label}
-                      </p>
-                      <p
-                        className={getThemeClasses('mt-3 text-3xl font-bold text-white', 'mt-3 text-3xl font-bold')}
-                        style={
-                          isAppleTheme
-                            ? undefined
-                            : { textShadow: '0 18px 45px rgba(79, 70, 229, 0.45)' }
-                        }
-                      >
-                        {highlight.value}
-                      </p>
-                      <p className={getThemeClasses('mt-3 text-xs text-slate-300/80', 'mt-3 text-xs')}>
-                        {highlight.caption}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </header>
-
-            {shouldShowPreview && (
-              <section
-                data-showcase-section="problem"
-                className={getThemeClasses(
-                  'mt-14 rounded-[32px] border border-white/10 bg-white/5 p-8 sm:p-12 text-slate-100 backdrop-blur-xl',
-                  'mt-14 rounded-[32px] p-8 sm:p-12'
-                )}
-                style={isAppleTheme ? undefined : { boxShadow: neoCardShadow }}
-              >
-                <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
-                  <div className="max-w-3xl">
-                    <p
-                      className={getThemeClasses(
-                        'text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80',
-                        'text-[0.65rem] font-semibold uppercase tracking-[0.45em]'
-                      )}
-                    >
-                      Le problème
-                    </p>
-                    <h3
-                      className={getThemeClasses('mt-3 text-3xl font-bold text-white', 'mt-3 text-3xl font-bold')}
-                    >
-                      Pourquoi ce projet doit exister
-                    </h3>
-                    {renderList(problemPainPoints)}
-                  </div>
-                </div>
-              </section>
-            )}
-
-            {shouldShowPreview && (
-              <section
-                data-showcase-section="solution"
-                className={getThemeClasses(
-                  'mt-14 rounded-[32px] border border-white/10 bg-gradient-to-br from-indigo-500/30 via-transparent to-sky-500/30 p-[1px]',
-                  'mt-14 rounded-[32px] p-0'
-                )}
-                style={isAppleTheme ? undefined : { boxShadow: neoCardShadow }}
-              >
-                <div
-                  className={getThemeClasses(
-                    'h-full w-full rounded-[30px] bg-slate-950/80 px-8 py-10 text-slate-100 sm:px-12',
-                    'h-full w-full rounded-[30px] px-8 py-10 sm:px-12'
-                  )}
-                >
-                  <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-                    <div>
-                      <p
-                        className={getThemeClasses(
-                          'text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80',
-                          'text-[0.65rem] font-semibold uppercase tracking-[0.45em]'
-                        )}
-                      >
-                        La solution
-                      </p>
-                      <h3
-                        className={getThemeClasses('mt-3 text-3xl font-bold text-white', 'mt-3 text-3xl font-bold')}
-                      >
-                        Comment nous changeons la donne
-                      </h3>
-                    </div>
-                    <Rocket className={getThemeClasses('text-4xl text-sky-300', 'text-4xl')} />
-                  </div>
-                  <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2">
-                    {hasText(solutionDescription) && (
-                      <div
-                        data-showcase-element="solution-card"
-                        className={getThemeClasses(
-                          'rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-200 backdrop-blur-xl',
-                          'rounded-3xl p-6 text-sm'
-                        )}
-                        style={isAppleTheme ? undefined : { boxShadow: neoCardShadow }}
-                      >
-                        <p
-                          className={getThemeClasses(
-                            'text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/90',
-                            'text-[0.65rem] font-semibold uppercase tracking-[0.45em]'
-                          )}
-                        >
-                          Expérience proposée
-                        </p>
-                        <p
-                          className={getThemeClasses('mt-3 text-sm leading-relaxed text-slate-200/90', 'mt-3 text-sm leading-relaxed')}
-                        >
-                          {renderTextWithLinks(solutionDescription)}
-                        </p>
-                      </div>
-                    )}
-                    {solutionBenefits.length > 0 && (
-                      <div
-                        data-showcase-element="solution-card"
-                        className={getThemeClasses(
-                          'rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-200 backdrop-blur-xl',
-                          'rounded-3xl p-6 text-sm'
-                        )}
-                        style={isAppleTheme ? undefined : { boxShadow: neoCardShadow }}
-                      >
-                        <p
-                          className={getThemeClasses(
-                            'text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/90',
-                            'text-[0.65rem] font-semibold uppercase tracking-[0.45em]'
-                          )}
-                        >
-                          Bénéfices clés
-                        </p>
-                        {renderList(solutionBenefits)}
-                      </div>
-                    )}
-                    {hasText(solutionComparison) && (
-                      <div
-                        data-showcase-element="solution-card"
-                        className={getThemeClasses(
-                          'rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-200 backdrop-blur-xl',
-                          'rounded-3xl p-6 text-sm'
-                        )}
-                        style={isAppleTheme ? undefined : { boxShadow: neoCardShadow }}
-                      >
-                        <p
-                          className={getThemeClasses(
-                            'text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/90',
-                            'text-[0.65rem] font-semibold uppercase tracking-[0.45em]'
-                          )}
-                        >
-                          Pourquoi c'est différent
-                        </p>
-                        <p
-                          className={getThemeClasses('mt-3 text-sm leading-relaxed text-slate-200/90', 'mt-3 text-sm leading-relaxed')}
-                        >
-                          {renderTextWithLinks(solutionComparison)}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </section>
-            )}
-
-            {shouldShowPreview && hasText(innovationProcess) && (
-              <section
-                data-showcase-section="innovation"
-                className="mt-14 rounded-[32px] border border-white/10 bg-white/5 p-8 sm:p-12 text-slate-100 backdrop-blur-xl"
-                style={{ boxShadow: neoCardShadow }}
-              >
-                <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-                  <div>
-                    <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80">Innovation</p>
-                    <h3 className="mt-3 text-2xl font-bold text-white">Ce qui rend l'approche unique</h3>
-                  </div>
-                  <div
-                    data-showcase-element="innovation-card"
-                    className="rounded-3xl border border-white/10 bg-white/5 p-6 text-sm leading-relaxed text-slate-200 backdrop-blur-xl"
-                    style={{ boxShadow: neoCardShadow }}
-                  >
-                    <Compass className="mb-4 h-7 w-7 text-sky-300" />
-                    {renderTextWithLinks(innovationProcess)}
-                  </div>
-                </div>
-              </section>
-            )}
-
-            {shouldShowPreview && (
-              <section
-                data-showcase-section="evidence"
-                className="mt-14 rounded-[32px] border border-white/10 bg-white/5 p-8 sm:p-12 text-slate-100 backdrop-blur-xl"
-                style={{ boxShadow: neoCardShadow }}
-              >
-                <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
-                  <div className="max-w-3xl space-y-8">
-                    <div>
-                      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80">Potentiel & impact</p>
-                      <h3 className="mt-3 text-3xl font-bold text-white">Les preuves qui donnent envie d'y croire</h3>
-                      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        {timelineSummary && (
-                          <div
-                            data-showcase-element="metric-card"
-                            className="rounded-3xl border border-white/10 bg-white/5 p-5 text-sm text-slate-200 backdrop-blur-xl"
-                            style={{ boxShadow: neoCardShadow }}
-                          >
-                            <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/70">Préparation au lancement</p>
-                            <p className="mt-2 text-2xl font-bold text-white">{`${timelineSummary.weeks} sem.`}</p>
-                            <p className="mt-2 text-xs text-slate-300/80">
-                              {timelineSummary.satisfied ? 'Runway suffisant pour activer les relais.' : 'Runway à renforcer pour sécuriser la diffusion.'}
-                            </p>
-                          </div>
-                        )}
-                        <div
-                          data-showcase-element="metric-card"
-                          className="rounded-3xl border border-white/10 bg-white/5 p-5 text-sm text-slate-200 backdrop-blur-xl"
-                          style={{ boxShadow: neoCardShadow }}
-                        >
-                          <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/70">Complexité estimée</p>
-                          <p className="mt-2 text-2xl font-bold text-white">{complexity}</p>
-                          <p className="mt-2 text-xs text-slate-300/80">Basée sur les points de vigilance identifiés.</p>
-                        </div>
-                      </div>
-                    </div>
-                    {hasText(visionStatement) && (
-                      <div
-                        data-showcase-element="vision-card"
-                        className="rounded-3xl border border-white/10 bg-white/5 p-6 text-slate-200 backdrop-blur-xl"
-                        style={{ boxShadow: neoCardShadow }}
-                      >
-                        <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80">Vision</p>
-                        <p className="mt-3 text-base leading-relaxed text-slate-200/90">{renderTextWithLinks(visionStatement)}</p>
-                      </div>
-                    )}
-                  </div>
-                  {primaryRisk && (
-                    <aside
-                      data-showcase-aside="risk"
-                      className="max-w-sm rounded-3xl border border-amber-400/30 bg-gradient-to-br from-amber-500/20 via-amber-500/10 to-amber-300/10 p-6 text-sm leading-relaxed text-amber-100 backdrop-blur-xl"
-                      style={{ boxShadow: neoCardShadow }}
-                    >
-                      <AlertTriangle className="mb-4 h-8 w-8 text-amber-300" />
-                      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.4em] text-amber-200/90">Point de vigilance</p>
-                      <h4 className="mt-3 text-xl font-semibold text-white">{primaryRisk.title || 'Vigilance prioritaire'}</h4>
-                      <p className="mt-4 text-sm text-amber-100/90">{renderTextWithLinks(primaryRisk.description)}</p>
-                      <p className="mt-4 text-[0.65rem] font-semibold uppercase tracking-[0.4em] text-amber-200/90">Priorité : {primaryRisk.priority}</p>
-                    </aside>
-                  )}
-                </div>
-              </section>
-            )}
-
-            {shouldShowPreview && (
-              <section
-                data-showcase-section="team"
-                className="mt-14 rounded-[32px] border border-white/10 bg-white/5 p-8 sm:p-12 text-slate-100 backdrop-blur-xl"
-                style={{ boxShadow: neoCardShadow }}
-              >
-                <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
-                  <div className="max-w-3xl space-y-6 text-sm text-slate-200/90">
-                    <div>
-                      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80">L'équipe</p>
-                      <h3 className="mt-3 text-3xl font-bold text-white">Les talents derrière la vision</h3>
-                    </div>
-                    {hasText(teamLead) && (
-                      <p>
-                        <span className="font-semibold text-white">Lead du projet :</span>{' '}
-                        {renderTextWithLinks(teamLead)}
-                      </p>
-                    )}
-                    {teamCoreMembers.length > 0 && (
-                      <div>
-                        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-200/90">Collectif moteur</p>
-                        {renderList(teamCoreMembers)}
-                      </div>
-                    )}
-                  </div>
-                  {normalizedTeams.length > 0 && (
-                    <aside
-                      data-showcase-aside="teams"
-                      className="max-w-sm rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-100 backdrop-blur-xl"
-                      style={{ boxShadow: neoCardShadow }}
-                    >
-                      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80">Alliés activés</p>
-                      <div className="mt-4 space-y-3">
-                        {normalizedTeams.map(team => (
-                          <div key={team.id} className="flex items-start gap-3">
-                            <Users className="mt-1 h-4 w-4 text-sky-300" />
-                            <div>
-                              <p className="text-sm font-semibold text-white">{team.name}</p>
-                              <p className="text-xs text-slate-300/80">{team.expertise}</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </aside>
-                  )}
-                </div>
-              </section>
-            )}
-
-            {shouldShowPreview && (runway || timelineSummary) && (
-              <section
-                data-showcase-section="timeline"
-                className="mt-14 rounded-[32px] border border-white/10 bg-gradient-to-br from-indigo-500/25 via-transparent to-sky-500/25 p-8 sm:p-12 text-slate-100 backdrop-blur-xl"
-                style={{ boxShadow: neoCardShadow }}
-              >
-                <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-                  <div className="space-y-3">
-                    <p className="text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200/80">Prochaines étapes</p>
-                    <h3 className="text-2xl font-bold text-white">Orchestrer la narration jusqu'au lancement</h3>
-                    {runway && (
-                      <p className="text-sm text-slate-200/90">
-                        Runway prévu de <span className="font-semibold text-white">{runway.weeksLabel}</span> ({runway.daysLabel}) entre le {runway.startLabel} et le {runway.endLabel}.
-                      </p>
-                    )}
-                  </div>
-                  <Calendar className="text-4xl text-sky-300" />
-                </div>
-                {timelineSummary?.profiles?.length > 0 && (
-                  <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    {timelineSummary.profiles.map(profile => (
-                      <div
-                        data-showcase-element="timeline-profile"
-                        key={profile.id}
-                        className="rounded-3xl border border-white/10 bg-white/5 p-5 text-sm text-slate-200 backdrop-blur-xl"
-                        style={{ boxShadow: neoCardShadow }}
-                      >
-                        <p className="text-sm font-semibold text-white">{profile.label}</p>
-                        {profile.description && (
-                          <p className="mt-2 text-xs text-slate-300/80">{profile.description}</p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </section>
-            )}
-
-            {canEdit && (
-              <div className="mt-16 flex flex-col items-center justify-center gap-3 sm:flex-row sm:justify-end">
-                {isEditing ? (
-                  <>
-                    <button
-                      type="button"
-                      onClick={handleCancelEditing}
-                      className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/10 px-5 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-slate-200 transition hover:bg-white/20"
-                    >
-                      Annuler l'édition
-                    </button>
-                    <button
-                      type="submit"
-                      form={formId}
-                      className="inline-flex items-center justify-center rounded-full border border-indigo-400/60 bg-gradient-to-r from-indigo-500 via-sky-500 to-cyan-400 px-5 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-white shadow-lg shadow-indigo-500/30 transition hover:brightness-110"
-                    >
-                      <CheckCircle className="mr-2 h-4 w-4" />
-                      Enregistrer
-                    </button>
-                  </>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={handleStartEditing}
-                    className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/10 px-5 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.45em] text-indigo-200 transition hover:bg-white/20"
-                  >
-                    <Edit className="mr-2 h-4 w-4" />
-                    Modifier le contenu
-                  </button>
-                )}
-              </div>
-            )}
-        </div>
-      </div>
+  const payload = useMemo(
+    () =>
+      buildShowcasePayload({
+        selectedTheme,
+        safeProjectName,
+        slogan,
+        targetAudienceList,
+        heroHighlights,
+        problemPainPoints,
+        solutionDescription,
+        solutionBenefits,
+        solutionComparison,
+        innovationProcess,
+        visionStatement,
+        teamLead,
+        teamCoreMembersList,
+        normalizedTeams,
+        runway,
+        timelineSummary,
+        timelineDetails: Array.isArray(timelineDetails) ? timelineDetails : [],
+        complexity,
+        analysis,
+        primaryRisk,
+        missingShowcaseQuestions
+      }),
+    [
+      selectedTheme,
+      safeProjectName,
+      slogan,
+      targetAudienceList,
+      heroHighlights,
+      problemPainPoints,
+      solutionDescription,
+      solutionBenefits,
+      solutionComparison,
+      innovationProcess,
+      visionStatement,
+      teamLead,
+      teamCoreMembersList,
+      normalizedTeams,
+      runway,
+      timelineSummary,
+      timelineDetails,
+      complexity,
+      analysis,
+      primaryRisk,
+      missingShowcaseQuestions
+    ]
   );
 
-  const ThemeContainer = activeTheme?.component || THEME_CONTAINERS[selectedTheme] || THEME_CONTAINERS.apple;
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    try {
+      window.dispatchEvent(new CustomEvent('project-showcase:data', { detail: payload }));
+      window.__PROJECT_SHOWCASE_DATA__ = payload;
+    } catch (error) {
+      // Ignorer les erreurs lors de la diffusion de l'événement.
+    }
+  }, [payload]);
+
+  const serializedPayload = useMemo(() => sanitizeForScript(payload), [payload]);
+
+  const handleClose = useCallback(() => {
+    if (typeof onClose === 'function') {
+      onClose();
+    }
+  }, [onClose]);
 
   return (
-    <ThemeContainer renderInStandalone={renderInStandalone}>
-      {showcaseCard}
-    </ThemeContainer>
+    <article
+      data-component="project-showcase"
+      data-theme={selectedTheme}
+      data-standalone={renderInStandalone ? 'true' : 'false'}
+    >
+      <section data-section="theme">
+        <h2>Style de présentation</h2>
+        {activeTheme?.description ? (
+          <p data-role="theme-description">{activeTheme.description}</p>
+        ) : null}
+        <div data-role="theme-options">
+          {SHOWCASE_THEMES.map(theme => (
+            <button
+              key={theme.id}
+              type="button"
+              data-theme-option={theme.id}
+              aria-pressed={theme.id === selectedTheme}
+              onClick={() => handleThemeChange(theme.id)}
+            >
+              {theme.label}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section data-section="hero">
+        <h1 data-field="project-name">{safeProjectName}</h1>
+        {hasText(slogan) ? <p data-field="project-slogan">{slogan}</p> : null}
+        {heroHighlights.length > 0 && (
+          <div data-role="hero-highlights">
+            {heroHighlights.map(highlight => (
+              <article data-highlight={highlight.id} key={highlight.id}>
+                <h3 data-role="label">{highlight.label}</h3>
+                <p data-role="value">{highlight.value}</p>
+                {highlight.caption ? <p data-role="caption">{highlight.caption}</p> : null}
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {targetAudienceList.length > 0 && (
+        <section data-section="audience">
+          <h2>Audiences cibles</h2>
+          <ul data-field="target-audience">
+            {targetAudienceList.map((item, index) => (
+              <li key={`${item}-${index}`}>{item}</li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {problemPainPoints.length > 0 && (
+        <section data-section="problem">
+          <h2>Problèmes identifiés</h2>
+          <ul data-field="problem-pain-points">
+            {problemPainPoints.map((item, index) => (
+              <li key={`${item}-${index}`}>{item}</li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {(hasText(solutionDescription) || solutionBenefits.length > 0 || hasText(solutionComparison)) && (
+        <section data-section="solution">
+          <h2>Proposition de valeur</h2>
+          {hasText(solutionDescription) ? (
+            <p data-field="solution-description">{solutionDescription}</p>
+          ) : null}
+          {solutionBenefits.length > 0 && (
+            <>
+              <h3>Principaux bénéfices</h3>
+              <ul data-field="solution-benefits">
+                {solutionBenefits.map((item, index) => (
+                  <li key={`${item}-${index}`}>{item}</li>
+                ))}
+              </ul>
+            </>
+          )}
+          {hasText(solutionComparison) ? (
+            <p data-field="solution-comparison">{solutionComparison}</p>
+          ) : null}
+        </section>
+      )}
+
+      {hasText(innovationProcess) && (
+        <section data-section="innovation-process">
+          <h2>Processus d'innovation</h2>
+          <p data-field="innovation-process">{innovationProcess}</p>
+        </section>
+      )}
+
+      {hasText(visionStatement) && (
+        <section data-section="vision">
+          <h2>Vision</h2>
+          <p data-field="vision-statement">{visionStatement}</p>
+        </section>
+      )}
+
+      {(hasText(teamLead) || teamCoreMembersList.length > 0 || normalizedTeams.length > 0) && (
+        <section data-section="team">
+          <h2>Équipe projet</h2>
+          {hasText(teamLead) ? <p data-field="team-lead">{teamLead}</p> : null}
+          {teamCoreMembersList.length > 0 && (
+            <>
+              <h3>Membres clés</h3>
+              <ul data-field="team-core-members">
+                {teamCoreMembersList.map((member, index) => (
+                  <li key={`${member}-${index}`}>{member}</li>
+                ))}
+              </ul>
+            </>
+          )}
+          {normalizedTeams.length > 0 && (
+            <>
+              <h3>Équipes impliquées</h3>
+              <ul data-field="relevant-teams">
+                {normalizedTeams.map(team => (
+                  <li key={team.id || team.name}>
+                    {team.name}
+                    {team.expertise ? <span data-role="team-expertise"> — {team.expertise}</span> : null}
+                    {team.contact ? <span data-role="team-contact"> ({team.contact})</span> : null}
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </section>
+      )}
+
+      {(runway || timelineSummary || (Array.isArray(timelineDetails) && timelineDetails.length > 0)) && (
+        <section data-section="timeline">
+          <h2>Feuille de route</h2>
+          {runway ? (
+            <p data-field="timeline-runway">
+              {`Du ${runway.startLabel} au ${runway.endLabel} (${runway.weeksLabel}, ${runway.daysLabel})`}
+            </p>
+          ) : null}
+          {timelineSummary ? (
+            <p data-field="timeline-summary">
+              {timelineSummary.ruleName ? `${timelineSummary.ruleName} : ` : ''}
+              {timelineSummary.satisfied ? 'Conformité atteinte' : 'Conformité non atteinte'}
+              {timelineSummary.weeks
+                ? ` (${timelineSummary.weeks} sem., ${timelineSummary.days} jours)`
+                : ''}
+            </p>
+          ) : null}
+          {Array.isArray(timelineDetails) && timelineDetails.length > 0 && (
+            <ul data-field="timeline-details">
+              {timelineDetails.map((detail, index) => (
+                <li key={detail.ruleId || detail.ruleName || index}>
+                  {detail.ruleName || 'Règle'}
+                  {detail.diff?.diffInWeeks
+                    ? ` : ${Math.round(detail.diff.diffInWeeks)} sem.`
+                    : ''}
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
+
+      {(complexity || hasText(analysis?.summary) || primaryRisk || (Array.isArray(analysis?.risks) && analysis.risks.length > 0)) && (
+        <section data-section="analysis">
+          <h2>Analyse de conformité</h2>
+          {complexity ? (
+            <p data-field="analysis-complexity">{`Complexité : ${complexity}`}</p>
+          ) : null}
+          {hasText(analysis?.summary) ? (
+            <p data-field="analysis-summary">{analysis.summary}</p>
+          ) : null}
+          {primaryRisk ? (
+            <article data-element="primary-risk">
+              <h3>Risque principal</h3>
+              {primaryRisk.priority ? (
+                <p data-field="primary-risk-priority">{primaryRisk.priority}</p>
+              ) : null}
+              {hasText(primaryRisk.description) ? (
+                <p data-field="primary-risk-description">{primaryRisk.description}</p>
+              ) : null}
+              {hasText(primaryRisk.mitigation) ? (
+                <p data-field="primary-risk-mitigation">{primaryRisk.mitigation}</p>
+              ) : null}
+            </article>
+          ) : null}
+          {Array.isArray(analysis?.risks) && analysis.risks.length > 0 && (
+            <div data-element="risk-list">
+              <h3>Risques identifiés</h3>
+              <ul>
+                {analysis.risks.map((risk, index) => (
+                  <li key={risk.id || risk.ruleId || index}>
+                    <span data-role="risk-title">{risk.title || risk.name || `Risque ${index + 1}`}</span>
+                    {risk.priority ? <span data-role="risk-priority"> — {risk.priority}</span> : null}
+                    {hasText(risk.description) ? (
+                      <p data-role="risk-description">{risk.description}</p>
+                    ) : null}
+                    {hasText(risk.mitigation) ? (
+                      <p data-role="risk-mitigation">{risk.mitigation}</p>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </section>
+      )}
+
+      {Array.isArray(analysis?.opportunities) && analysis.opportunities.length > 0 && (
+        <section data-section="opportunities">
+          <h2>Opportunités</h2>
+          <ul>
+            {analysis.opportunities.map((opportunity, index) => (
+              <li key={opportunity.id || index}>
+                <span data-role="opportunity-title">
+                  {opportunity.title || opportunity.name || `Opportunité ${index + 1}`}
+                </span>
+                {hasText(opportunity.description) ? (
+                  <p data-role="opportunity-description">{opportunity.description}</p>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {missingShowcaseQuestions.length > 0 && (
+        <section data-section="missing-questions">
+          <h2>Questions manquantes pour la vitrine</h2>
+          <ul>
+            {missingShowcaseQuestions.map(id => (
+              <li key={id}>{id}</li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {typeof onClose === 'function' && (
+        <section data-section="actions">
+          <button type="button" data-action="close" onClick={handleClose}>
+            Revenir à l'application
+          </button>
+        </section>
+      )}
+
+      <script
+        type="application/json"
+        data-project-showcase-payload
+        dangerouslySetInnerHTML={{ __html: serializedPayload }}
+      />
+    </article>
   );
 };
-
