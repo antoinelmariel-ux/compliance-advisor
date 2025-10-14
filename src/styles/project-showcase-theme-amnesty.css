@@ -405,6 +405,21 @@
   margin-bottom: 0.75rem;
 }
 
+:where([data-showcase-scope][data-showcase-theme='amnesty']) [data-showcase-section] h2 {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  letter-spacing: 0.2em;
+}
+
+:where([data-showcase-scope][data-showcase-theme='amnesty']) [data-showcase-section] h2::after {
+  content: '';
+  display: inline-block;
+  width: 58px;
+  height: 3px;
+  background: linear-gradient(90deg, #121212 0%, transparent 100%);
+}
+
 :where([data-showcase-scope][data-showcase-theme='amnesty']) [data-showcase-element='hero-highlight'],
 :where([data-showcase-scope][data-showcase-theme='amnesty']) [data-showcase-element='metric-card'],
 :where([data-showcase-scope][data-showcase-theme='amnesty']) [data-showcase-element='vision-card'],
@@ -544,6 +559,15 @@
 
 :where([data-showcase-scope][data-showcase-theme='amnesty']) [class*='placeholder:text-slate-400']::placeholder {
   color: rgba(60, 60, 60, 0.6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where([data-showcase-scope][data-showcase-theme='amnesty']) *,
+  :where([data-showcase-scope][data-showcase-theme='amnesty']) *::before,
+  :where([data-showcase-scope][data-showcase-theme='amnesty']) *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
 }
 
 @media (min-width: 640px) {
