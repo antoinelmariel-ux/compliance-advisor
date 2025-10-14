@@ -1,10 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from '../react.js';
 import { formatAnswer } from '../utils/questions.js';
-import {
-  AppleShowcaseContainer,
-  NetflixShowcaseContainer,
-  AmnestyShowcaseContainer
-} from './themes/ThemeContainers.jsx';
+import { AppleShowcase } from './themes/apple/AppleShowcase.jsx';
+import { NetflixShowcase } from './themes/netflix/NetflixShowcase.jsx';
+import { AmnestyShowcase } from './themes/amnesty/AmnestyShowcase.jsx';
 
 const findQuestionById = (questions, id) => {
   if (!Array.isArray(questions)) {
@@ -56,10 +54,10 @@ const SHOWCASE_THEMES = [
   }
 ];
 
-const THEME_CONTAINERS = {
-  apple: AppleShowcaseContainer,
-  netflix: NetflixShowcaseContainer,
-  amnesty: AmnestyShowcaseContainer
+const THEME_COMPONENTS = {
+  apple: AppleShowcase,
+  netflix: NetflixShowcase,
+  amnesty: AmnestyShowcase
 };
 
 const REQUIRED_SHOWCASE_QUESTION_IDS = [
@@ -524,334 +522,25 @@ export const ProjectShowcase = ({
     }
   }, [onClose]);
 
-  const ThemeContainer = THEME_CONTAINERS[selectedTheme] || AppleShowcaseContainer;
+  const themeSwitch = useMemo(
+    () => ({
+      selected: selectedTheme,
+      activeTheme,
+      options: SHOWCASE_THEMES,
+      onChange: handleThemeChange
+    }),
+    [selectedTheme, activeTheme, handleThemeChange]
+  );
+
+  const ThemeComponent = THEME_COMPONENTS[selectedTheme] || AppleShowcase;
 
   return (
-    <ThemeContainer renderInStandalone={renderInStandalone}>
-      <article
-        data-component="project-showcase"
-        data-theme={selectedTheme}
-        data-standalone={renderInStandalone ? 'true' : 'false'}
-      >
-        <div data-showcase-card>
-          <div data-showcase-overlay aria-hidden="true" />
-          <div data-showcase-body>
-            <section data-section="theme" data-showcase-theme-switcher>
-              <h2>Style de présentation</h2>
-              {activeTheme?.description ? (
-                <p data-role="theme-description">{activeTheme.description}</p>
-              ) : null}
-              <div data-role="theme-options">
-                {SHOWCASE_THEMES.map(theme => (
-                  <button
-                    key={theme.id}
-                    type="button"
-                    data-theme-option={theme.id}
-                    aria-pressed={theme.id === selectedTheme}
-                    onClick={() => handleThemeChange(theme.id)}
-                  >
-                    {theme.label}
-                  </button>
-                ))}
-              </div>
-            </section>
-
-            <header data-section="hero" data-showcase-section="hero">
-              <div data-role="hero-header">
-                <p data-role="eyebrow">Vitrine du projet</p>
-                <h1 data-field="project-name">{safeProjectName}</h1>
-                {hasText(slogan) ? <p data-field="project-slogan">{slogan}</p> : null}
-              </div>
-              {heroHighlights.length > 0 && (
-                <div data-role="hero-highlights">
-                  {heroHighlights.map(highlight => (
-                    <article data-showcase-element="hero-highlight" data-highlight={highlight.id} key={highlight.id}>
-                      <h3 data-role="label">{highlight.label}</h3>
-                      <p data-role="value">{highlight.value}</p>
-                      {highlight.caption ? <p data-role="caption">{highlight.caption}</p> : null}
-                    </article>
-                  ))}
-                </div>
-              )}
-            </header>
-
-            {targetAudienceList.length > 0 && (
-              <section data-section="audience" data-showcase-section="audience">
-                <h2>Audiences cibles</h2>
-                <ul data-field="target-audience" data-role="tag-list">
-                  {targetAudienceList.map((item, index) => (
-                    <li key={`${item}-${index}`}>{item}</li>
-                  ))}
-                </ul>
-              </section>
-            )}
-
-            {problemPainPoints.length > 0 && (
-              <section data-section="problem" data-showcase-section="problem">
-                <h2>Problèmes identifiés</h2>
-                <ul data-field="problem-pain-points">
-                  {problemPainPoints.map((item, index) => (
-                    <li key={`${item}-${index}`}>{item}</li>
-                  ))}
-                </ul>
-              </section>
-            )}
-
-            {(hasText(solutionDescription) || solutionBenefits.length > 0 || hasText(solutionComparison)) && (
-              <section data-section="solution" data-showcase-section="solution">
-                <h2>Proposition de valeur</h2>
-                <div data-role="split-layout">
-                  {hasText(solutionDescription) ? (
-                    <article data-showcase-element="solution-card">
-                      <h3>Description</h3>
-                      <p data-field="solution-description">{solutionDescription}</p>
-                    </article>
-                  ) : null}
-                  {solutionBenefits.length > 0 && (
-                    <article data-showcase-element="solution-card">
-                      <h3>Bénéfices clés</h3>
-                      <ul data-field="solution-benefits">
-                        {solutionBenefits.map((item, index) => (
-                          <li key={`${item}-${index}`}>{item}</li>
-                        ))}
-                      </ul>
-                    </article>
-                  )}
-                  {hasText(solutionComparison) ? (
-                    <article data-showcase-element="solution-card">
-                      <h3>Différenciation</h3>
-                      <p data-field="solution-comparison">{solutionComparison}</p>
-                    </article>
-                  ) : null}
-                </div>
-              </section>
-            )}
-
-            {(hasText(innovationProcess) || hasText(visionStatement)) && (
-              <section data-section="innovation" data-showcase-section="innovation">
-                <h2>Innovation &amp; vision</h2>
-                <div data-role="split-layout">
-                  {hasText(innovationProcess) ? (
-                    <article data-showcase-element="vision-card">
-                      <h3>Approche</h3>
-                      <p data-field="innovation-process">{innovationProcess}</p>
-                    </article>
-                  ) : null}
-                  {hasText(visionStatement) ? (
-                    <article data-showcase-element="vision-card">
-                      <h3>Vision</h3>
-                      <p data-field="vision-statement">{visionStatement}</p>
-                    </article>
-                  ) : null}
-                </div>
-              </section>
-            )}
-
-            {(hasText(teamLead) || teamCoreMembersList.length > 0 || normalizedTeams.length > 0) && (
-              <section data-section="team" data-showcase-section="team">
-                <h2>Équipe projet</h2>
-                <div data-role="split-layout">
-                  {hasText(teamLead) ? (
-                    <article data-showcase-element="team-card">
-                      <h3>Leadership</h3>
-                      <p data-field="team-lead">{teamLead}</p>
-                    </article>
-                  ) : null}
-                  {teamCoreMembersList.length > 0 && (
-                    <article data-showcase-element="team-card">
-                      <h3>Membres clés</h3>
-                      <ul data-field="team-core-members" data-role="tag-list">
-                        {teamCoreMembersList.map((member, index) => (
-                          <li key={`${member}-${index}`}>{member}</li>
-                        ))}
-                      </ul>
-                    </article>
-                  )}
-                  {normalizedTeams.length > 0 && (
-                    <article data-showcase-element="team-card">
-                      <h3>Experts conformité</h3>
-                      <div data-role="team-grid">
-                        {normalizedTeams.map(team => (
-                          <div data-showcase-aside="team-profile" key={team.id || team.name}>
-                            <h4>{team.name}</h4>
-                            {team.expertise ? (
-                              <p data-role="team-expertise">{team.expertise}</p>
-                            ) : null}
-                            {team.contact ? (
-                              <p data-role="team-contact">{team.contact}</p>
-                            ) : null}
-                          </div>
-                        ))}
-                      </div>
-                    </article>
-                  )}
-                </div>
-              </section>
-            )}
-
-            {(runway || timelineSummary || (Array.isArray(timelineDetails) && timelineDetails.length > 0)) && (
-              <section data-section="timeline" data-showcase-section="timeline">
-                <h2>Feuille de route</h2>
-                <div data-role="split-layout">
-                  {runway ? (
-                    <article data-showcase-element="timeline-profile">
-                      <h3>Période clef</h3>
-                      <p data-field="timeline-runway">
-                        {`Du ${runway.startLabel} au ${runway.endLabel} (${runway.weeksLabel}, ${runway.daysLabel})`}
-                      </p>
-                    </article>
-                  ) : null}
-                  {timelineSummary ? (
-                    <article data-showcase-element="timeline-profile">
-                      <h3>Conformité</h3>
-                      <p data-field="timeline-summary">
-                        {timelineSummary.ruleName ? `${timelineSummary.ruleName} : ` : ''}
-                        {timelineSummary.satisfied ? 'Conformité atteinte' : 'Conformité non atteinte'}
-                        {timelineSummary.weeks
-                          ? ` (${timelineSummary.weeks} sem., ${timelineSummary.days} jours)`
-                          : ''}
-                      </p>
-                      {Array.isArray(timelineSummary.profiles) && timelineSummary.profiles.length > 0 ? (
-                        <ul data-role="tag-list">
-                          {timelineSummary.profiles.map(profile => (
-                            <li
-                              key={profile.id || profile.label}
-                              title={profile.description || undefined}
-                              aria-label={
-                                profile.description
-                                  ? `${profile.label} — ${profile.description}`
-                                  : profile.label
-                              }
-                            >
-                              {profile.label}
-                            </li>
-                          ))}
-                        </ul>
-                      ) : null}
-                    </article>
-                  ) : null}
-                  {Array.isArray(timelineDetails) && timelineDetails.length > 0 && (
-                    <article data-showcase-element="timeline-profile">
-                      <h3>Jalons clés</h3>
-                      <ul data-field="timeline-details" data-role="timeline-list">
-                        {timelineDetails.map((detail, index) => (
-                          <li key={detail.ruleId || detail.ruleName || index}>
-                            <span>{detail.ruleName || 'Règle'}</span>
-                            {detail.diff?.diffInWeeks ? (
-                              <span>
-                                {`${Math.round(detail.diff.diffInWeeks)} sem.`}
-                                {detail.diff.diffInDays ? ` · ${Math.round(detail.diff.diffInDays)} jours` : ''}
-                              </span>
-                            ) : null}
-                          </li>
-                        ))}
-                      </ul>
-                    </article>
-                  )}
-                </div>
-              </section>
-            )}
-
-            {(complexity || hasText(analysis?.summary) || primaryRisk || (Array.isArray(analysis?.risks) && analysis.risks.length > 0)) && (
-              <section data-section="analysis" data-showcase-section="analysis">
-                <h2>Analyse de conformité</h2>
-                <div data-role="split-layout">
-                  {complexity ? (
-                    <article data-showcase-element="metric-card">
-                      <h3>Niveau de complexité</h3>
-                      <p data-field="analysis-complexity">{complexity}</p>
-                    </article>
-                  ) : null}
-                  {hasText(analysis?.summary) ? (
-                    <article data-showcase-element="metric-card">
-                      <h3>Résumé</h3>
-                      <p data-field="analysis-summary">{analysis.summary}</p>
-                    </article>
-                  ) : null}
-                  {primaryRisk ? (
-                    <article data-showcase-element="metric-card" data-element="primary-risk">
-                      <h3>Risque principal</h3>
-                      {primaryRisk.priority ? (
-                        <p data-field="primary-risk-priority">{primaryRisk.priority}</p>
-                      ) : null}
-                      {hasText(primaryRisk.description) ? (
-                        <p data-field="primary-risk-description">{primaryRisk.description}</p>
-                      ) : null}
-                      {hasText(primaryRisk.mitigation) ? (
-                        <p data-field="primary-risk-mitigation">{primaryRisk.mitigation}</p>
-                      ) : null}
-                    </article>
-                  ) : null}
-                  {Array.isArray(analysis?.risks) && analysis.risks.length > 0 && (
-                    <article data-showcase-element="metric-card" data-element="risk-list">
-                      <h3>Risques identifiés</h3>
-                      <ul data-role="risk-list">
-                        {analysis.risks.map((risk, index) => (
-                          <li key={risk.id || risk.ruleId || index}>
-                            <span data-role="risk-title">{risk.title || risk.name || `Risque ${index + 1}`}</span>
-                            {risk.priority ? <span data-role="risk-priority"> — {risk.priority}</span> : null}
-                            {hasText(risk.description) ? (
-                              <p data-role="risk-description">{risk.description}</p>
-                            ) : null}
-                            {hasText(risk.mitigation) ? (
-                              <p data-role="risk-mitigation">{risk.mitigation}</p>
-                            ) : null}
-                          </li>
-                        ))}
-                      </ul>
-                    </article>
-                  )}
-                </div>
-              </section>
-            )}
-
-            {Array.isArray(analysis?.opportunities) && analysis.opportunities.length > 0 && (
-              <section data-section="opportunities" data-showcase-section="opportunities">
-                <h2>Opportunités</h2>
-                <ul data-role="opportunity-list">
-                  {analysis.opportunities.map((opportunity, index) => (
-                    <li key={opportunity.id || index}>
-                      <span data-role="opportunity-title">
-                        {opportunity.title || opportunity.name || `Opportunité ${index + 1}`}
-                      </span>
-                      {hasText(opportunity.description) ? (
-                        <p data-role="opportunity-description">{opportunity.description}</p>
-                      ) : null}
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            )}
-
-            {missingShowcaseQuestions.length > 0 && (
-              <section data-section="missing-questions" data-showcase-section="missing-questions">
-                <h2>Questions manquantes pour la vitrine</h2>
-                <ul data-role="tag-list">
-                  {missingShowcaseQuestions.map(id => (
-                    <li key={id}>{id}</li>
-                  ))}
-                </ul>
-              </section>
-            )}
-
-            {typeof onClose === 'function' && (
-              <section data-section="actions" data-showcase-section="actions">
-                <div data-role="actions">
-                  <button type="button" data-action="close" onClick={handleClose}>
-                    Revenir à l'application
-                  </button>
-                </div>
-              </section>
-            )}
-          </div>
-        </div>
-
-        <script
-          type="application/json"
-          data-project-showcase-payload
-          dangerouslySetInnerHTML={{ __html: serializedPayload }}
-        />
-      </article>
-    </ThemeContainer>
+    <ThemeComponent
+      data={payload}
+      themeSwitch={themeSwitch}
+      onClose={typeof onClose === 'function' ? handleClose : null}
+      renderInStandalone={renderInStandalone}
+      serializedPayload={serializedPayload}
+    />
   );
 };
