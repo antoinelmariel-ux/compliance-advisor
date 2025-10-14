@@ -173,22 +173,38 @@
 
 :where([data-showcase-scope][data-showcase-theme='apple']) [data-showcase-card] {
   position: relative;
-  margin: 0 auto;
-  max-width: 1200px;
-  border-radius: var(--showcase-radius-xl);
+  margin: 0;
+  width: 100%;
+  max-width: none;
+  border-radius: 0;
   background: var(--showcase-color-card);
-  border: 1px solid var(--showcase-color-border);
-  box-shadow: var(--showcase-shadow-card);
+  border: none;
+  box-shadow: none;
   overflow: hidden;
   color: inherit;
   isolation: isolate;
   backdrop-filter: var(--showcase-backdrop-blur);
 }
 
+:where([data-showcase-scope][data-showcase-theme='apple']) .animate-on-scroll {
+  opacity: 0;
+  transform: translateY(48px);
+  transition: opacity 600ms ease, transform 600ms ease;
+}
+
+:where([data-showcase-scope][data-showcase-theme='apple']) .animate-on-scroll.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+:where([data-showcase-scope][data-showcase-theme='apple']) [data-showcase-card]::before,
+:where([data-showcase-scope][data-showcase-theme='apple']) [data-showcase-card]::after {
+  opacity: 0.75;
+}
+
 @media (prefers-color-scheme: dark) {
   :where([data-showcase-scope][data-showcase-theme='apple']) [data-showcase-card] {
     background: var(--showcase-color-card-dark);
-    border-color: var(--showcase-color-border-dark);
   }
 }
 
@@ -236,10 +252,10 @@
   position: relative;
   margin-bottom: clamp(2rem, 4vw, 3.5rem);
   padding: 1.4rem clamp(1.25rem, 4vw, 2rem);
-  border-radius: var(--showcase-radius-lg);
-  background: var(--showcase-color-surface);
-  border: 1px solid color-mix(in srgb, var(--showcase-color-border) 80%, transparent);
-  box-shadow: var(--showcase-shadow-floating);
+  border-radius: 0;
+  background: color-mix(in srgb, var(--showcase-color-surface) 70%, transparent);
+  border: none;
+  box-shadow: none;
   backdrop-filter: var(--showcase-backdrop-blur);
   display: flex;
   flex-direction: column;
@@ -249,8 +265,7 @@
 
 @media (prefers-color-scheme: dark) {
   :where([data-showcase-scope][data-showcase-theme='apple']) [data-showcase-theme-switcher] {
-    background: var(--showcase-color-surface-dark);
-    border-color: color-mix(in srgb, var(--showcase-color-border-dark) 60%, transparent);
+    background: color-mix(in srgb, var(--showcase-color-surface-dark) 70%, transparent);
   }
 }
 

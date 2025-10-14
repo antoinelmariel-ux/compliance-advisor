@@ -121,17 +121,29 @@
 
 :where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-card] {
   position: relative;
-  margin: 0 auto;
-  max-width: 1180px;
-  border-radius: var(--showcase-radius-lg);
+  margin: 0;
+  width: 100%;
+  max-width: none;
+  border-radius: 0;
   background: var(--showcase-color-card);
   border: none;
-  box-shadow: var(--showcase-shadow-card);
+  box-shadow: none;
   overflow: hidden;
   color: inherit;
   isolation: isolate;
-  clip-path: polygon(0 0, 100% 0, 100% 96%, 0 100%);
+  clip-path: none;
   transform: translateZ(0);
+}
+
+:where([data-showcase-scope][data-showcase-theme='netflix']) .animate-on-scroll {
+  opacity: 0;
+  transform: translateY(60px) scale(0.98);
+  transition: opacity 420ms ease, transform 480ms ease;
+}
+
+:where([data-showcase-scope][data-showcase-theme='netflix']) .animate-on-scroll.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
 }
 
 :where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-card] > div:not([data-showcase-overlay]) {
@@ -159,15 +171,15 @@
   position: relative;
   margin-bottom: clamp(2.25rem, 5vw, 3.25rem);
   padding: 1.25rem 1.5rem;
-  border-radius: var(--showcase-radius-md);
+  border-radius: 0;
   background: rgba(12, 12, 18, 0.9);
   border: none;
-  box-shadow: 0 32px 90px rgba(0, 0, 0, 0.55);
+  box-shadow: none;
   backdrop-filter: blur(16px);
   display: flex;
   flex-direction: column;
   gap: 1.1rem;
-  clip-path: polygon(0 0, 100% 0, 100% 92%, 0 100%);
+  clip-path: none;
 }
 
 :where([data-showcase-scope][data-showcase-theme='netflix']) [data-showcase-theme-switcher] p {
