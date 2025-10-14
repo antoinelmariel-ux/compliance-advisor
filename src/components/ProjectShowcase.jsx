@@ -147,6 +147,56 @@ const computeRunway = (answers) => {
   };
 };
 
+const sanitizeTimelineProfiles = (profiles) => {
+  if (!Array.isArray(profiles)) {
+    return [];
+  }
+
+  return profiles.map((profile, index) => {
+    if (profile && typeof profile === 'object' && !Array.isArray(profile)) {
+      const labelCandidate = [profile.label, profile.name, profile.id]
+        .map(value => {
+          if (typeof value === 'string') {
+            return value.trim();
+          }
+          if (typeof value === 'number') {
+            return String(value);
+          }
+          return '';
+        })
+        .find(value => value.length > 0);
+
+      const label = labelCandidate && labelCandidate.length > 0
+        ? labelCandidate
+        : `Profil ${index + 1}`;
+      const description = typeof profile.description === 'string' && profile.description.trim().length > 0
+        ? profile.description.trim()
+        : null;
+
+      return {
+        id: typeof profile.id === 'string' && profile.id.trim().length > 0
+          ? profile.id
+          : `timeline-profile-${index}`,
+        label,
+        description,
+        requirements: profile.requirements && typeof profile.requirements === 'object'
+          ? profile.requirements
+          : undefined
+      };
+    }
+
+    const stringLabel = typeof profile === 'string' ? profile.trim() : '';
+    const label = stringLabel.length > 0 ? stringLabel : `Profil ${index + 1}`;
+
+    return {
+      id: `timeline-profile-${index}`,
+      label,
+      description: null,
+      requirements: undefined
+    };
+  });
+};
+
 const computeTimelineSummary = (timelineDetails) => {
   if (!Array.isArray(timelineDetails)) {
     return null;
@@ -167,7 +217,7 @@ const computeTimelineSummary = (timelineDetails) => {
     satisfied: Boolean(detailWithDiff.satisfied),
     weeks,
     days,
-    profiles: Array.isArray(detailWithDiff.profiles) ? detailWithDiff.profiles : []
+    profiles: sanitizeTimelineProfiles(detailWithDiff.profiles)
   };
 };
 
@@ -663,8 +713,18 @@ export const ProjectShowcase = ({
                       </p>
                       {Array.isArray(timelineSummary.profiles) && timelineSummary.profiles.length > 0 ? (
                         <ul data-role="tag-list">
-                          {timelineSummary.profiles.map((profile, index) => (
-                            <li key={`${profile}-${index}`}>{profile}</li>
+                          {timelineSummary.profiles.map(profile => (
+                            <li
+                              key={profile.id || profile.label}
+                              title={profile.description || undefined}
+                              aria-label={
+                                profile.description
+                                  ? `${profile.label} — ${profile.description}`
+                                  : profile.label
+                              }
+                            >
+                              {profile.label}
+                            </li>
                           ))}
                         </ul>
                       ) : null}
