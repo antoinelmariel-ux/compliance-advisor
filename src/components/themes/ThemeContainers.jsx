@@ -198,15 +198,16 @@ export const AppleShowcaseContainer = ({ children, renderInStandalone }) => (
   <ThemeContainerBase
     themeId="apple"
     renderInStandalone={renderInStandalone}
-    backgroundClass="bg-[#f5f5f7]"
+    backgroundClass="bg-[#f6f7fb]"
     overlay={
       <>
-        <div className="absolute -top-36 -left-24 h-[460px] w-[460px] rounded-full bg-gradient-to-br from-white via-[#dce9ff] to-[#9cc9ff] opacity-70 blur-[170px]" />
-        <div className="absolute top-1/3 right-[-10%] h-[520px] w-[520px] rounded-[52%] bg-gradient-to-tr from-[#c7ddff] via-white/40 to-transparent opacity-70 blur-[200px]" />
-        <div className="absolute bottom-[-38%] left-1/2 h-[640px] w-[640px] -translate-x-1/2 rounded-[58%] bg-gradient-to-tr from-[#82cfff]/40 via-[#a3e0ff]/20 to-transparent opacity-70 blur-[220px]" />
-        <div className="absolute inset-x-[18%] top-[32%] h-px bg-gradient-to-r from-transparent via-white/60 to-transparent" />
-        <div className="absolute inset-x-[12%] top-[32%] h-[3px] -translate-y-[18px] rounded-full bg-gradient-to-r from-transparent via-sky-200/60 to-transparent blur" />
-        <div className="absolute inset-y-[20%] left-[8%] w-[1px] bg-gradient-to-b from-transparent via-white/30 to-transparent" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.75)_0%,_transparent_60%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,_rgba(15,23,42,0.04)_0%,_transparent_55%)]" />
+        <div className="absolute -top-40 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-gradient-to-br from-white via-[#dbe7ff] to-[#b8cffc] opacity-70 blur-[190px]" />
+        <div className="absolute bottom-[-32%] right-[10%] h-[520px] w-[520px] rounded-full bg-gradient-to-br from-white via-[#cff2ff] to-[#9ed4ff] opacity-55 blur-[200px]" />
+        <div className="absolute bottom-[-28%] left-[12%] h-[420px] w-[420px] rounded-[45%] bg-gradient-to-tr from-[#eff6ff] via-white to-transparent opacity-70 blur-[170px]" />
+        <div className="absolute inset-x-[18%] top-[26%] h-px bg-gradient-to-r from-transparent via-black/10 to-transparent" />
+        <div className="absolute inset-x-[20%] top-[26%] h-[3px] -translate-y-[18px] rounded-full bg-gradient-to-r from-transparent via-slate-200/70 to-transparent blur" />
       </>
     }
   >
