@@ -1,4 +1,171 @@
-import React from '../../react.js';
+import React, { useEffect, useRef } from '../../react.js';
+
+const NetflixAmbientVideo = () => {
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    const videoElement = videoRef.current;
+
+    if (!videoElement || typeof window === 'undefined' || typeof document === 'undefined') {
+      return undefined;
+    }
+
+    const reduceMotionQuery = window.matchMedia?.('(prefers-reduced-motion: reduce)');
+
+    if (reduceMotionQuery?.matches) {
+      return undefined;
+    }
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    if (!ctx || typeof canvas.captureStream !== 'function') {
+      if (videoElement.parentElement) {
+        videoElement.parentElement.style.display = 'none';
+      }
+      return undefined;
+    }
+
+    const baseWidth = 1280;
+    const baseHeight = 720;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = baseWidth * dpr;
+    canvas.height = baseHeight * dpr;
+    canvas.style.width = `${baseWidth}px`;
+    canvas.style.height = `${baseHeight}px`;
+    ctx.scale(dpr, dpr);
+
+    const stream = canvas.captureStream(30);
+    videoElement.srcObject = stream;
+    videoElement.muted = true;
+
+    const safelyPlay = () => {
+      if (!videoElement.paused) {
+        return;
+      }
+
+      const playback = videoElement.play();
+
+      if (playback && typeof playback.catch === 'function') {
+        playback.catch(() => {
+          /* Intentionally swallow autoplay errors. */
+        });
+      }
+    };
+
+    safelyPlay();
+
+    let frame = 0;
+    let animationFrame;
+
+    const render = () => {
+      frame += 1;
+
+      const width = baseWidth;
+      const height = baseHeight;
+
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.globalAlpha = 1;
+      ctx.clearRect(0, 0, width, height);
+
+      const baseGradient = ctx.createLinearGradient(0, 0, width, height);
+      baseGradient.addColorStop(0, 'rgba(10, 10, 10, 0.92)');
+      baseGradient.addColorStop(0.45, 'rgba(20, 20, 20, 0.88)');
+      baseGradient.addColorStop(1, 'rgba(12, 12, 12, 0.92)');
+      ctx.fillStyle = baseGradient;
+      ctx.fillRect(0, 0, width, height);
+
+      const pulse = (Math.sin(frame / 45) + 1) / 2;
+      const halo = ctx.createRadialGradient(
+        width * (0.25 + pulse * 0.35),
+        height * (0.25 + Math.cos(frame / 60) * 0.18),
+        width * 0.05,
+        width * 0.55,
+        height * 0.5,
+        width * 0.85
+      );
+      halo.addColorStop(0, `rgba(229, 9, 20, ${0.55 + pulse * 0.3})`);
+      halo.addColorStop(0.45, 'rgba(118, 0, 12, 0.32)');
+      halo.addColorStop(1, 'rgba(5, 5, 5, 0.92)');
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.fillStyle = halo;
+      ctx.fillRect(0, 0, width, height);
+
+      const beamWidth = width * (0.22 + Math.sin(frame / 70) * 0.12);
+      const beamGradient = ctx.createLinearGradient(0, 0, beamWidth, height * 1.5);
+      beamGradient.addColorStop(0, 'rgba(229, 9, 20, 0.35)');
+      beamGradient.addColorStop(0.5, 'rgba(229, 9, 20, 0.18)');
+      beamGradient.addColorStop(1, 'rgba(229, 9, 20, 0)');
+      ctx.save();
+      ctx.translate(width * 0.68, height * 0.15);
+      ctx.rotate(Math.sin(frame / 90) * 0.18);
+      ctx.fillStyle = beamGradient;
+      ctx.fillRect(-beamWidth / 2, -height * 0.2, beamWidth, height * 1.6);
+      ctx.restore();
+
+      ctx.globalCompositeOperation = 'screen';
+      ctx.globalAlpha = 0.12;
+      for (let i = 0; i < 45; i += 1) {
+        const sparkleSize = 1 + Math.random() * 2;
+        ctx.fillStyle = `rgba(255,255,255,${0.15 + Math.random() * 0.25})`;
+        ctx.fillRect(Math.random() * width, Math.random() * height, sparkleSize, sparkleSize);
+      }
+
+      ctx.globalAlpha = 0.25;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+      ctx.fillRect(0, height * 0.85 + Math.sin(frame / 35) * 12, width, 1);
+      ctx.globalAlpha = 1;
+      ctx.globalCompositeOperation = 'source-over';
+
+      animationFrame = window.requestAnimationFrame(render);
+    };
+
+    animationFrame = window.requestAnimationFrame(render);
+
+    const handleVisibility = () => {
+      const tracks = stream.getTracks();
+      const enabled = !document.hidden;
+
+      tracks.forEach((track) => {
+        track.enabled = enabled;
+      });
+
+      if (enabled) {
+        safelyPlay();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility);
+      if (animationFrame) {
+        window.cancelAnimationFrame(animationFrame);
+      }
+
+      stream.getTracks().forEach((track) => track.stop());
+
+      if (videoElement.srcObject === stream) {
+        videoElement.pause();
+        videoElement.srcObject = null;
+      }
+    };
+  }, []);
+
+  return (
+    <div className="netflix-ambient-video__container" aria-hidden="true">
+      <video
+        ref={videoRef}
+        className="netflix-ambient-video"
+        playsInline
+        muted
+        loop
+        autoPlay
+        tabIndex={-1}
+      />
+    </div>
+  );
+};
 
 const ThemeContainerBase = ({
   themeId,
@@ -54,6 +221,7 @@ export const NetflixShowcaseContainer = ({ children, renderInStandalone }) => (
     backgroundClass="bg-[#050507]"
     overlay={
       <>
+        <NetflixAmbientVideo />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(20,20,22,0.85),_transparent_70%)]" />
         <div className="absolute inset-0 bg-[linear-gradient(120deg,_rgba(229,9,20,0.22)_0%,_transparent_60%)]" />
         <div className="absolute -top-40 right-[-28%] h-[520px] w-[520px] rounded-full bg-[#e50914] opacity-35 blur-[170px]" />
