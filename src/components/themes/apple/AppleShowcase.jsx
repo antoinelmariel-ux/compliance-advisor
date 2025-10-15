@@ -22,19 +22,21 @@ export const AppleShowcase = ({
         serializedPayload={serializedPayload}
         classNames={{
           article: 'apple-showcase-surface',
-          themeSwitcher: 'animate-on-scroll apple-switcher',
-          heroSection: 'animate-on-scroll apple-hero',
-          heroHighlights: 'animate-on-scroll apple-hero-highlights',
-          audienceSection: 'animate-on-scroll apple-section',
-          problemSection: 'animate-on-scroll apple-section',
-          solutionSection: 'animate-on-scroll apple-section',
-          innovationSection: 'animate-on-scroll apple-section',
-          teamSection: 'animate-on-scroll apple-section',
-          timelineSection: 'animate-on-scroll apple-section',
-          analysisSection: 'animate-on-scroll apple-section',
-          opportunitiesSection: 'animate-on-scroll apple-section',
-          missingSection: 'animate-on-scroll apple-section',
-          actionsSection: 'animate-on-scroll apple-actions'
+          card: 'apple-showcase-panel',
+          body: 'apple-showcase-body',
+          themeSwitcher: 'animate-on-scroll apple-switcher apple-parallax',
+          heroSection: 'animate-on-scroll apple-hero apple-parallax',
+          heroHighlights: 'apple-hero-highlights',
+          audienceSection: 'animate-on-scroll apple-section apple-section--tags apple-parallax',
+          problemSection: 'animate-on-scroll apple-section apple-section--narrative apple-parallax',
+          solutionSection: 'animate-on-scroll apple-section apple-section--grid apple-parallax',
+          innovationSection: 'animate-on-scroll apple-section apple-section--narrative apple-parallax',
+          teamSection: 'animate-on-scroll apple-section apple-section--grid apple-parallax',
+          timelineSection: 'animate-on-scroll apple-section apple-section--timeline apple-parallax',
+          analysisSection: 'animate-on-scroll apple-section apple-section--analysis apple-parallax',
+          opportunitiesSection: 'animate-on-scroll apple-section apple-section--opportunities apple-parallax',
+          missingSection: 'animate-on-scroll apple-section apple-section--missing apple-parallax',
+          actionsSection: 'animate-on-scroll apple-actions apple-parallax'
         }}
       />
     </AppleShowcaseContainer>
