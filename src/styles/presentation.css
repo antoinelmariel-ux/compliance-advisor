@@ -86,7 +86,7 @@ body.presentation-page {
 
 .presentation-content {
   flex: 1;
-  padding: clamp(1.5rem, 4vw, 3rem);
+  padding: clamp(1.5rem, 4vw, 3rem) 0;
   display: flex;
 }
 
@@ -124,7 +124,7 @@ body.presentation-page {
 
 @media (max-width: 640px) {
   .presentation-content {
-    padding: 1.25rem;
+    padding: 1.25rem 0;
   }
 
   .presentation-button {
