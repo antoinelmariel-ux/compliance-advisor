@@ -14,7 +14,7 @@ import { analyzeAnswers } from './utils/rules.js';
 import { extractProjectName } from './utils/projects.js';
 import { createDemoProject } from './data/demoProject.js';
 
-const APP_VERSION = 'v1.0.40';
+const APP_VERSION = 'v1.0.41';
 
 
 const isAnswerProvided = (value) => {
