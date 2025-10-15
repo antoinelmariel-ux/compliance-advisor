@@ -257,3 +257,24 @@ export const AmnestyShowcaseContainer = ({ children, renderInStandalone }) => (
     {children}
   </ThemeContainerBase>
 );
+
+export const NebulaShowcaseContainer = ({ children, renderInStandalone }) => (
+  <ThemeContainerBase
+    themeId="nebula"
+    renderInStandalone={renderInStandalone}
+    backgroundClass="bg-[#030513]"
+    overlay={
+      <div className="nebula-overlay" aria-hidden="true">
+        <div className="nebula-overlay__grid" />
+        <div className="nebula-aurora" />
+        <div className="nebula-orb nebula-orb--one" />
+        <div className="nebula-orb nebula-orb--two" />
+        <div className="nebula-orb nebula-orb--three" />
+        <div className="nebula-constellation" />
+      </div>
+    }
+    ariaLabel="Vitrine marketing du projet – thème Nebula Pulse"
+  >
+    {children}
+  </ThemeContainerBase>
+);

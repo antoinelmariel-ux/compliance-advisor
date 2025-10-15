@@ -3,6 +3,7 @@ import { formatAnswer } from '../utils/questions.js';
 import { AppleShowcase } from './themes/apple/AppleShowcase.jsx';
 import { NetflixShowcase } from './themes/netflix/NetflixShowcase.jsx';
 import { AmnestyShowcase } from './themes/amnesty/AmnestyShowcase.jsx';
+import { NebulaShowcase } from './themes/nebula/NebulaShowcase.jsx';
 
 const findQuestionById = (questions, id) => {
   if (!Array.isArray(questions)) {
@@ -51,13 +52,20 @@ const SHOWCASE_THEMES = [
     label: 'Engagement Amnesty',
     description:
       "Contrastes noir/jaune inspirés d’Amnesty International, typographie militante et badges manifestes."
+  },
+  {
+    id: 'nebula',
+    label: 'Nebula Pulse',
+    description:
+      'Voyage cosmique : aurores animées, constellations vivantes et cartes holographiques pour un récit futuriste.'
   }
 ];
 
 const THEME_COMPONENTS = {
   apple: AppleShowcase,
   netflix: NetflixShowcase,
-  amnesty: AmnestyShowcase
+  amnesty: AmnestyShowcase,
+  nebula: NebulaShowcase
 };
 
 const REQUIRED_SHOWCASE_QUESTION_IDS = [
