@@ -1,0 +1,803 @@
+/*
+ * Thème Nebula Pulse – version 2024.
+ * Palette inspirée des aurores boréales et des interfaces spatiales.
+ */
+
+:where([data-showcase-scope][data-showcase-theme='nebula']) {
+  color-scheme: dark;
+}
+
+[data-showcase-theme='nebula'] {
+  font-family: 'Sora', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #ecf7ff;
+}
+
+:where([data-showcase-scope][data-showcase-theme='nebula']) {
+  background-color: #030513;
+  background-image:
+    radial-gradient(circle at 20% 10%, rgba(79, 205, 255, 0.18), transparent 55%),
+    radial-gradient(circle at 80% 0%, rgba(195, 104, 255, 0.15), transparent 45%),
+    linear-gradient(160deg, #030513 0%, #05061b 55%, #090320 100%);
+  overflow: hidden;
+}
+
+:where([data-showcase-scope][data-showcase-theme='nebula']) * {
+  letter-spacing: 0.01em;
+}
+
+:where([data-showcase-scope][data-showcase-theme='nebula']) *::selection {
+  background: rgba(91, 255, 220, 0.35);
+  color: #0e172c;
+}
+
+:where([data-showcase-scope][data-showcase-theme='nebula']) [data-showcase-card] {
+  position: relative;
+  border-radius: 36px;
+  padding: clamp(2.5rem, 5vw, 4rem);
+  background: rgba(5, 10, 24, 0.82);
+  box-shadow:
+    0 24px 60px rgba(10, 5, 45, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(122, 220, 255, 0.25);
+  overflow: hidden;
+}
+
+:where([data-showcase-scope][data-showcase-theme='nebula']) [data-showcase-overlay] {
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background:
+    linear-gradient(130deg, rgba(18, 112, 232, 0.18), rgba(118, 13, 206, 0.14));
+  mask: linear-gradient(180deg, rgba(0, 0, 0, 0.9), transparent 65%);
+  mix-blend-mode: screen;
+}
+
+:where([data-showcase-scope][data-showcase-theme='nebula']) [data-showcase-body] {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: clamp(2.5rem, 4vw, 3.5rem);
+}
+
+.nebula-showcase {
+  display: block;
+}
+
+.nebula-panel {
+  position: relative;
+}
+
+.nebula-panel::before,
+.nebula-panel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.nebula-panel::before {
+  background: linear-gradient(140deg, rgba(68, 219, 255, 0.18), rgba(234, 76, 255, 0.08));
+  opacity: 0.65;
+  filter: blur(42px);
+}
+
+.nebula-panel::after {
+  border: 1px solid rgba(102, 255, 209, 0.25);
+  mix-blend-mode: overlay;
+}
+
+.nebula-body {
+  position: relative;
+}
+
+.nebula-body::before {
+  content: '';
+  position: absolute;
+  inset: -120px;
+  background:
+    conic-gradient(from 120deg at 30% 30%, rgba(91, 255, 220, 0.18), transparent 70%),
+    conic-gradient(from 240deg at 70% 60%, rgba(118, 87, 255, 0.22), transparent 65%);
+  filter: blur(80px);
+  opacity: 0.65;
+  animation: nebulaDrift 28s ease-in-out infinite;
+}
+
+@keyframes nebulaDrift {
+  0% {
+    transform: translate3d(-20px, -10px, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(20px, 18px, 0) scale(1.08);
+  }
+  100% {
+    transform: translate3d(-20px, -10px, 0) scale(1);
+  }
+}
+
+.nebula-body > * {
+  position: relative;
+  z-index: 2;
+}
+
+:where([data-showcase-theme='nebula']) [data-showcase-section] h2,
+:where([data-showcase-theme='nebula']) [data-showcase-section] h3,
+:where([data-showcase-theme='nebula']) [data-showcase-section] h4 {
+  font-family: 'Sora', 'Segoe UI', system-ui, sans-serif;
+  text-transform: none;
+  color: #f6fbff;
+}
+
+:where([data-showcase-theme='nebula']) [data-showcase-section] h2 {
+  font-size: clamp(1.6rem, 4vw, 2.05rem);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #baf5ff;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  position: relative;
+}
+
+:where([data-showcase-theme='nebula']) [data-showcase-section] h2::after {
+  content: '';
+  width: 58px;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(91, 255, 220, 0.45), rgba(85, 149, 255, 0));
+  border-radius: 999px;
+}
+
+:where([data-showcase-theme='nebula']) p,
+:where([data-showcase-theme='nebula']) li {
+  color: rgba(226, 240, 255, 0.88);
+  font-size: 0.98rem;
+  line-height: 1.65;
+}
+
+.nebula-hero {
+  display: grid;
+  gap: 2rem;
+  padding-bottom: 1rem;
+}
+
+.nebula-hero [data-role='hero-header'] {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.nebula-hero [data-role='eyebrow'] {
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  color: rgba(118, 243, 255, 0.8);
+}
+
+.nebula-hero h1 {
+  font-size: clamp(2.6rem, 5vw, 3.4rem);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #fff;
+}
+
+.nebula-hero [data-field='project-slogan'] {
+  font-size: clamp(1.05rem, 3vw, 1.25rem);
+  color: rgba(211, 226, 255, 0.82);
+  max-width: 58ch;
+}
+
+.nebula-hero-highlights {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: clamp(1.25rem, 3vw, 1.8rem);
+}
+
+:where([data-showcase-theme='nebula']) [data-showcase-element='hero-highlight'] {
+  position: relative;
+  padding: 1.4rem 1.6rem;
+  border-radius: 22px;
+  background: rgba(17, 34, 76, 0.55);
+  backdrop-filter: blur(22px);
+  overflow: hidden;
+  border: 1px solid rgba(96, 210, 255, 0.25);
+  transition: transform 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease;
+}
+
+:where([data-showcase-theme='nebula']) [data-showcase-element='hero-highlight']::before {
+  content: '';
+  position: absolute;
+  inset: -60% -50% auto;
+  height: 120%;
+  background: radial-gradient(circle, rgba(144, 241, 255, 0.4), transparent 65%);
+  opacity: 0.7;
+  transform: translate3d(0, 0, 0);
+  animation: nebulaGlare 10s linear infinite;
+}
+
+@keyframes nebulaGlare {
+  0% {
+    transform: translate3d(-40%, -20%, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(20%, -10%, 0) rotate(160deg);
+  }
+  100% {
+    transform: translate3d(-40%, -20%, 0) rotate(360deg);
+  }
+}
+
+:where([data-showcase-theme='nebula']) [data-showcase-element='hero-highlight']:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 18px 45px rgba(33, 134, 255, 0.24);
+  border-color: rgba(155, 255, 226, 0.65);
+}
+
+:where([data-showcase-theme='nebula']) [data-showcase-element='hero-highlight'] h3 {
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.24em;
+  color: rgba(118, 243, 255, 0.9);
+}
+
+:where([data-showcase-theme='nebula']) [data-showcase-element='hero-highlight'] [data-role='value'] {
+  font-size: 1.35rem;
+  font-weight: 500;
+  color: #f8fbff;
+  margin-top: 0.35rem;
+}
+
+:where([data-showcase-theme='nebula']) [data-showcase-element='hero-highlight'] [data-role='caption'] {
+  font-size: 0.85rem;
+  color: rgba(198, 219, 245, 0.72);
+  margin-top: 0.75rem;
+}
+
+.nebula-section {
+  display: grid;
+  gap: 1.75rem;
+  padding: clamp(1.6rem, 4vw, 2.25rem);
+  border-radius: 28px;
+  background: rgba(10, 20, 50, 0.58);
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(80, 160, 255, 0.28);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+:where([data-showcase-theme='nebula']) [data-role='team-grid'] {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+:where([data-showcase-theme='nebula']) [data-showcase-aside='team-profile'] {
+  display: grid;
+  gap: 1rem;
+}
+
+.nebula-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top, rgba(135, 255, 243, 0.18), transparent 65%);
+  opacity: 0.8;
+  mix-blend-mode: screen;
+}
+
+.nebula-section::after {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  border: 1px solid rgba(100, 255, 220, 0.16);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.nebula-section > * {
+  position: relative;
+  z-index: 1;
+}
+
+.nebula-section--audience ul[data-role='tag-list'] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.nebula-section--audience ul[data-role='tag-list'] li {
+  padding: 0.5rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid rgba(137, 208, 255, 0.45);
+  background: rgba(11, 30, 72, 0.6);
+  box-shadow: inset 0 0 0 1px rgba(84, 200, 255, 0.2);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.75rem;
+  color: rgba(187, 231, 255, 0.9);
+}
+
+:where([data-showcase-theme='nebula']) [data-showcase-section='problem'] ul,
+:where([data-showcase-theme='nebula']) [data-showcase-section='solution'] ul,
+:where([data-showcase-theme='nebula']) [data-showcase-section='analysis'] ul,
+:where([data-showcase-theme='nebula']) [data-showcase-section='opportunities'] ul,
+:where([data-showcase-theme='nebula']) [data-showcase-section='missing'] ul {
+  display: grid;
+  gap: 0.85rem;
+  padding-left: 1.5rem;
+  list-style: none;
+}
+
+:where([data-showcase-theme='nebula']) [data-showcase-section='problem'] ul li,
+:where([data-showcase-theme='nebula']) [data-showcase-section='solution'] ul li,
+:where([data-showcase-theme='nebula']) [data-showcase-section='analysis'] ul li,
+:where([data-showcase-theme='nebula']) [data-showcase-section='opportunities'] ul li,
+:where([data-showcase-theme='nebula']) [data-showcase-section='missing'] ul li {
+  position: relative;
+  padding-left: 1.35rem;
+}
+
+:where([data-showcase-theme='nebula']) [data-showcase-section] ul li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.75em;
+  transform: translateY(-50%);
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: radial-gradient(circle, #7cfff0 0%, #4ae0ff 65%, #0c2f49 100%);
+  box-shadow: 0 0 12px rgba(91, 255, 220, 0.7);
+}
+
+:where([data-showcase-theme='nebula']) [data-showcase-section='solution'] [data-role='split-layout'] {
+  display: grid;
+  gap: clamp(1.25rem, 3vw, 1.75rem);
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+:where([data-showcase-theme='nebula']) [data-showcase-element='solution-card'],
+:where([data-showcase-theme='nebula']) [data-showcase-element='vision-card'],
+:where([data-showcase-theme='nebula']) [data-showcase-element='metric-card'],
+:where([data-showcase-theme='nebula']) [data-showcase-element='timeline-profile'],
+:where([data-showcase-theme='nebula']) [data-showcase-element='team-profile'] {
+  background: rgba(11, 26, 58, 0.68);
+  border-radius: 24px;
+  padding: 1.5rem 1.6rem;
+  border: 1px solid rgba(96, 180, 255, 0.28);
+  box-shadow: 0 18px 40px rgba(6, 22, 58, 0.45);
+  transition: transform 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+}
+
+:where([data-showcase-theme='nebula']) [data-showcase-element='solution-card']:hover,
+:where([data-showcase-theme='nebula']) [data-showcase-element='vision-card']:hover,
+:where([data-showcase-theme='nebula']) [data-showcase-element='metric-card']:hover,
+:where([data-showcase-theme='nebula']) [data-showcase-element='timeline-profile']:hover,
+:where([data-showcase-theme='nebula']) [data-showcase-element='team-profile']:hover {
+  transform: translateY(-8px);
+  border-color: rgba(160, 255, 233, 0.65);
+  box-shadow: 0 24px 55px rgba(14, 65, 132, 0.55);
+}
+
+:where([data-showcase-theme='nebula']) [data-showcase-element='solution-card'] h3,
+:where([data-showcase-theme='nebula']) [data-showcase-element='vision-card'] h3,
+:where([data-showcase-theme='nebula']) [data-showcase-element='metric-card'] h3,
+:where([data-showcase-theme='nebula']) [data-showcase-element='timeline-profile'] h3,
+:where([data-showcase-theme='nebula']) [data-showcase-element='team-profile'] h3 {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.82rem;
+  color: rgba(120, 245, 255, 0.9);
+  margin-bottom: 0.95rem;
+}
+
+:where([data-showcase-theme='nebula']) [data-showcase-element='metric-card'] strong {
+  display: block;
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+}
+
+:where([data-showcase-theme='nebula']) [data-role='split-layout'] {
+  align-items: stretch;
+}
+
+:where([data-showcase-theme='nebula']) [data-showcase-section='innovation'] [data-role='split-layout'] {
+  display: grid;
+  gap: clamp(1.25rem, 3vw, 1.8rem);
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+:where([data-showcase-theme='nebula']) [data-showcase-section='timeline'] {
+  position: relative;
+}
+
+:where([data-showcase-theme='nebula']) [data-showcase-section='timeline']::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle at 50% 0%, rgba(118, 87, 255, 0.4), transparent 70%);
+  opacity: 0.4;
+  filter: blur(30px);
+}
+
+:where([data-showcase-theme='nebula']) [data-showcase-section='timeline'] ul[data-role='timeline-list'] {
+  position: relative;
+  padding-left: 2.5rem;
+  display: grid;
+  gap: 1.25rem;
+}
+
+:where([data-showcase-theme='nebula']) [data-showcase-section='timeline'] ul[data-role='timeline-list']::before {
+  content: '';
+  position: absolute;
+  left: 0.8rem;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(180deg, rgba(118, 243, 255, 0), rgba(118, 243, 255, 0.6), rgba(118, 243, 255, 0));
+  animation: nebulaPulse 6s ease-in-out infinite;
+}
+
+@keyframes nebulaPulse {
+  0%, 100% {
+    opacity: 0.6;
+    filter: blur(0px);
+  }
+  50% {
+    opacity: 1;
+    filter: blur(1px);
+  }
+}
+
+:where([data-showcase-theme='nebula']) [data-showcase-section='timeline'] ul[data-role='timeline-list'] li {
+  border-left: 1px solid rgba(118, 243, 255, 0.25);
+  padding-left: 1.5rem;
+  margin-left: -1.5rem;
+  position: relative;
+}
+
+:where([data-showcase-theme='nebula']) [data-showcase-section='timeline'] ul[data-role='timeline-list'] li::before {
+  top: 0;
+  transform: translate(-50%, -10%);
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #90fff5, #4de2ff);
+  box-shadow: 0 0 0 3px rgba(118, 243, 255, 0.25), 0 0 12px rgba(118, 243, 255, 0.5);
+}
+
+:where([data-showcase-theme='nebula']) [data-showcase-section='analysis'] [data-role='risk-title'] {
+  font-size: 1.05rem;
+  color: #ffd6f9;
+  font-weight: 600;
+}
+
+:where([data-showcase-theme='nebula']) [data-showcase-section='analysis'] [data-role='risk-priority'] {
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: rgba(255, 176, 234, 0.82);
+}
+
+:where([data-showcase-theme='nebula']) [data-showcase-section='opportunities'] [data-role='opportunity-title'] {
+  font-size: 1.05rem;
+  color: #b8faff;
+  font-weight: 600;
+}
+
+:where([data-showcase-theme='nebula']) [data-showcase-section='actions'] {
+  display: grid;
+  gap: 1.25rem;
+  align-content: start;
+}
+
+:where([data-showcase-theme='nebula']) [data-role='actions'] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.nebula-actions {
+  background: rgba(6, 18, 42, 0.8);
+  border: 1px solid rgba(91, 255, 220, 0.25);
+  backdrop-filter: blur(18px);
+}
+
+:where([data-showcase-theme='nebula']) [data-role='actions'] a,
+:where([data-showcase-theme='nebula']) [data-role='actions'] button,
+:where([data-showcase-theme='nebula']) [data-role='actions'] [role='button'] {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  padding: 0.9rem 1.6rem;
+  border-radius: 999px;
+  border: 1px solid rgba(118, 243, 255, 0.35);
+  background:
+    linear-gradient(120deg, rgba(118, 243, 255, 0.28), rgba(74, 134, 255, 0.32));
+  color: #081229;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
+}
+
+:where([data-showcase-theme='nebula']) [data-role='actions'] a:hover,
+:where([data-showcase-theme='nebula']) [data-role='actions'] button:hover,
+:where([data-showcase-theme='nebula']) [data-role='actions'] [role='button']:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(74, 134, 255, 0.35);
+}
+
+:where([data-showcase-theme='nebula']) [data-role='actions'] a:focus-visible,
+:where([data-showcase-theme='nebula']) [data-role='actions'] button:focus-visible,
+:where([data-showcase-theme='nebula']) [data-role='actions'] [role='button']:focus-visible {
+  outline: 2px solid rgba(144, 255, 245, 0.85);
+  outline-offset: 3px;
+}
+
+.nebula-switcher {
+  position: relative;
+  padding: clamp(1.25rem, 4vw, 1.8rem);
+  border-radius: 22px;
+  background: rgba(6, 18, 42, 0.85);
+  border: 1px solid rgba(91, 255, 220, 0.22);
+  backdrop-filter: blur(18px);
+  display: grid;
+  gap: 1rem;
+}
+
+.nebula-switcher::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle at 10% 0%, rgba(91, 255, 220, 0.22), transparent 70%);
+  opacity: 0.9;
+}
+
+.nebula-switcher > * {
+  position: relative;
+  z-index: 1;
+}
+
+.nebula-switcher h2 {
+  font-size: 0.85rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(118, 243, 255, 0.88);
+}
+
+.nebula-switcher [data-role='theme-description'] {
+  font-size: 0.95rem;
+  color: rgba(204, 225, 255, 0.78);
+}
+
+.nebula-switcher [data-role='theme-options'] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.nebula-switcher [data-role='theme-options'] button {
+  border-radius: 999px;
+  border: 1px solid rgba(118, 243, 255, 0.35);
+  padding: 0.55rem 1.2rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(205, 226, 255, 0.82);
+  background: rgba(9, 32, 74, 0.65);
+  transition: border-color 0.3s ease, color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.nebula-switcher [data-role='theme-options'] button[aria-pressed='true'] {
+  border-color: rgba(157, 255, 233, 0.8);
+  color: #0b142f;
+  background: linear-gradient(115deg, rgba(118, 243, 255, 0.9), rgba(74, 134, 255, 0.9));
+  box-shadow: 0 12px 30px rgba(74, 134, 255, 0.35);
+}
+
+.nebula-switcher [data-role='theme-options'] button:hover {
+  transform: translateY(-3px);
+  border-color: rgba(157, 255, 233, 0.65);
+}
+
+.nebula-switcher [data-role='theme-options'] button:focus-visible {
+  outline: 2px solid rgba(118, 243, 255, 0.65);
+  outline-offset: 3px;
+}
+
+.nebula-team-grid {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.nebula-missing {
+  border: 1px dashed rgba(255, 202, 231, 0.45);
+  background: rgba(63, 9, 44, 0.3);
+  box-shadow: inset 0 0 18px rgba(181, 34, 121, 0.3);
+}
+
+.nebula-missing ul li::before {
+  background: radial-gradient(circle, #ff9ce7 0%, #f344b5 65%, rgba(63, 9, 44, 0.7) 100%);
+  box-shadow: 0 0 12px rgba(255, 132, 213, 0.6);
+}
+
+.nebula-actions-cta {
+  border: 1px solid rgba(118, 243, 255, 0.38);
+  background: linear-gradient(120deg, rgba(118, 243, 255, 0.22), rgba(74, 134, 255, 0.28));
+}
+
+.nebula-overlay {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.nebula-overlay__grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(19, 38, 92, 0.2) 1px, transparent 0),
+    linear-gradient(90deg, rgba(19, 38, 92, 0.2) 1px, transparent 0);
+  background-size: 120px 120px;
+  opacity: 0.15;
+  animation: nebulaGrid 40s linear infinite;
+}
+
+@keyframes nebulaGrid {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-60px, -40px, 0);
+  }
+}
+
+.nebula-aurora {
+  position: absolute;
+  inset: -30% -30% 40% -30%;
+  background: radial-gradient(circle at 20% 20%, rgba(118, 243, 255, 0.45), transparent 60%),
+    radial-gradient(circle at 80% 20%, rgba(178, 95, 255, 0.45), transparent 65%),
+    radial-gradient(circle at 50% 80%, rgba(43, 140, 255, 0.4), transparent 70%);
+  filter: blur(70px);
+  opacity: 0.75;
+  animation: nebulaAurora 26s ease-in-out infinite;
+}
+
+@keyframes nebulaAurora {
+  0% {
+    transform: translate3d(0, -40px, 0) scale(1.05);
+  }
+  50% {
+    transform: translate3d(0, 30px, 0) scale(1.12);
+  }
+  100% {
+    transform: translate3d(0, -40px, 0) scale(1.05);
+  }
+}
+
+.nebula-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(0px);
+  opacity: 0.8;
+  mix-blend-mode: screen;
+}
+
+.nebula-orb--one {
+  width: 480px;
+  height: 480px;
+  top: 10%;
+  left: -12%;
+  background: radial-gradient(circle, rgba(118, 243, 255, 0.4), rgba(118, 243, 255, 0));
+  animation: nebulaOrbit 32s ease-in-out infinite;
+}
+
+.nebula-orb--two {
+  width: 360px;
+  height: 360px;
+  bottom: -8%;
+  right: -10%;
+  background: radial-gradient(circle, rgba(178, 95, 255, 0.45), rgba(178, 95, 255, 0));
+  animation: nebulaOrbit 28s ease-in-out infinite reverse;
+}
+
+.nebula-orb--three {
+  width: 220px;
+  height: 220px;
+  top: 25%;
+  right: 22%;
+  background: radial-gradient(circle, rgba(91, 255, 220, 0.55), rgba(91, 255, 220, 0));
+  animation: nebulaOrbit 18s ease-in-out infinite;
+}
+
+@keyframes nebulaOrbit {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.6;
+  }
+  25% {
+    transform: translate3d(40px, -30px, 0) scale(1.1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: translate3d(-25px, 30px, 0) scale(0.95);
+    opacity: 0.7;
+  }
+  75% {
+    transform: translate3d(15px, -35px, 0) scale(1.08);
+    opacity: 0.95;
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.6;
+  }
+}
+
+.nebula-constellation {
+  position: absolute;
+  inset: 15% 20% auto 15%;
+  height: 280px;
+  display: grid;
+  place-items: center;
+  opacity: 0.4;
+}
+
+.nebula-constellation::before,
+.nebula-constellation::after {
+  content: '';
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  border: 1px dashed rgba(118, 243, 255, 0.25);
+  animation: nebulaConstellation 20s linear infinite;
+}
+
+.nebula-constellation::after {
+  width: 180px;
+  height: 180px;
+  animation-duration: 14s;
+  animation-direction: reverse;
+}
+
+@keyframes nebulaConstellation {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 768px) {
+  :where([data-showcase-scope][data-showcase-theme='nebula']) [data-showcase-card] {
+    padding: clamp(1.8rem, 6vw, 2.4rem);
+    border-radius: 24px;
+  }
+
+  .nebula-hero {
+    text-align: left;
+  }
+
+  .nebula-hero h1 {
+    font-size: clamp(2.2rem, 8vw, 2.8rem);
+  }
+
+  .nebula-section {
+    padding: clamp(1.25rem, 6vw, 1.8rem);
+  }
+
+  .nebula-switcher {
+    padding: clamp(1rem, 6vw, 1.35rem);
+  }
+}
