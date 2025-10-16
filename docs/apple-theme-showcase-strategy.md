@@ -28,4 +28,4 @@
 ## Mise en œuvre initiale (Sprint 1)
 - Création d’un layout React dédié (`AppleShowcase`) qui reproduit la structure de `aura-showcase-base.html` : navigation interne, sections héro, grilles et chronologie.
 - Ajout d’un socle CSS Aura pour le thème Apple (badge, cartes vitrées, listes empilées, timeline) tout en conservant le traitement visuel « keynote ».
-- Synchronisation des versions : `Campagne Aura 0.1.2` pour la maquette, `Thème Apple v1.0.52` côté application.
+- Synchronisation des versions : `Campagne Aura 0.1.3` pour la maquette, `Thème Apple v1.0.52` côté application.

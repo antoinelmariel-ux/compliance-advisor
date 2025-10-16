@@ -698,7 +698,7 @@ export const AppleShowcase = ({
 
               <footer className="apple-aura__footer">
                 <div className="footer__content">
-                  <p className="footer__meta">Campagne Aura — Version 0.1.2 — Alignement React</p>
+                  <p className="footer__meta">Campagne Aura — Version 0.1.3 — Données showcase complétées</p>
                   <p className="footer__meta">Thème Apple — Build v1.0.52</p>
                 </div>
               </footer>
