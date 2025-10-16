@@ -32,9 +32,9 @@ const getRawAnswer = (answers, id) => {
 
 const hasText = (value) => typeof value === 'string' && value.trim().length > 0;
 
-const SHOWCASE_THEME_STORAGE_KEY = 'compliance-advisor.showcase-theme';
+export const SHOWCASE_THEME_STORAGE_KEY = 'compliance-advisor.showcase-theme';
 
-const SHOWCASE_THEMES = [
+export const SHOWCASE_THEMES = [
   {
     id: 'apple',
     label: 'Apple Keynote',
@@ -66,6 +66,33 @@ const THEME_COMPONENTS = {
   netflix: NetflixShowcase,
   amnesty: AmnestyShowcase,
   nebula: NebulaShowcase
+};
+
+const isValidTheme = (themeId, themeOptions) =>
+  typeof themeId === 'string'
+    && themeOptions.some(theme => theme.id === themeId);
+
+const resolveThemeOptions = (options) =>
+  Array.isArray(options) && options.length > 0 ? options : SHOWCASE_THEMES;
+
+export const getInitialShowcaseTheme = (themeOptions = SHOWCASE_THEMES) => {
+  const resolvedOptions = resolveThemeOptions(themeOptions);
+  const fallbackTheme = resolvedOptions[0]?.id || 'apple';
+
+  if (typeof window === 'undefined' || typeof window.localStorage === 'undefined') {
+    return fallbackTheme;
+  }
+
+  try {
+    const storedTheme = window.localStorage.getItem(SHOWCASE_THEME_STORAGE_KEY);
+    if (isValidTheme(storedTheme, resolvedOptions)) {
+      return storedTheme;
+    }
+  } catch (error) {
+    // Ignorer les erreurs d'accès au stockage.
+  }
+
+  return fallbackTheme;
 };
 
 const REQUIRED_SHOWCASE_QUESTION_IDS = [
@@ -355,33 +382,40 @@ export const ProjectShowcase = ({
   questions,
   answers,
   timelineDetails = [],
-  renderInStandalone = false
+  renderInStandalone = false,
+  selectedTheme: selectedThemeProp,
+  onThemeChange,
+  themeOptions: themeOptionsProp
 }) => {
   const rawProjectName = typeof projectName === 'string' ? projectName.trim() : '';
   const safeProjectName = rawProjectName.length > 0 ? rawProjectName : 'Votre projet';
 
-  const [selectedTheme, setSelectedTheme] = useState(() => {
-    const fallbackTheme = SHOWCASE_THEMES[0]?.id || 'apple';
+  const themeOptions = useMemo(
+    () => resolveThemeOptions(themeOptionsProp),
+    [themeOptionsProp]
+  );
 
-    if (typeof window === 'undefined' || typeof window.localStorage === 'undefined') {
-      return fallbackTheme;
+  const [internalTheme, setInternalTheme] = useState(() => getInitialShowcaseTheme(themeOptions));
+
+  useEffect(() => {
+    if (isValidTheme(internalTheme, themeOptions)) {
+      return;
     }
 
-    try {
-      const storedTheme = window.localStorage.getItem(SHOWCASE_THEME_STORAGE_KEY);
-      if (typeof storedTheme === 'string' && SHOWCASE_THEMES.some(theme => theme.id === storedTheme)) {
-        return storedTheme;
-      }
-    } catch (error) {
-      // Ignorer les erreurs d'accès au stockage.
+    const fallbackTheme = themeOptions[0]?.id || 'apple';
+    if (internalTheme !== fallbackTheme) {
+      setInternalTheme(fallbackTheme);
     }
+  }, [internalTheme, themeOptions]);
 
-    return fallbackTheme;
-  });
+  const isControlledTheme = isValidTheme(selectedThemeProp, themeOptions);
+  const selectedTheme = isControlledTheme
+    ? selectedThemeProp
+    : (isValidTheme(internalTheme, themeOptions) ? internalTheme : themeOptions[0]?.id || 'apple');
 
   const activeTheme = useMemo(
-    () => SHOWCASE_THEMES.find(theme => theme.id === selectedTheme) || SHOWCASE_THEMES[0] || null,
-    [selectedTheme]
+    () => themeOptions.find(theme => theme.id === selectedTheme) || themeOptions[0] || null,
+    [themeOptions, selectedTheme]
   );
 
   useEffect(() => {
@@ -397,12 +431,19 @@ export const ProjectShowcase = ({
   }, [selectedTheme]);
 
   const handleThemeChange = useCallback((nextThemeId) => {
-    if (!SHOWCASE_THEMES.some(theme => theme.id === nextThemeId)) {
+    if (!isValidTheme(nextThemeId, themeOptions)) {
       return;
     }
 
-    setSelectedTheme(nextThemeId);
-  }, []);
+    if (isControlledTheme) {
+      if (typeof onThemeChange === 'function') {
+        onThemeChange(nextThemeId);
+      }
+      return;
+    }
+
+    setInternalTheme(nextThemeId);
+  }, [isControlledTheme, onThemeChange, themeOptions]);
 
   const normalizedTeams = useMemo(() => {
     if (!Array.isArray(relevantTeams)) {
@@ -534,10 +575,10 @@ export const ProjectShowcase = ({
     () => ({
       selected: selectedTheme,
       activeTheme,
-      options: SHOWCASE_THEMES,
+      options: themeOptions,
       onChange: handleThemeChange
     }),
-    [selectedTheme, activeTheme, handleThemeChange]
+    [selectedTheme, activeTheme, themeOptions, handleThemeChange]
   );
 
   const ThemeComponent = THEME_COMPONENTS[selectedTheme] || AppleShowcase;

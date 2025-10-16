@@ -1,6 +1,10 @@
-import React, { useMemo, useEffect, useCallback } from './react.js';
+import React, { useMemo, useEffect, useCallback, useState } from './react.js';
 import { ReactDOM } from './react.js';
-import { ProjectShowcase } from './components/ProjectShowcase.jsx';
+import {
+  ProjectShowcase,
+  SHOWCASE_THEMES,
+  getInitialShowcaseTheme
+} from './components/ProjectShowcase.jsx';
 import { loadPersistedState } from './utils/storage.js';
 import { initialQuestions } from './data/questions.js';
 import { initialRules } from './data/rules.js';
@@ -92,6 +96,22 @@ const buildPresentationContext = () => {
 const PresentationPage = () => {
   const context = useMemo(buildPresentationContext, []);
 
+  const themeOptions = SHOWCASE_THEMES;
+  const [selectedTheme, setSelectedTheme] = useState(() => getInitialShowcaseTheme(themeOptions));
+
+  const activeTheme = useMemo(
+    () => themeOptions.find(theme => theme.id === selectedTheme) || themeOptions[0] || null,
+    [themeOptions, selectedTheme]
+  );
+
+  const handleThemeSelection = useCallback((nextThemeId) => {
+    if (!themeOptions.some(theme => theme.id === nextThemeId)) {
+      return;
+    }
+
+    setSelectedTheme(nextThemeId);
+  }, [themeOptions]);
+
   useEffect(() => {
     if (context.status !== 'ready') {
       return;
@@ -136,9 +156,30 @@ const PresentationPage = () => {
   return (
     <div className="presentation-layout">
       <header className="presentation-header">
-        <div>
+        <div className="presentation-header-main">
           <h1 className="presentation-title">Présentation du projet</h1>
           <p className="presentation-subtitle">{context.projectName}</p>
+          <div className="presentation-theme-switch" role="group" aria-label="Choisir un thème de vitrine">
+            <div className="presentation-theme-summary">
+              <span className="presentation-theme-label">Style de présentation</span>
+              {activeTheme?.description ? (
+                <p className="presentation-theme-description">{activeTheme.description}</p>
+              ) : null}
+            </div>
+            <div className="presentation-theme-options">
+              {themeOptions.map(theme => (
+                <button
+                  key={theme.id}
+                  type="button"
+                  className={`presentation-theme-option${theme.id === selectedTheme ? ' presentation-theme-option--active' : ''}`}
+                  onClick={() => handleThemeSelection(theme.id)}
+                  aria-pressed={theme.id === selectedTheme}
+                >
+                  {theme.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
         <div className="presentation-actions">
           <button type="button" className="presentation-button" onClick={handleClose}>
@@ -163,6 +204,9 @@ const PresentationPage = () => {
           timelineDetails={context.timelineDetails}
           onClose={handleClose}
           renderInStandalone
+          selectedTheme={selectedTheme}
+          onThemeChange={handleThemeSelection}
+          themeOptions={themeOptions}
         />
       </main>
     </div>

@@ -11,13 +11,6 @@ export const ShowcaseContent = ({
   serializedPayload = '{}'
 }) => {
   const themeId = themeSwitch?.selected || data?.theme || 'apple';
-  const themeDescription = themeSwitch?.activeTheme?.description;
-  const themeOptions = Array.isArray(themeSwitch?.options) ? themeSwitch.options : [];
-  const handleThemeChange = (nextThemeId) => {
-    if (typeof themeSwitch?.onChange === 'function') {
-      themeSwitch.onChange(nextThemeId);
-    }
-  };
 
   const projectName = isNonEmptyString(data?.projectName) ? data.projectName : 'Votre projet';
   const slogan = isNonEmptyString(data?.slogan) ? data.slogan : null;
@@ -61,7 +54,6 @@ export const ShowcaseContent = ({
     article: '',
     card: '',
     body: '',
-    themeSwitcher: 'animate-on-scroll',
     heroSection: 'animate-on-scroll',
     heroHighlights: '',
     audienceSection: 'animate-on-scroll',
@@ -89,28 +81,6 @@ export const ShowcaseContent = ({
       <div data-showcase-card className={getClass('card')}>
         <div data-showcase-overlay aria-hidden="true" />
         <div data-showcase-body className={getClass('body')}>
-          <section
-            data-section="theme"
-            data-showcase-theme-switcher
-            className={getClass('themeSwitcher')}
-          >
-            <h2>Style de présentation</h2>
-            {themeDescription ? <p data-role="theme-description">{themeDescription}</p> : null}
-            <div data-role="theme-options">
-              {themeOptions.map((theme) => (
-                <button
-                  key={theme.id}
-                  type="button"
-                  data-theme-option={theme.id}
-                  aria-pressed={theme.id === themeId}
-                  onClick={() => handleThemeChange(theme.id)}
-                >
-                  {theme.label}
-                </button>
-              ))}
-            </div>
-          </section>
-
           <header
             data-section="hero"
             data-showcase-section="hero"
