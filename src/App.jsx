@@ -15,7 +15,7 @@ import { extractProjectName } from './utils/projects.js';
 import { createDemoProject } from './data/demoProject.js';
 import { verifyAdminPassword } from './utils/password.js';
 
-const APP_VERSION = 'v1.0.56';
+const APP_VERSION = 'v1.0.57';
 
 
 
@@ -816,6 +816,11 @@ export const App = () => {
     }
   }, [mode, setMode, verifyAdminPassword]);
 
+  const handleExitBackOffice = useCallback(() => {
+    setMode('user');
+    setScreen('home');
+  }, [setMode, setScreen]);
+
   const handleBackToQuestionnaire = useCallback(() => {
     if (unansweredMandatoryQuestions.length > 0) {
       const firstMissingId = unansweredMandatoryQuestions[0].id;
@@ -887,15 +892,17 @@ export const App = () => {
                 Accueil projets
               </button>
             )}
-            <button
-              type="button"
-              onClick={() => setMode('user')}
-              className={`app-header__button${mode === 'user' ? ' app-header__button--active' : ''}`}
-              aria-pressed={mode === 'user'}
-              aria-label="Basculer vers le mode chef de projet"
-            >
-              Mode Chef de Projet
-            </button>
+            {mode === 'admin' && (
+              <button
+                type="button"
+                onClick={handleExitBackOffice}
+                className={`app-header__button${mode === 'user' ? ' app-header__button--active' : ''}`}
+                aria-pressed={mode === 'user'}
+                aria-label="Basculer vers le mode chef de projet"
+              >
+                Mode Chef de Projet
+              </button>
+            )}
             <button
               type="button"
               onClick={handleEnterBackOffice}
