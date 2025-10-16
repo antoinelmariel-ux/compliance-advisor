@@ -13,7 +13,8 @@ import {
   AlertTriangle,
   Edit,
   Save,
-  Upload
+  Upload,
+  Copy
 } from './icons.js';
 
 const formatDate = (isoDate) => {
@@ -72,7 +73,9 @@ export const HomeScreen = ({
   onOpenProject,
   onDeleteProject,
   onOpenPresentation,
-  onImportProject
+  onImportProject,
+  onOpenSynthesis,
+  onDuplicateProject
 }) => {
   const [ownerFilter, setOwnerFilter] = useState('');
   const [targetFilter, setTargetFilter] = useState('');
@@ -442,15 +445,22 @@ export const HomeScreen = ({
                         <div className="mt-6 flex flex-wrap gap-3">
                           <button
                             type="button"
-                            onClick={() => onOpenProject(project.id)}
-                            className={`inline-flex items-center px-4 py-2 rounded-lg font-semibold transition-all hv-button ${
-                              isDraft
-                                ? 'bg-amber-500 text-white hover:bg-amber-600'
-                                : 'bg-indigo-600 text-white hover:bg-indigo-700 hv-button-primary'
-                            }`}
+                            onClick={() => {
+                              if (typeof onOpenSynthesis === 'function') {
+                                onOpenSynthesis(project.id);
+                              } else if (typeof onOpenProject === 'function') {
+                                onOpenProject(project.id);
+                              }
+                            }}
+                            disabled={
+                              !(
+                                typeof onOpenSynthesis === 'function'
+                                || typeof onOpenProject === 'function'
+                              )
+                            }
+                            className={`inline-flex items-center px-4 py-2 rounded-lg font-semibold transition-all hv-button hv-focus-ring bg-indigo-600 text-white hover:bg-indigo-700 hv-button-primary disabled:opacity-50 disabled:cursor-not-allowed`}
                           >
-                            {isDraft ? <Edit className="w-4 h-4 mr-2" /> : <Eye className="w-4 h-4 mr-2" />}
-                            {isDraft ? 'Continuer le questionnaire' : 'Consulter la synthèse'}
+                            <Eye className="w-4 h-4 mr-2" /> Consulter la synthèse
                           </button>
                           {onOpenPresentation && (
                             <button
@@ -461,6 +471,34 @@ export const HomeScreen = ({
                               <Sparkles className="w-4 h-4 mr-2" /> Présentation
                             </button>
                           )}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (isDraft && typeof onOpenProject === 'function') {
+                                onOpenProject(project.id);
+                              }
+
+                              if (!isDraft && typeof onDuplicateProject === 'function') {
+                                onDuplicateProject(project.id);
+                              }
+                            }}
+                            disabled={
+                              (isDraft && typeof onOpenProject !== 'function')
+                              || (!isDraft && typeof onDuplicateProject !== 'function')
+                            }
+                            className={`inline-flex items-center px-4 py-2 rounded-lg font-semibold transition-all hv-button hv-focus-ring ${
+                              isDraft
+                                ? 'bg-amber-500 text-white hover:bg-amber-600'
+                                : 'bg-white border border-indigo-200 text-indigo-600 hover:bg-indigo-50'
+                            } disabled:opacity-50 disabled:cursor-not-allowed`}
+                          >
+                            {isDraft ? (
+                              <Edit className="w-4 h-4 mr-2" />
+                            ) : (
+                              <Copy className="w-4 h-4 mr-2" />
+                            )}
+                            {isDraft ? 'Modifier' : 'Dupliquer'}
+                          </button>
                         </div>
                       </article>
                     );
