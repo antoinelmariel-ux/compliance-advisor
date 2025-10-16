@@ -188,6 +188,10 @@ textarea {
   margin-top: clamp(5.25rem, 7vw, 6.25rem);
 }
 
+.home-screen .section-stack > * + * {
+  margin-top: clamp(3rem, 5vw, 4.25rem);
+}
+
 .hv-background {
   background: radial-gradient(circle at 0% -10%, rgba(230, 239, 246, 0.85), transparent 55%),
     linear-gradient(180deg, var(--color-bg-alt) 0%, var(--color-bg-main) 100%) !important;
