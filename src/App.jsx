@@ -15,7 +15,7 @@ import { extractProjectName } from './utils/projects.js';
 import { createDemoProject } from './data/demoProject.js';
 import { verifyAdminPassword } from './utils/password.js';
 
-const APP_VERSION = 'v1.0.59';
+const APP_VERSION = 'v1.0.60';
 
 
 
@@ -585,7 +585,7 @@ export const App = () => {
     try {
       const url = new URL('./presentation.html', window.location.href);
       url.searchParams.set('projectId', targetId);
-      window.open(url.toString(), '_blank', 'noopener,noreferrer');
+      window.location.assign(url.toString());
     } catch (error) {
       console.error('Impossible d\'ouvrir la page de présentation :', error);
     }
