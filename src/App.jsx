@@ -3,7 +3,7 @@ import { QuestionnaireScreen } from './components/QuestionnaireScreen.jsx';
 import { SynthesisReport } from './components/SynthesisReport.jsx';
 import { HomeScreen } from './components/HomeScreen.jsx';
 import { BackOffice } from './components/BackOffice.jsx';
-import { CheckCircle } from './components/icons.js';
+import { CheckCircle, Settings } from './components/icons.js';
 import { MandatoryQuestionsSummary } from './components/MandatoryQuestionsSummary.jsx';
 import { initialQuestions } from './data/questions.js';
 import { initialRules } from './data/rules.js';
@@ -14,7 +14,7 @@ import { analyzeAnswers } from './utils/rules.js';
 import { extractProjectName } from './utils/projects.js';
 import { createDemoProject } from './data/demoProject.js';
 
-const APP_VERSION = 'v1.0.47';
+const APP_VERSION = 'v1.0.48';
 
 
 const isAnswerProvided = (value) => {
@@ -114,7 +114,6 @@ export const App = () => {
   const [analysis, setAnalysis] = useState(null);
   const [projects, setProjects] = useState(buildInitialProjectsState);
   const [activeProjectId, setActiveProjectId] = useState(null);
-  const [isHighVisibility, setIsHighVisibility] = useState(false);
   const [validationError, setValidationError] = useState(null);
   const [questions, setQuestions] = useState(initialQuestions);
   const [rules, setRules] = useState(initialRules);
@@ -133,7 +132,9 @@ export const App = () => {
     const fallbackRules = Array.isArray(savedState.rules) ? savedState.rules : rules;
     const fallbackQuestionsLength = resolveFallbackQuestionsLength(savedState, fallbackQuestions.length);
 
-    if (savedState.mode) setMode(savedState.mode);
+    if (savedState.mode) {
+      setMode(savedState.mode === 'admin' ? 'user' : savedState.mode);
+    }
     if (savedState.screen) setScreen(savedState.screen);
     if (typeof savedState.currentQuestionIndex === 'number' && savedState.currentQuestionIndex >= 0) {
       setCurrentQuestionIndex(savedState.currentQuestionIndex);
@@ -159,7 +160,6 @@ export const App = () => {
     if (Array.isArray(savedState.questions)) setQuestions(savedState.questions);
     if (Array.isArray(savedState.rules)) setRules(savedState.rules);
     if (Array.isArray(savedState.teams)) setTeams(savedState.teams);
-    if (typeof savedState.isHighVisibility === 'boolean') setIsHighVisibility(savedState.isHighVisibility);
 
     setIsHydrated(true);
   }, []);
@@ -173,7 +173,6 @@ export const App = () => {
     questions,
     rules,
     teams,
-    isHighVisibility,
     projects,
     activeProjectId
   }), [
@@ -185,7 +184,6 @@ export const App = () => {
     questions,
     rules,
     teams,
-    isHighVisibility,
     projects,
     activeProjectId
   ]);
@@ -218,17 +216,6 @@ export const App = () => {
       }
     };
   }, [buildPersistPayload, isHydrated]);
-
-  useEffect(() => {
-    if (typeof document === 'undefined') return;
-    const body = document.body;
-    if (!body) return;
-    if (isHighVisibility) {
-      body.classList.add('high-visibility');
-    } else {
-      body.classList.remove('high-visibility');
-    }
-  }, [isHighVisibility]);
 
   const activeQuestions = useMemo(
     () => questions.filter(q => shouldShowQuestion(q, answers)),
@@ -803,9 +790,26 @@ export const App = () => {
     }
   }, [handleSaveProject, setMode, setScreen, setValidationError]);
 
-  const handleToggleHighVisibility = useCallback(() => {
-    setIsHighVisibility(prev => !prev);
-  }, []);
+  const handleEnterBackOffice = useCallback(() => {
+    if (mode === 'admin') {
+      return;
+    }
+
+    if (typeof window === 'undefined' || typeof window.prompt !== 'function') {
+      return;
+    }
+
+    const password = window.prompt('Veuillez saisir le mot de passe pour accéder au back-office :');
+    if (password === null) {
+      return;
+    }
+
+    if (password === 'ComplianceTeam2025et+') {
+      setMode('admin');
+    } else if (typeof window.alert === 'function') {
+      window.alert('Mot de passe incorrect.');
+    }
+  }, [mode, setMode]);
 
   const handleBackToQuestionnaire = useCallback(() => {
     if (unansweredMandatoryQuestions.length > 0) {
@@ -898,27 +902,16 @@ export const App = () => {
               </button>
               <button
                 type="button"
-                onClick={() => setMode('admin')}
-                className={`w-full sm:w-auto px-4 py-2 rounded-lg font-medium text-sm sm:text-base transition-all hv-button ${
+                onClick={handleEnterBackOffice}
+                className={`inline-flex items-center justify-center px-3 py-2 rounded-lg transition-all hv-button ${
                   mode === 'admin'
                     ? 'bg-indigo-600 text-white hv-button-primary'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'text-gray-500 hover:text-indigo-600 hover:bg-gray-100'
                 }`}
                 aria-pressed={mode === 'admin'}
-                aria-label="Basculer vers le mode back-office"
+                aria-label="Accéder au back-office"
               >
-                Back-Office
-              </button>
-              <button
-                type="button"
-                onClick={handleToggleHighVisibility}
-                className={`w-full sm:w-auto px-4 py-2 rounded-lg font-medium text-sm sm:text-base transition-all hv-button hv-focus-ring ${
-                  isHighVisibility ? 'hv-button-primary' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-                aria-pressed={isHighVisibility}
-                aria-label="Activer ou désactiver le mode haute visibilité"
-              >
-                Mode haute visibilité {isHighVisibility ? 'activé' : 'désactivé'}
+                <Settings className="w-5 h-5" />
               </button>
             </div>
           </div>
