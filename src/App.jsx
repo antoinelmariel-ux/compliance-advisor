@@ -13,8 +13,9 @@ import { shouldShowQuestion } from './utils/questions.js';
 import { analyzeAnswers } from './utils/rules.js';
 import { extractProjectName } from './utils/projects.js';
 import { createDemoProject } from './data/demoProject.js';
+import { verifyAdminPassword } from './utils/password.js';
 
-const APP_VERSION = 'v1.0.48';
+const APP_VERSION = 'v1.0.49';
 
 
 const isAnswerProvided = (value) => {
@@ -790,7 +791,7 @@ export const App = () => {
     }
   }, [handleSaveProject, setMode, setScreen, setValidationError]);
 
-  const handleEnterBackOffice = useCallback(() => {
+  const handleEnterBackOffice = useCallback(async () => {
     if (mode === 'admin') {
       return;
     }
@@ -804,12 +805,15 @@ export const App = () => {
       return;
     }
 
-    if (password === 'ComplianceTeam2025et+') {
+    const { isValid, error } = await verifyAdminPassword(password);
+    if (isValid) {
       setMode('admin');
+    } else if (error && typeof window.alert === 'function') {
+      window.alert("La vérification du mot de passe n'est pas disponible dans ce navigateur.");
     } else if (typeof window.alert === 'function') {
       window.alert('Mot de passe incorrect.');
     }
-  }, [mode, setMode]);
+  }, [mode, setMode, verifyAdminPassword]);
 
   const handleBackToQuestionnaire = useCallback(() => {
     if (unansweredMandatoryQuestions.length > 0) {
