@@ -474,15 +474,12 @@ const buildMailtoLink = ({ projectName, relevantTeams, body }) => {
 
   const toField = recipients.join(',');
   const subject = projectName || 'Projet compliance';
-  const params = new URLSearchParams();
-
-  params.set('subject', subject);
-  const normalizedBody = (body || '').replace(/\r?\n/g, '\r\n');
-  params.set('body', normalizedBody);
-
-  const paramString = params.toString();
   const prefix = toField ? `mailto:${toField}` : 'mailto:';
-  return `${prefix}?${paramString}`;
+  const normalizedBody = (body || '').replace(/\r?\n/g, '\r\n');
+  const encodedSubject = encodeURIComponent(subject);
+  const encodedBody = encodeURIComponent(normalizedBody);
+
+  return `${prefix}?subject=${encodedSubject}&body=${encodedBody}`;
 };
 
 export const SynthesisReport = ({
