@@ -17,7 +17,21 @@ import { verifyAdminPassword } from './utils/password.js';
 import { isAnswerProvided } from './utils/answers.js';
 import { computeMissingShowcaseQuestions } from './utils/showcaseRequirements.js';
 
-const APP_VERSION = 'v1.0.59';
+const APP_VERSION = 'v1.0.60';
+
+
+
+const isAnswerProvided = (value) => {
+  if (Array.isArray(value)) {
+    return value.length > 0;
+  }
+
+  if (typeof value === 'string') {
+    return value.trim().length > 0;
+  }
+
+  return value !== null && value !== undefined;
+};
 
 const normalizeProjectEntry = (project = {}, fallbackQuestionsLength = initialQuestions.length) => {
   const answers = typeof project.answers === 'object' && project.answers !== null ? project.answers : {};
@@ -417,11 +431,6 @@ export const App = () => {
     }
     setValidationError(null);
   }, [currentQuestionIndex]);
-
-  const handleRestart = useCallback(() => {
-    resetProjectState();
-    setScreen('questionnaire');
-  }, [resetProjectState]);
 
   const resolveProjectContext = useCallback((projectId) => {
     if (!projectId) {
@@ -955,7 +964,6 @@ export const App = () => {
               analysis={analysis}
               teams={teams}
               questions={activeQuestions}
-              onRestart={handleRestart}
               onBack={handleBackToQuestionnaire}
               onUpdateAnswers={handleUpdateAnswers}
               onSubmitProject={handleSubmitProject}

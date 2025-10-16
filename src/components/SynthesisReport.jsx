@@ -474,15 +474,12 @@ const buildMailtoLink = ({ projectName, relevantTeams, body }) => {
 
   const toField = recipients.join(',');
   const subject = projectName || 'Projet compliance';
-  const params = new URLSearchParams();
-
-  params.set('subject', subject);
-  const normalizedBody = (body || '').replace(/\r?\n/g, '\r\n');
-  params.set('body', normalizedBody);
-
-  const paramString = params.toString();
   const prefix = toField ? `mailto:${toField}` : 'mailto:';
-  return `${prefix}?${paramString}`;
+  const normalizedBody = (body || '').replace(/\r?\n/g, '\r\n');
+  const encodedSubject = encodeURIComponent(subject);
+  const encodedBody = encodeURIComponent(normalizedBody);
+
+  return `${prefix}?subject=${encodedSubject}&body=${encodedBody}`;
 };
 
 export const SynthesisReport = ({
@@ -490,7 +487,6 @@ export const SynthesisReport = ({
   analysis,
   teams,
   questions,
-  onRestart,
   onBack,
   onUpdateAnswers,
   onSubmitProject,
@@ -702,13 +698,6 @@ export const SynthesisReport = ({
                   Présentation
                 </button>
               )}
-              <button
-                type="button"
-                onClick={onRestart}
-                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium text-gray-700 transition-all hv-button w-full sm:w-auto justify-center text-sm sm:text-base"
-              >
-                Nouveau projet
-              </button>
             </div>
           </div>
 
