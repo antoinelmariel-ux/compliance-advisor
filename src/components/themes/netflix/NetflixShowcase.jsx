@@ -134,7 +134,6 @@ export const NetflixShowcase = ({
           audienceSection: 'animate-on-scroll netflix-section',
           problemSection: 'animate-on-scroll netflix-section',
           solutionSection: 'animate-on-scroll netflix-section',
-          innovationSection: 'animate-on-scroll netflix-section',
           teamSection: 'animate-on-scroll netflix-section',
           timelineSection: 'animate-on-scroll netflix-section',
           analysisSection: 'animate-on-scroll netflix-section',

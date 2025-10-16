@@ -153,51 +153,9 @@ export const initialQuestions =  [
     }
   },
   {
-    id: 'innovationProcess',
-    type: 'long_text',
-    question: 'Comment votre équipe transforme cette innovation en expérience fluide ?',
-    options: [],
-    required: false,
-    conditions: [],
-    conditionLogic: 'all',
-    guidance: {
-      objective: 'Décrire le process ou l’architecture qui garantit une exécution sans friction.',
-      details: 'Cette réponse est mise en scène comme un mini schéma narratif.',
-      tips: [
-        'Décrivez 3 étapes clés maximum pour garder la lecture fluide.',
-        'Mentionnez les outils, rituels ou partenaires qui rendent le parcours intuitif.'
-      ]
-    },
-    showcase: {
-      sections: ['innovation'],
-      usage: 'Encart explicatif sur le fonctionnement de l’innovation.'
-    }
-  },
-  {
-    id: 'visionStatement',
-    type: 'long_text',
-    question: 'Quelle vision inspirante souhaitez-vous partager pour conclure la narration ?',
-    options: [],
-    required: false,
-    conditions: [],
-    conditionLogic: 'all',
-    guidance: {
-      objective: 'Projeter votre audience sur le futur souhaité grâce au projet.',
-      details: 'Cette phrase finale apporte une touche émotionnelle dans la section “Potentiel & impact”.',
-      tips: [
-        'Employez le futur ou le conditionnel pour ouvrir sur la suite.',
-        'Reliez la vision à l’impact sociétal, business ou humain que vous visez.'
-      ]
-    },
-    showcase: {
-      sections: ['impact'],
-      usage: 'Citation de conclusion dans la section impact.'
-    }
-  },
-  {
     id: 'campaignKickoffDate',
     type: 'date',
-    question: 'Quand débutez-vous la préparation active de la campagne ?',
+    question: 'Quand allez-vous soumettre ce projet à la compliance ?',
     options: [],
     required: false,
     conditions: [],
@@ -218,7 +176,7 @@ export const initialQuestions =  [
   {
     id: 'launchDate',
     type: 'date',
-    question: 'Quelle est la date de lancement ou de reveal souhaitée ?',
+    question: 'Quand souhaitez-vous lancer votre projet ?',
     options: [],
     required: false,
     conditions: [],
@@ -239,7 +197,7 @@ export const initialQuestions =  [
   {
     id: 'teamLead',
     type: 'text',
-    question: 'Qui porte la narration et coordonne le projet ?',
+    question: 'Qui lead ce projet ?',
     options: [],
     required: true,
     conditions: [],
@@ -260,7 +218,7 @@ export const initialQuestions =  [
   {
     id: 'teamCoreMembers',
     type: 'long_text',
-    question: 'Quels sont les membres clés qui incarnent le projet ?',
+    question: 'Qui sont les membres d l’équipe projet ?',
     options: [],
     required: false,
     conditions: [],
