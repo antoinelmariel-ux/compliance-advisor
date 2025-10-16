@@ -8,7 +8,8 @@ export const NetflixShowcase = ({
   themeSwitch,
   onClose,
   renderInStandalone,
-  serializedPayload
+  serializedPayload,
+  editing
 }) => {
   useShowcaseAnimations([data, themeSwitch?.selected]);
 
@@ -126,6 +127,7 @@ export const NetflixShowcase = ({
         onClose={onClose}
         renderInStandalone={renderInStandalone}
         serializedPayload={serializedPayload}
+        editing={editing}
         classNames={{
           article: 'netflix-showcase-frame',
           themeSwitcher: 'animate-on-scroll netflix-switcher',

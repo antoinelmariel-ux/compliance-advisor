@@ -8,7 +8,8 @@ export const NebulaShowcase = ({
   themeSwitch,
   onClose,
   renderInStandalone,
-  serializedPayload
+  serializedPayload,
+  editing
 }) => {
   useShowcaseAnimations([data, themeSwitch?.selected]);
 
@@ -20,6 +21,7 @@ export const NebulaShowcase = ({
         onClose={onClose}
         renderInStandalone={renderInStandalone}
         serializedPayload={serializedPayload}
+        editing={editing}
         classNames={{
           article: 'nebula-showcase',
           card: 'nebula-panel',

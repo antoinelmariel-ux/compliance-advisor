@@ -1,4 +1,5 @@
 import React from '../../../react.js';
+import { ShowcaseEditable } from './ShowcaseEditable.jsx';
 
 const isNonEmptyString = (value) => typeof value === 'string' && value.trim().length > 0;
 
@@ -8,7 +9,8 @@ export const ShowcaseContent = ({
   onClose,
   renderInStandalone = false,
   classNames: classNamesOverrides = {},
-  serializedPayload = '{}'
+  serializedPayload = '{}',
+  editing = null
 }) => {
   const themeId = themeSwitch?.selected || data?.theme || 'apple';
 
@@ -68,11 +70,25 @@ export const ShowcaseContent = ({
   const classes = { ...classDefaults, ...(classNamesOverrides || {}) };
   const getClass = (key) => (classes[key] ? classes[key] : undefined);
 
+  const editHandler = typeof editing?.onEdit === 'function' ? editing.onEdit : null;
+  const requestEnableHandler = typeof editing?.onRequestEnable === 'function' ? editing.onRequestEnable : null;
+  const editingFields = editing?.fields || {};
+  const editingEnabled = Boolean(editing?.enabled) && Boolean(editHandler);
+  const buildEditableProps = (fieldKey, fallbackVariant = 'block') => ({
+    enabled: editingEnabled && Boolean(editingFields[fieldKey]?.questionId),
+    onEdit: editHandler,
+    onRequestEnable: requestEnableHandler,
+    questionId: editingFields[fieldKey]?.questionId,
+    label: editingFields[fieldKey]?.label,
+    variant: editingFields[fieldKey]?.variant || fallbackVariant
+  });
+
   return (
     <article
       data-component="project-showcase"
       data-theme={themeId}
       data-standalone={renderInStandalone ? 'true' : 'false'}
+      data-editing={editingEnabled ? 'enabled' : 'disabled'}
       className={getClass('article')}
     >
       <div data-showcase-card className={getClass('card')}>
@@ -85,8 +101,14 @@ export const ShowcaseContent = ({
           >
             <div data-role="hero-header">
               <p data-role="eyebrow">{eyebrow}</p>
-              <h1 data-field="project-name">{projectName}</h1>
-              {slogan ? <p data-field="project-slogan">{slogan}</p> : null}
+              <ShowcaseEditable {...buildEditableProps('projectName', 'inline')}>
+                <h1 data-field="project-name">{projectName}</h1>
+              </ShowcaseEditable>
+              {slogan ? (
+                <ShowcaseEditable {...buildEditableProps('projectSlogan', 'inline')}>
+                  <p data-field="project-slogan">{slogan}</p>
+                </ShowcaseEditable>
+              ) : null}
             </div>
             {highlights.length > 0 ? (
               <div data-role="hero-highlights" className={getClass('heroHighlights')}>
@@ -106,33 +128,37 @@ export const ShowcaseContent = ({
           </header>
 
           {audienceItems.length > 0 ? (
-            <section
-              data-section="audience"
-              data-showcase-section="audience"
-              className={getClass('audienceSection')}
-            >
-              <h2>Audiences cibles</h2>
+          <section
+            data-section="audience"
+            data-showcase-section="audience"
+            className={getClass('audienceSection')}
+          >
+            <h2>Audiences cibles</h2>
+            <ShowcaseEditable {...buildEditableProps('targetAudience')}>
               <ul data-field="target-audience" data-role="tag-list">
                 {audienceItems.map((item, index) => (
                   <li key={`${item}-${index}`}>{item}</li>
                 ))}
               </ul>
-            </section>
+            </ShowcaseEditable>
+          </section>
           ) : null}
 
           {problemPainPoints.length > 0 ? (
-            <section
-              data-section="problem"
-              data-showcase-section="problem"
-              className={getClass('problemSection')}
-            >
-              <h2>Problèmes identifiés</h2>
+          <section
+            data-section="problem"
+            data-showcase-section="problem"
+            className={getClass('problemSection')}
+          >
+            <h2>Problèmes identifiés</h2>
+            <ShowcaseEditable {...buildEditableProps('problemPainPoints')}>
               <ul data-field="problem-pain-points">
                 {problemPainPoints.map((item, index) => (
                   <li key={`${item}-${index}`}>{item}</li>
                 ))}
               </ul>
-            </section>
+            </ShowcaseEditable>
+          </section>
           ) : null}
 
           {(solutionDescription || solutionBenefits.length > 0 || solutionComparison) ? (
@@ -146,23 +172,29 @@ export const ShowcaseContent = ({
                 {solutionDescription ? (
                   <article data-showcase-element="solution-card">
                     <h3>Description</h3>
-                    <p data-field="solution-description">{solutionDescription}</p>
+                    <ShowcaseEditable {...buildEditableProps('solutionDescription')}>
+                      <p data-field="solution-description">{solutionDescription}</p>
+                    </ShowcaseEditable>
                   </article>
                 ) : null}
                 {solutionBenefits.length > 0 ? (
                   <article data-showcase-element="solution-card">
                     <h3>Bénéfices clés</h3>
-                    <ul data-field="solution-benefits">
-                      {solutionBenefits.map((item, index) => (
-                        <li key={`${item}-${index}`}>{item}</li>
-                      ))}
-                    </ul>
+                    <ShowcaseEditable {...buildEditableProps('solutionBenefits')}>
+                      <ul data-field="solution-benefits">
+                        {solutionBenefits.map((item, index) => (
+                          <li key={`${item}-${index}`}>{item}</li>
+                        ))}
+                      </ul>
+                    </ShowcaseEditable>
                   </article>
                 ) : null}
                 {solutionComparison ? (
                   <article data-showcase-element="solution-card">
                     <h3>Différenciation</h3>
-                    <p data-field="solution-comparison">{solutionComparison}</p>
+                    <ShowcaseEditable {...buildEditableProps('solutionComparison')}>
+                      <p data-field="solution-comparison">{solutionComparison}</p>
+                    </ShowcaseEditable>
                   </article>
                 ) : null}
               </div>
@@ -180,13 +212,19 @@ export const ShowcaseContent = ({
                 {(teamLead || teamCoreMembers.length > 0) ? (
                   <article data-showcase-element="team-profile">
                     <h3>Leadership</h3>
-                    {teamLead ? <p data-field="team-lead">{teamLead}</p> : null}
+                    {teamLead ? (
+                      <ShowcaseEditable {...buildEditableProps('teamLead', 'inline')}>
+                        <p data-field="team-lead">{teamLead}</p>
+                      </ShowcaseEditable>
+                    ) : null}
                     {teamCoreMembers.length > 0 ? (
-                      <ul data-field="team-core-members">
-                        {teamCoreMembers.map((member, index) => (
-                          <li key={`${member}-${index}`}>{member}</li>
-                        ))}
-                      </ul>
+                      <ShowcaseEditable {...buildEditableProps('teamCoreMembers')}>
+                        <ul data-field="team-core-members">
+                          {teamCoreMembers.map((member, index) => (
+                            <li key={`${member}-${index}`}>{member}</li>
+                          ))}
+                        </ul>
+                      </ShowcaseEditable>
                     ) : null}
                   </article>
                 ) : null}
