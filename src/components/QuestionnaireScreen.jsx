@@ -3,6 +3,7 @@ import { Info, Calendar, CheckCircle, ChevronLeft, ChevronRight, AlertTriangle, 
 import { formatAnswer } from '../utils/questions.js';
 import { normalizeConditionGroups } from '../utils/conditionGroups.js';
 import { renderTextWithLinks } from '../utils/linkify.js';
+import { isShowcaseCriticalQuestion } from '../utils/showcaseRequirements.js';
 
 const OPERATOR_LABELS = {
   equals: 'est égal à',
@@ -38,6 +39,7 @@ export const QuestionnaireScreen = ({
   const guidancePanelId = `guidance-${currentQuestion.id}`;
   const progressLabelId = `progress-label-${currentQuestion.id}`;
   const hasValidationError = validationError?.questionId === currentQuestion.id;
+  const isShowcaseCritical = isShowcaseCriticalQuestion(currentQuestion.id);
 
   useEffect(() => {
     setShowGuidance(false);
@@ -342,15 +344,26 @@ export const QuestionnaireScreen = ({
           </div>
 
           <div className="mb-8">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-              <h2 id={questionTextId} className="text-2xl font-bold text-gray-800 sm:text-3xl">
-                {currentQuestion.question}
-              </h2>
-              {!currentQuestion.required && (
-                <span className="inline-flex items-center px-3 py-1 text-xs font-semibold uppercase tracking-wide bg-gray-100 text-gray-600 rounded-full border border-gray-200 hv-badge self-start">
-                  Réponse facultative
-                </span>
-              )}
+            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+              <div className="flex-1">
+                <h2 id={questionTextId} className="text-2xl font-bold text-gray-800 sm:text-3xl">
+                  {currentQuestion.question}
+                </h2>
+                {(isShowcaseCritical || (!currentQuestion.required)) && (
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    {isShowcaseCritical && (
+                      <span className="inline-flex items-center px-3 py-1 text-xs font-semibold uppercase tracking-wide bg-amber-100 text-amber-700 rounded-full border border-amber-200 hv-badge">
+                        Indispensable pour la vitrine
+                      </span>
+                    )}
+                    {!currentQuestion.required && !isShowcaseCritical && (
+                      <span className="inline-flex items-center px-3 py-1 text-xs font-semibold uppercase tracking-wide bg-gray-100 text-gray-600 rounded-full border border-gray-200 hv-badge">
+                        Réponse facultative
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
               {hasGuidanceContent && (
                 <button
                   type="button"

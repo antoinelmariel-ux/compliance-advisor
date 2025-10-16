@@ -14,6 +14,8 @@ import { analyzeAnswers } from './utils/rules.js';
 import { extractProjectName } from './utils/projects.js';
 import { createDemoProject } from './data/demoProject.js';
 import { verifyAdminPassword } from './utils/password.js';
+import { isAnswerProvided } from './utils/answers.js';
+import { computeMissingShowcaseQuestions } from './utils/showcaseRequirements.js';
 
 const APP_VERSION = 'v1.0.60';
 
@@ -237,6 +239,16 @@ export const App = () => {
         position: activeQuestions.findIndex(item => item.id === question.id) + 1
       })),
     [unansweredMandatoryQuestions, activeQuestions]
+  );
+
+  const missingShowcaseQuestions = useMemo(
+    () => computeMissingShowcaseQuestions(activeQuestions, answers),
+    [activeQuestions, answers]
+  );
+
+  const optionalShowcaseQuestions = useMemo(
+    () => missingShowcaseQuestions.filter(item => !item.question?.required),
+    [missingShowcaseQuestions]
   );
 
   useEffect(() => {
@@ -941,6 +953,7 @@ export const App = () => {
             <MandatoryQuestionsSummary
               pendingQuestions={pendingMandatoryQuestions}
               totalQuestions={activeQuestions.length}
+              missingShowcaseQuestions={optionalShowcaseQuestions}
               onBackToQuestionnaire={handleBackToQuestionnaire}
               onNavigateToQuestion={handleNavigateToQuestion}
               onProceedToSynthesis={handleProceedToSynthesis}

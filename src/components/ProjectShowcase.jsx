@@ -4,6 +4,7 @@ import { AppleShowcase } from './themes/apple/AppleShowcase.jsx';
 import { NetflixShowcase } from './themes/netflix/NetflixShowcase.jsx';
 import { AmnestyShowcase } from './themes/amnesty/AmnestyShowcase.jsx';
 import { NebulaShowcase } from './themes/nebula/NebulaShowcase.jsx';
+import { getMissingShowcaseQuestionLabels } from '../utils/showcaseRequirements.js';
 
 const findQuestionById = (questions, id) => {
   if (!Array.isArray(questions)) {
@@ -31,34 +32,6 @@ const getRawAnswer = (answers, id) => {
 };
 
 const hasText = (value) => typeof value === 'string' && value.trim().length > 0;
-
-const hasProvidedValue = (value) => {
-  if (value === null || value === undefined) {
-    return false;
-  }
-
-  if (typeof value === 'string') {
-    return value.trim().length > 0;
-  }
-
-  if (typeof value === 'number') {
-    return !Number.isNaN(value);
-  }
-
-  if (typeof value === 'boolean') {
-    return true;
-  }
-
-  if (Array.isArray(value)) {
-    return value.some(item => hasProvidedValue(item));
-  }
-
-  if (typeof value === 'object') {
-    return Object.values(value).some(item => hasProvidedValue(item));
-  }
-
-  return false;
-};
 
 export const SHOWCASE_THEME_STORAGE_KEY = 'compliance-advisor.showcase-theme';
 
@@ -122,22 +95,6 @@ export const getInitialShowcaseTheme = (themeOptions = SHOWCASE_THEMES) => {
 
   return fallbackTheme;
 };
-
-const REQUIRED_SHOWCASE_QUESTION_IDS = [
-  'projectName',
-  'projectSlogan',
-  'targetAudience',
-  'problemPainPoints',
-  'solutionDescription',
-  'solutionBenefits',
-  'solutionComparison',
-  'innovationProcess',
-  'visionStatement',
-  'teamLead',
-  'teamCoreMembers',
-  'campaignKickoffDate',
-  'launchDate'
-];
 
 const parseListAnswer = (value) => {
   if (!value) {
@@ -557,34 +514,10 @@ export const ProjectShowcase = ({
     [projectMeta, isDemoProject, safeProjectName]
   );
 
-  const missingShowcaseQuestions = useMemo(() => {
-    const questionList = Array.isArray(questions) ? questions : [];
-    const questionById = questionList.reduce((map, question) => {
-      if (question && typeof question.id === 'string' && question.id.length > 0) {
-        map.set(question.id, question);
-      }
-      return map;
-    }, new Map());
-
-    return REQUIRED_SHOWCASE_QUESTION_IDS.filter((id) => {
-      const question = questionById.get(id);
-      if (!question) {
-        return true;
-      }
-
-      const answer = answers ? answers[id] : undefined;
-      return !hasProvidedValue(answer);
-    }).map((id) => {
-      const question = questionById.get(id);
-      if (question && typeof question.question === 'string' && question.question.trim().length > 0) {
-        return question.question.trim();
-      }
-      if (question && typeof question.label === 'string' && question.label.trim().length > 0) {
-        return question.label.trim();
-      }
-      return id;
-    });
-  }, [answers, questions]);
+  const missingShowcaseQuestions = useMemo(
+    () => getMissingShowcaseQuestionLabels(questions, answers),
+    [answers, questions]
+  );
 
   const payload = useMemo(
     () =>
