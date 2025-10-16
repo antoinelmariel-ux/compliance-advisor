@@ -205,7 +205,7 @@ export const HomeScreen = ({
               <button
                 type="button"
                 onClick={onStartNewProject}
-                className="hv-button hv-button-primary inline-flex items-center justify-center px-6 py-3 text-base"
+                className="hv-button hv-button-primary home-hero__button flex items-center justify-center px-6 py-3 text-base"
               >
                 <Plus className="w-5 h-5 mr-2" />
                 Créer un nouveau projet
@@ -214,7 +214,7 @@ export const HomeScreen = ({
                 <button
                   type="button"
                   onClick={() => onOpenProject(sortedProjects[0]?.id)}
-                  className="hv-button hv-button-outline inline-flex items-center justify-center px-6 py-3 text-base"
+                  className="hv-button hv-button-outline home-hero__button flex items-center justify-center px-6 py-3 text-base"
                 >
                   <Eye className="w-5 h-5 mr-2" />
                   Reprendre le dernier projet
@@ -232,7 +232,7 @@ export const HomeScreen = ({
                   <button
                     type="button"
                     onClick={handleImportClick}
-                    className="hv-button hv-button-accent inline-flex items-center justify-center px-6 py-3 text-base"
+                    className="hv-button hv-button-accent home-hero__button flex items-center justify-center px-6 py-3 text-base"
                   >
                     <Upload className="w-5 h-5 mr-2" />
                     Charger un projet
