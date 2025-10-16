@@ -15,7 +15,7 @@ import { extractProjectName } from './utils/projects.js';
 import { createDemoProject } from './data/demoProject.js';
 import { verifyAdminPassword } from './utils/password.js';
 
-const APP_VERSION = 'v1.0.59';
+const APP_VERSION = 'v1.0.60';
 
 
 
@@ -419,11 +419,6 @@ export const App = () => {
     }
     setValidationError(null);
   }, [currentQuestionIndex]);
-
-  const handleRestart = useCallback(() => {
-    resetProjectState();
-    setScreen('questionnaire');
-  }, [resetProjectState]);
 
   const resolveProjectContext = useCallback((projectId) => {
     if (!projectId) {
@@ -956,7 +951,6 @@ export const App = () => {
               analysis={analysis}
               teams={teams}
               questions={activeQuestions}
-              onRestart={handleRestart}
               onBack={handleBackToQuestionnaire}
               onUpdateAnswers={handleUpdateAnswers}
               onSubmitProject={handleSubmitProject}
