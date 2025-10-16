@@ -2,6 +2,10 @@ import { initialQuestions } from './questions.js';
 import { initialRules } from './rules.js';
 import { analyzeAnswers } from '../utils/rules.js';
 
+export const DEMO_PROJECT_BADGE = 'Projet de démonstration';
+export const DEMO_SHOWCASE_VERSION = '0.1.4';
+const DEMO_SHOWCASE_STATUS = 'Données showcase complétées';
+
 const demoProjectAnswers = {
   projectName: 'Campagne Aura',
   projectSlogan: 'Illuminer chaque lancement produit',
@@ -256,7 +260,16 @@ export const createDemoProject = ({ questions = initialQuestions, rules = initia
     lastQuestionIndex: sanitizedTotal > 0 ? sanitizedTotal - 1 : 0,
     totalQuestions: sanitizedTotal,
     answeredQuestions: sanitizedTotal,
-    isDemo: true
+    isDemo: true,
+    meta: {
+      badge: 'Showcase Aura',
+      eyebrow: DEMO_PROJECT_BADGE,
+      version: {
+        label: demoProjectAnswers.projectName,
+        number: DEMO_SHOWCASE_VERSION,
+        status: DEMO_SHOWCASE_STATUS
+      }
+    }
   };
 };
 

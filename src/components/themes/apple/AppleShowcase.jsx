@@ -193,6 +193,24 @@ export const AppleShowcase = ({
 
   const projectName = hasText(data?.projectName) ? data.projectName : 'Votre projet';
   const slogan = hasText(data?.slogan) ? data.slogan : null;
+  const meta = data?.meta && typeof data.meta === 'object' ? data.meta : {};
+  const heroBadgeLabel = hasText(meta.badge) ? meta.badge.trim() : 'Showcase Aura';
+  const heroEyebrow = hasText(meta.eyebrow) ? meta.eyebrow.trim() : null;
+  const versionSource = meta.version && typeof meta.version === 'object' ? meta.version : null;
+  const versionLabel = hasText(versionSource?.label) ? versionSource.label.trim() : projectName;
+  const versionNumber = hasText(versionSource?.number) ? versionSource.number.trim() : null;
+  const defaultFooterStatus = 'Données showcase prêtes';
+  const versionStatus = hasText(versionSource?.status)
+    ? versionSource.status.trim()
+    : defaultFooterStatus;
+  const footerVersionParts = [versionLabel];
+  if (versionNumber) {
+    footerVersionParts.push(`Version ${versionNumber}`);
+  }
+  if (versionStatus) {
+    footerVersionParts.push(versionStatus);
+  }
+  const footerVersionText = footerVersionParts.join(' — ');
 
   const heroHighlights = Array.isArray(data?.highlights)
     ? data.highlights
@@ -312,10 +330,15 @@ export const AppleShowcase = ({
           <div data-showcase-body className="apple-showcase-body apple-aura-body">
             <div className="apple-aura" data-showcase-layout="aura">
               <header className="hero apple-aura__hero-section animate-on-scroll apple-parallax" id="top">
-                <div className="hero__badge" aria-label="Showcase Aura">
+                <div className="hero__badge" aria-label={heroBadgeLabel}>
                   <span aria-hidden="true" className="hero__badge-dot" />
-                  <span>Showcase Aura</span>
+                  <span>{heroBadgeLabel}</span>
                 </div>
+                {heroEyebrow ? (
+                  <p className="hero__eyebrow" data-field="project-eyebrow">
+                    {heroEyebrow}
+                  </p>
+                ) : null}
                 <h1 className="hero__title" data-field="project-name">
                   {projectName}
                 </h1>
@@ -698,7 +721,7 @@ export const AppleShowcase = ({
 
               <footer className="apple-aura__footer">
                 <div className="footer__content">
-                  <p className="footer__meta">Campagne Aura — Version 0.1.3 — Données showcase complétées</p>
+                  <p className="footer__meta">{footerVersionText}</p>
                   <p className="footer__meta">Thème Apple — Build v1.0.52</p>
                 </div>
               </footer>
