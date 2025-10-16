@@ -22,10 +22,6 @@ const demoProjectAnswers = {
     '• +35 % d’intention d’achat mesurée lors des tests pré-lancement.\n• Bibliothèque d’assets localisés livrée en 4 semaines.\n• Plan média multi-pays orchestré avec les partenaires retail.',
   solutionComparison:
     'Contrairement aux campagnes précédentes, Aura intègre dès le départ les besoins des partenaires et un plan de preuves dynamique, évitant les validations tardives.',
-  innovationProcess:
-    '1. Sprint storytelling de 5 jours pour cadrer le pitch.\n2. Production collaborative des assets avec validations hebdomadaires.\n3. Activation omnicanale pilotée par un cockpit partagé.',
-  visionStatement:
-    'En 2025, chaque lancement majeur du groupe proposera une expérience Aura pour générer engagement, confiance et ventes durables.',
   campaignKickoffDate: '2024-01-15',
   launchDate: '2024-04-15',
   teamLead: 'Clara Dupont — Head of Narrative Design',

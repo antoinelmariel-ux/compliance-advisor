@@ -8,8 +8,6 @@ export const REQUIRED_SHOWCASE_QUESTION_IDS = [
   'solutionDescription',
   'solutionBenefits',
   'solutionComparison',
-  'innovationProcess',
-  'visionStatement',
   'teamLead',
   'teamCoreMembers',
   'campaignKickoffDate',

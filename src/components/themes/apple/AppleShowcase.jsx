@@ -233,13 +233,6 @@ export const AppleShowcase = ({
     ? sections.solution.comparison.trim()
     : null;
 
-  const innovationProcess = hasText(sections?.innovation?.process)
-    ? sections.innovation.process.trim()
-    : null;
-  const visionStatement = hasText(sections?.innovation?.vision)
-    ? sections.innovation.vision.trim()
-    : null;
-
   const teamLead = hasText(sections?.team?.lead) ? sections.team.lead.trim() : null;
   const teamCoreMembers = sanitizeStringList(sections?.team?.coreMembers);
   const relevantTeams = sanitizeRelevantTeams(sections?.team?.relevantTeams);
@@ -279,11 +272,6 @@ export const AppleShowcase = ({
       id: 'solution',
       label: 'Solution',
       visible: Boolean(solutionDescription || solutionBenefits.length > 0 || solutionComparison)
-    },
-    {
-      id: 'innovation',
-      label: 'Innovation',
-      visible: Boolean(innovationProcess || visionStatement)
     },
     {
       id: 'team',
@@ -449,35 +437,6 @@ export const AppleShowcase = ({
                         <article className="card" data-showcase-element="solution-card">
                           <h3>Différenciation</h3>
                           <p>{solutionComparison}</p>
-                        </article>
-                      ) : null}
-                    </div>
-                  </section>
-                ) : null}
-
-                {innovationProcess || visionStatement ? (
-                  <section
-                    id="innovation"
-                    data-showcase-section="innovation"
-                    className="apple-aura__section animate-on-scroll"
-                  >
-                    <header>
-                      <h2 className="section__headline">Innovation &amp; vision</h2>
-                      <p className="section__lead">
-                        Cadrez la démarche et la vision long terme qui guident l'expérience Aura.
-                      </p>
-                    </header>
-                    <div className="grid grid--two">
-                      {innovationProcess ? (
-                        <article className="card" data-showcase-element="vision-card">
-                          <h3>Approche</h3>
-                          <p>{innovationProcess}</p>
-                        </article>
-                      ) : null}
-                      {visionStatement ? (
-                        <article className="card" data-showcase-element="vision-card">
-                          <h3>Vision</h3>
-                          <p>{visionStatement}</p>
                         </article>
                       ) : null}
                     </div>

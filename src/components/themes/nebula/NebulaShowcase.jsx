@@ -30,7 +30,6 @@ export const NebulaShowcase = ({
           audienceSection: 'animate-on-scroll nebula-section nebula-section--audience',
           problemSection: 'animate-on-scroll nebula-section nebula-section--problem',
           solutionSection: 'animate-on-scroll nebula-section nebula-section--solution',
-          innovationSection: 'animate-on-scroll nebula-section nebula-section--innovation',
           teamSection: 'animate-on-scroll nebula-section nebula-section--team',
           timelineSection: 'animate-on-scroll nebula-section nebula-section--timeline',
           analysisSection: 'animate-on-scroll nebula-section nebula-section--analysis',

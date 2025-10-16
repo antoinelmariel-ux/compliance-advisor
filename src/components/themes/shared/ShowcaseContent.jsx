@@ -29,10 +29,6 @@ export const ShowcaseContent = ({
   const solutionBenefits = Array.isArray(solution.benefits) ? solution.benefits : [];
   const solutionComparison = isNonEmptyString(solution.comparison) ? solution.comparison : null;
 
-  const innovation = sections?.innovation || {};
-  const innovationProcess = isNonEmptyString(innovation.process) ? innovation.process : null;
-  const visionStatement = isNonEmptyString(innovation.vision) ? innovation.vision : null;
-
   const team = sections?.team || {};
   const teamLead = isNonEmptyString(team.lead) ? team.lead : null;
   const teamCoreMembers = Array.isArray(team.coreMembers) ? team.coreMembers : [];
@@ -61,7 +57,6 @@ export const ShowcaseContent = ({
     audienceSection: 'animate-on-scroll',
     problemSection: 'animate-on-scroll',
     solutionSection: 'animate-on-scroll',
-    innovationSection: 'animate-on-scroll',
     teamSection: 'animate-on-scroll',
     timelineSection: 'animate-on-scroll',
     analysisSection: 'animate-on-scroll',
@@ -168,30 +163,6 @@ export const ShowcaseContent = ({
                   <article data-showcase-element="solution-card">
                     <h3>Différenciation</h3>
                     <p data-field="solution-comparison">{solutionComparison}</p>
-                  </article>
-                ) : null}
-              </div>
-            </section>
-          ) : null}
-
-          {(innovationProcess || visionStatement) ? (
-            <section
-              data-section="innovation"
-              data-showcase-section="innovation"
-              className={getClass('innovationSection')}
-            >
-              <h2>Innovation &amp; vision</h2>
-              <div data-role="split-layout">
-                {innovationProcess ? (
-                  <article data-showcase-element="vision-card">
-                    <h3>Approche</h3>
-                    <p data-field="innovation-process">{innovationProcess}</p>
-                  </article>
-                ) : null}
-                {visionStatement ? (
-                  <article data-showcase-element="vision-card">
-                    <h3>Vision</h3>
-                    <p data-field="vision-statement">{visionStatement}</p>
                   </article>
                 ) : null}
               </div>

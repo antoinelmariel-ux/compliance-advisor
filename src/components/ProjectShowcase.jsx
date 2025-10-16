@@ -335,8 +335,6 @@ const buildShowcasePayload = ({
   solutionDescription,
   solutionBenefits,
   solutionComparison,
-  innovationProcess,
-  visionStatement,
   teamLead,
   teamCoreMembersList,
   normalizedTeams,
@@ -364,10 +362,6 @@ const buildShowcasePayload = ({
       description: hasText(solutionDescription) ? solutionDescription : null,
       benefits: solutionBenefits,
       comparison: hasText(solutionComparison) ? solutionComparison : null
-    },
-    innovation: {
-      process: hasText(innovationProcess) ? innovationProcess : null,
-      vision: hasText(visionStatement) ? visionStatement : null
     },
     team: {
       lead: hasText(teamLead) ? teamLead : null,
@@ -493,8 +487,6 @@ export const ProjectShowcase = ({
     [answers]
   );
   const solutionComparison = getFormattedAnswer(questions, answers, 'solutionComparison');
-  const innovationProcess = getFormattedAnswer(questions, answers, 'innovationProcess');
-  const visionStatement = getFormattedAnswer(questions, answers, 'visionStatement');
   const teamLead = getFormattedAnswer(questions, answers, 'teamLead');
   const teamCoreMembersList = useMemo(
     () => parseListAnswer(getRawAnswer(answers, 'teamCoreMembers')),
@@ -531,8 +523,6 @@ export const ProjectShowcase = ({
         solutionDescription,
         solutionBenefits,
         solutionComparison,
-        innovationProcess,
-        visionStatement,
         teamLead,
         teamCoreMembersList,
         normalizedTeams,
@@ -555,8 +545,6 @@ export const ProjectShowcase = ({
       solutionDescription,
       solutionBenefits,
       solutionComparison,
-      innovationProcess,
-      visionStatement,
       teamLead,
       teamCoreMembersList,
       normalizedTeams,

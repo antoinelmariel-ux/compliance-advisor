@@ -28,7 +28,6 @@ export const AmnestyShowcase = ({
           audienceSection: 'animate-on-scroll amnesty-section',
           problemSection: 'animate-on-scroll amnesty-section',
           solutionSection: 'animate-on-scroll amnesty-section',
-          innovationSection: 'animate-on-scroll amnesty-section',
           teamSection: 'animate-on-scroll amnesty-section',
           timelineSection: 'animate-on-scroll amnesty-section',
           analysisSection: 'animate-on-scroll amnesty-section',
