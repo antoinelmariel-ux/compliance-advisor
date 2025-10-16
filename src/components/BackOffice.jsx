@@ -481,7 +481,7 @@ export const BackOffice = ({ questions, setQuestions, rules, setRules, teams, se
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 hv-background">
+    <div className="min-h-screen hv-background px-4 py-16 sm:px-10 lg:px-12">
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 hv-surface" role="region" aria-label="Back-office compliance">
           <header className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between mb-8">
