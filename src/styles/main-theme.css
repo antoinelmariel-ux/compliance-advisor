@@ -544,7 +544,7 @@ textarea {
   box-shadow: var(--focus-ring);
 }
 
-.icomoon-icon {
+.app-icon {
   font-size: 1em;
   display: inline-flex;
   align-items: center;
@@ -552,18 +552,18 @@ textarea {
   line-height: 1;
 }
 
-.icomoon-icon.w-4,
-.icomoon-icon.h-4 {
+.app-icon.w-4,
+.app-icon.h-4 {
   font-size: 1rem;
 }
 
-.icomoon-icon.w-5,
-.icomoon-icon.h-5 {
+.app-icon.w-5,
+.app-icon.h-5 {
   font-size: 1.15rem;
 }
 
-.icomoon-icon.w-6,
-.icomoon-icon.h-6 {
+.app-icon.w-6,
+.app-icon.h-6 {
   font-size: 1.35rem;
 }
 
