@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from '../react.js';
+import React, { useMemo, useRef, useState } from '../react.js';
 import {
   Plus,
   Target,
@@ -12,7 +12,8 @@ import {
   Sparkles,
   AlertTriangle,
   Edit,
-  Save
+  Save,
+  Upload
 } from './icons.js';
 
 const formatDate = (isoDate) => {
@@ -70,11 +71,14 @@ export const HomeScreen = ({
   onStartNewProject,
   onOpenProject,
   onDeleteProject,
-  onOpenPresentation
+  onOpenPresentation,
+  onImportProject
 }) => {
   const [ownerFilter, setOwnerFilter] = useState('');
   const [targetFilter, setTargetFilter] = useState('');
   const [nameFilter, setNameFilter] = useState('');
+
+  const fileInputRef = useRef(null);
 
   const hasProjects = projects.length > 0;
 
@@ -154,6 +158,32 @@ export const HomeScreen = ({
     setNameFilter('');
   };
 
+  const handleImportClick = () => {
+    if (typeof onImportProject !== 'function') {
+      return;
+    }
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileChange = (event) => {
+    if (typeof onImportProject !== 'function') {
+      return;
+    }
+
+    const file = event?.target?.files?.[0];
+    if (file) {
+      onImportProject(file);
+    }
+
+    if (event?.target) {
+      event.target.value = '';
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50 px-4 py-8 sm:px-8 hv-background">
       <div className="max-w-6xl mx-auto space-y-12">
@@ -187,6 +217,25 @@ export const HomeScreen = ({
                     <Eye className="w-5 h-5 mr-2" />
                     Reprendre le dernier projet
                   </button>
+                )}
+                {typeof onImportProject === 'function' && (
+                  <>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="application/json"
+                      onChange={handleFileChange}
+                      style={{ display: 'none' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleImportClick}
+                      className="inline-flex items-center justify-center px-5 py-3 text-base font-semibold text-amber-600 bg-amber-50 hover:bg-amber-100 rounded-xl border border-amber-200 transition-all hv-button hv-focus-ring"
+                    >
+                      <Upload className="w-5 h-5 mr-2" />
+                      Charger un projet
+                    </button>
+                  </>
                 )}
               </div>
             </div>
