@@ -14,3 +14,13 @@ L'ajout d'une question, d'une règle ou d'une équipe génère un identifiant ba
 Dans le rapport de synthèse, la fonction `getTeamPriority` recherche un risque associé à une équipe, mais la condition fournie à `Array.prototype.find` n'utilise pas la variable de boucle `risk` : elle retourne simplement la vérité de `analysis.questions?.[teamId]`. Dès qu'une équipe possède des questions, le premier risque de la liste est renvoyé, quel que soit son lien réel avec l'équipe.【F:src/components/SynthesisReport.jsx†L103-L109】
 
 **Impact possible :** l'interface peut afficher une priorité erronée (ex. « Critique ») pour des équipes qui ne sont pas concernées par les risques identifiés, induisant les utilisateurs en erreur sur l'urgence des actions à mener.
+
+## 4. Échec silencieux de l'encodage UTF-8 en mode dégradé
+Le calcul de hachage de secours convertit la chaîne saisie à l'aide de `encodeURIComponent`. Si le navigateur rencontre des caractères invalides (surrogates orphelins, séquences UTF-16 tronquées), l'appel lève une erreur qui est attrapée et remplacée par une chaîne vide. Le mode dégradé calcule alors le SHA-256 d'une entrée vide sans indiquer à l'utilisateur que le mot de passe n'a pas pu être encodé.【F:src/utils/password.js†L7-L97】
+
+**Impact possible :** l'administrateur reçoit simplement un message « mot de passe incorrect » et peut croire que l'authentification échoue, alors que le problème provient de l'encodage côté navigateur. Les mots de passe contenant certains caractères spéciaux pourraient donc être inutilisables dans ces environnements.
+
+## 5. Chargement des modules bloqué par une CSP stricte
+Le module loader transpile chaque fichier via Babel puis l'exécute au moyen de `new Function(...)`. Cette stratégie nécessite l'autorisation `unsafe-eval` dans la Content Security Policy. Dans de nombreuses configurations d'hébergement ou d'entreprises, cette permission est interdite : l'appel à `new Function` est alors bloqué par le navigateur, empêchant tout chargement des modules React et laissant l'application vide au démarrage.【F:src/module-loader.js†L1-L58】
+
+**Impact possible :** en production derrière une CSP restrictive, l'application ne démarre pas et affiche un écran vierge, car aucun composant n'est initialisé.
