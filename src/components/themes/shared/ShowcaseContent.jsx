@@ -12,6 +12,8 @@ export const ShowcaseContent = ({
 }) => {
   const themeId = themeSwitch?.selected || data?.theme || 'apple';
 
+  const meta = data?.meta && typeof data.meta === 'object' ? data.meta : {};
+  const eyebrow = isNonEmptyString(meta.eyebrow) ? meta.eyebrow : 'Vitrine du projet';
   const projectName = isNonEmptyString(data?.projectName) ? data.projectName : 'Votre projet';
   const slogan = isNonEmptyString(data?.slogan) ? data.slogan : null;
   const highlights = Array.isArray(data?.highlights) ? data.highlights : [];
@@ -87,7 +89,7 @@ export const ShowcaseContent = ({
             className={getClass('heroSection')}
           >
             <div data-role="hero-header">
-              <p data-role="eyebrow">Vitrine du projet</p>
+              <p data-role="eyebrow">{eyebrow}</p>
               <h1 data-field="project-name">{projectName}</h1>
               {slogan ? <p data-field="project-slogan">{slogan}</p> : null}
             </div>

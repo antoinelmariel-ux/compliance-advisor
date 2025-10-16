@@ -786,6 +786,14 @@
   max-width: 72ch;
 }
 
+.apple-aura__hero-section .hero__eyebrow {
+  margin: 0;
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--apple-text-muted);
+}
+
 .apple-aura .hero__metrics {
   display: grid;
   gap: 1.5rem;

@@ -78,6 +78,8 @@ const buildPresentationContext = () => {
     : [];
   const timelineDetails = analysis?.timeline?.details || [];
   const projectName = project.projectName || extractProjectName(answers, relevantQuestions) || 'Projet sans nom';
+  const isDemoProject = Boolean(project.isDemo);
+  const projectMeta = project.meta && typeof project.meta === 'object' ? project.meta : null;
 
   return {
     status: 'ready',
@@ -89,7 +91,9 @@ const buildPresentationContext = () => {
     relevantTeams,
     questions: relevantQuestions,
     timelineDetails,
-    usedFallback
+    usedFallback,
+    isDemoProject,
+    projectMeta
   };
 };
 
@@ -207,6 +211,8 @@ const PresentationPage = () => {
           selectedTheme={selectedTheme}
           onThemeChange={handleThemeSelection}
           themeOptions={themeOptions}
+          isDemoProject={context.isDemoProject}
+          projectMeta={context.projectMeta}
         />
       </main>
     </div>

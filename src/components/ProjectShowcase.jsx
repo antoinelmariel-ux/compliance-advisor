@@ -338,6 +338,36 @@ const sanitizeForScript = (payload) => {
   }
 };
 
+const resolveShowcaseMeta = ({ projectMeta, isDemoProject, projectName }) => {
+  const metaSource = projectMeta && typeof projectMeta === 'object' ? projectMeta : {};
+
+  const badge = hasText(metaSource.badge)
+    ? metaSource.badge.trim()
+    : (isDemoProject ? 'Projet de démonstration' : null);
+
+  const eyebrow = hasText(metaSource.eyebrow)
+    ? metaSource.eyebrow.trim()
+    : (badge || (isDemoProject ? 'Projet de démonstration' : 'Vitrine du projet'));
+
+  const versionSource = metaSource.version && typeof metaSource.version === 'object'
+    ? metaSource.version
+    : null;
+
+  const version = versionSource && hasText(versionSource.number)
+    ? {
+        label: hasText(versionSource.label) ? versionSource.label.trim() : projectName,
+        number: versionSource.number.trim(),
+        status: hasText(versionSource.status) ? versionSource.status.trim() : null
+      }
+    : null;
+
+  return {
+    eyebrow: hasText(eyebrow) ? eyebrow : 'Vitrine du projet',
+    badge,
+    version
+  };
+};
+
 const buildShowcasePayload = ({
   selectedTheme,
   safeProjectName,
@@ -359,11 +389,13 @@ const buildShowcasePayload = ({
   complexity,
   analysis,
   primaryRisk,
-  missingShowcaseQuestions
+  missingShowcaseQuestions,
+  meta
 }) => ({
   theme: selectedTheme,
   projectName: safeProjectName,
   slogan: hasText(slogan) ? slogan : null,
+  meta,
   audience: {
     summary: targetAudienceList.join(', ') || null,
     items: targetAudienceList
@@ -413,7 +445,9 @@ export const ProjectShowcase = ({
   renderInStandalone = false,
   selectedTheme: selectedThemeProp,
   onThemeChange,
-  themeOptions: themeOptionsProp
+  themeOptions: themeOptionsProp,
+  isDemoProject = false,
+  projectMeta = null
 }) => {
   const rawProjectName = typeof projectName === 'string' ? projectName.trim() : '';
   const safeProjectName = rawProjectName.length > 0 ? rawProjectName : 'Votre projet';
@@ -518,6 +552,10 @@ export const ProjectShowcase = ({
     [targetAudience, runway]
   );
   const complexity = analysis?.complexity || null;
+  const resolvedMeta = useMemo(
+    () => resolveShowcaseMeta({ projectMeta, isDemoProject, projectName: safeProjectName }),
+    [projectMeta, isDemoProject, safeProjectName]
+  );
 
   const missingShowcaseQuestions = useMemo(() => {
     const questionList = Array.isArray(questions) ? questions : [];
@@ -571,7 +609,8 @@ export const ProjectShowcase = ({
         complexity,
         analysis,
         primaryRisk,
-        missingShowcaseQuestions
+        missingShowcaseQuestions,
+        meta: resolvedMeta
       }),
     [
       selectedTheme,
@@ -594,7 +633,8 @@ export const ProjectShowcase = ({
       complexity,
       analysis,
       primaryRisk,
-      missingShowcaseQuestions
+      missingShowcaseQuestions,
+      resolvedMeta
     ]
   );
 

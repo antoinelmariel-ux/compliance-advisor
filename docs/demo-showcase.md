@@ -1,5 +1,7 @@
 # Vitrine du projet démo – Campagne Aura
 
+> **Version** : Campagne Aura — Version 0.1.4 — Projet de démonstration complété.
+
 ## Hero
 - **Slogan** : Illuminer chaque lancement produit
 - **Audience principale** : Grand public / clients finaux, Investisseurs, Partenaires ou prescripteurs
