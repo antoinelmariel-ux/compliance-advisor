@@ -15,7 +15,8 @@ import { extractProjectName } from './utils/projects.js';
 import { createDemoProject } from './data/demoProject.js';
 import { verifyAdminPassword } from './utils/password.js';
 
-const APP_VERSION = 'v1.0.50';
+const APP_VERSION = 'v1.0.51';
+
 
 
 const isAnswerProvided = (value) => {
