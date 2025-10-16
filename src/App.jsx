@@ -17,7 +17,7 @@ import { verifyAdminPassword } from './utils/password.js';
 import { isAnswerProvided } from './utils/answers.js';
 import { computeMissingShowcaseQuestions } from './utils/showcaseRequirements.js';
 
-const APP_VERSION = 'v1.0.64';
+const APP_VERSION = 'v1.0.65';
 
 const normalizeProjectEntry = (project = {}, fallbackQuestionsLength = initialQuestions.length) => {
   const answers = typeof project.answers === 'object' && project.answers !== null ? project.answers : {};
@@ -177,6 +177,97 @@ export const App = () => {
     projects,
     activeProjectId
   ]);
+
+  const exportProjectDraft = useCallback((projectEntry) => {
+    if (!projectEntry || typeof window === 'undefined') {
+      return;
+    }
+
+    const { document: targetDocument } = window;
+    if (!targetDocument || typeof Blob === 'undefined') {
+      return;
+    }
+
+    const now = new Date();
+
+    const buildSafeFileName = (rawName) => {
+      if (typeof rawName !== 'string' || rawName.trim().length === 0) {
+        return null;
+      }
+
+      const trimmed = rawName.trim();
+
+      try {
+        return trimmed
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, '');
+      } catch (error) {
+        return trimmed
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, '');
+      }
+    };
+
+    const safeName = buildSafeFileName(projectEntry.projectName) || 'projet-compliance';
+    const timestamp = [
+      now.getFullYear(),
+      String(now.getMonth() + 1).padStart(2, '0'),
+      String(now.getDate()).padStart(2, '0'),
+      String(now.getHours()).padStart(2, '0'),
+      String(now.getMinutes()).padStart(2, '0'),
+      String(now.getSeconds()).padStart(2, '0')
+    ].join('');
+    const fileName = `${safeName}-${timestamp}.json`;
+
+    const questionnaireSummary = {
+      questionIds: questions.map(question => question.id),
+      total: questions.length
+    };
+
+    const exportPayload = {
+      version: APP_VERSION,
+      exportedAt: now.toISOString(),
+      project: {
+        id: projectEntry.id,
+        name: projectEntry.projectName,
+        projectName: projectEntry.projectName,
+        status: 'draft',
+        answers: projectEntry.answers || {},
+        analysis: projectEntry.analysis || null,
+        totalQuestions: projectEntry.totalQuestions,
+        lastQuestionIndex: projectEntry.lastQuestionIndex,
+        lastUpdated: projectEntry.lastUpdated,
+        questionnaire: questionnaireSummary
+      }
+    };
+
+    if (typeof URL === 'undefined' || typeof URL.createObjectURL !== 'function') {
+      return;
+    }
+
+    const blob = new Blob([JSON.stringify(exportPayload, null, 2)], {
+      type: 'application/json'
+    });
+
+    const objectUrl = URL.createObjectURL(blob);
+    const anchor = targetDocument.createElement('a');
+    anchor.href = objectUrl;
+    anchor.download = fileName;
+    anchor.rel = 'noopener';
+    anchor.style.display = 'none';
+
+    targetDocument.body.appendChild(anchor);
+    anchor.click();
+    targetDocument.body.removeChild(anchor);
+
+    setTimeout(() => {
+      URL.revokeObjectURL(objectUrl);
+    }, 0);
+  }, [questions]);
 
   useEffect(() => {
     return () => {
@@ -683,10 +774,11 @@ export const App = () => {
   const handleSaveDraft = useCallback(() => {
     const entry = handleSaveProject({ status: 'draft', lastQuestionIndex: currentQuestionIndex });
     if (entry) {
+      exportProjectDraft(entry);
       setValidationError(null);
       setScreen('home');
     }
-  }, [currentQuestionIndex, handleSaveProject]);
+  }, [currentQuestionIndex, exportProjectDraft, handleSaveProject]);
 
   const handleImportProjectFile = useCallback(async (file) => {
     if (!file || typeof file.text !== 'function') {
@@ -747,12 +839,16 @@ export const App = () => {
         : maxQuestionIndex;
 
       const importedName = (() => {
-        if (typeof projectSection.name === 'string' && projectSection.name.trim().length > 0) {
-          return projectSection.name.trim();
-        }
+        const candidates = [
+          projectSection.name,
+          projectSection.projectName,
+          parsed.projectName
+        ];
 
-        if (typeof parsed.projectName === 'string' && parsed.projectName.trim().length > 0) {
-          return parsed.projectName.trim();
+        for (const candidate of candidates) {
+          if (typeof candidate === 'string' && candidate.trim().length > 0) {
+            return candidate.trim();
+          }
         }
 
         return '';
