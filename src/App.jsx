@@ -14,7 +14,7 @@ import { analyzeAnswers } from './utils/rules.js';
 import { extractProjectName } from './utils/projects.js';
 import { createDemoProject } from './data/demoProject.js';
 
-const APP_VERSION = 'v1.0.45';
+const APP_VERSION = 'v1.0.46';
 
 
 const isAnswerProvided = (value) => {
@@ -523,7 +523,9 @@ export const App = () => {
     const baseAnswers = payload.answers && typeof payload.answers === 'object' ? payload.answers : answers;
     const sanitizedAnswers = baseAnswers || {};
     const status = payload.status === 'submitted' ? 'submitted' : 'draft';
-    const projectId = activeProjectId || payload.id || `project-${Date.now()}`;
+    const projectId = (payload && typeof payload.id === 'string' && payload.id.trim().length > 0)
+      ? payload.id.trim()
+      : activeProjectId || `project-${Date.now()}`;
     const relevantQuestions = questions.filter(question => shouldShowQuestion(question, sanitizedAnswers));
     const computedTotalQuestions = payload.totalQuestions
       || (relevantQuestions.length > 0 ? relevantQuestions.length : activeQuestions.length);
@@ -609,6 +611,103 @@ export const App = () => {
       setScreen('home');
     }
   }, [currentQuestionIndex, handleSaveProject]);
+
+  const handleImportProjectFile = useCallback(async (file) => {
+    if (!file || typeof file.text !== 'function') {
+      return;
+    }
+
+    try {
+      const fileContent = await file.text();
+      const parsed = JSON.parse(fileContent);
+
+      const projectSection = (() => {
+        if (!parsed || typeof parsed !== 'object') {
+          return null;
+        }
+
+        if (parsed.project && typeof parsed.project === 'object' && !Array.isArray(parsed.project)) {
+          return parsed.project;
+        }
+
+        if (parsed.projectData && typeof parsed.projectData === 'object' && !Array.isArray(parsed.projectData)) {
+          return parsed.projectData;
+        }
+
+        if (!Array.isArray(parsed)) {
+          return parsed;
+        }
+
+        return null;
+      })();
+
+      if (!projectSection || typeof projectSection !== 'object' || Array.isArray(projectSection)) {
+        throw new Error('INVALID_PROJECT_PAYLOAD');
+      }
+
+      const answers = projectSection.answers && typeof projectSection.answers === 'object' && !Array.isArray(projectSection.answers)
+        ? projectSection.answers
+        : {};
+
+      const analysisData = projectSection.analysis && typeof projectSection.analysis === 'object' && !Array.isArray(projectSection.analysis)
+        ? projectSection.analysis
+        : null;
+
+      const questionnaireIds = Array.isArray(projectSection.questionnaire?.questionIds)
+        ? projectSection.questionnaire.questionIds.filter(id => typeof id === 'string')
+        : [];
+
+      const inferredTotalQuestions = typeof projectSection.totalQuestions === 'number' && projectSection.totalQuestions > 0
+        ? projectSection.totalQuestions
+        : questionnaireIds.length > 0
+          ? questionnaireIds.length
+          : Object.keys(answers).length;
+
+      const totalQuestions = inferredTotalQuestions > 0 ? inferredTotalQuestions : Object.keys(answers).length;
+      const maxQuestionIndex = totalQuestions > 0 ? totalQuestions - 1 : 0;
+
+      const importedLastIndex = typeof projectSection.lastQuestionIndex === 'number'
+        ? Math.min(Math.max(projectSection.lastQuestionIndex, 0), maxQuestionIndex)
+        : maxQuestionIndex;
+
+      const importedName = (() => {
+        if (typeof projectSection.name === 'string' && projectSection.name.trim().length > 0) {
+          return projectSection.name.trim();
+        }
+
+        if (typeof parsed.projectName === 'string' && parsed.projectName.trim().length > 0) {
+          return parsed.projectName.trim();
+        }
+
+        return '';
+      })();
+
+      const generatedId = typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+        ? `project-${crypto.randomUUID()}`
+        : `project-${Date.now()}`;
+
+      const entry = handleSaveProject({
+        id: generatedId,
+        projectName: importedName,
+        answers,
+        analysis: analysisData,
+        status: 'draft',
+        totalQuestions,
+        lastQuestionIndex: importedLastIndex
+      });
+
+      if (entry) {
+        setMode('user');
+        setScreen('home');
+        setValidationError(null);
+      }
+    } catch (error) {
+      console.error("Impossible d'importer le projet :", error);
+      if (typeof window !== 'undefined' && typeof window.alert === 'function') {
+        window.alert('Le fichier sélectionné ne correspond pas à un projet valide.');
+      }
+    }
+  }, [handleSaveProject, setMode, setScreen, setValidationError]);
 
   const handleToggleHighVisibility = useCallback(() => {
     setIsHighVisibility(prev => !prev);
@@ -741,6 +840,7 @@ export const App = () => {
               onOpenProject={handleOpenProject}
               onDeleteProject={handleDeleteProject}
               onOpenPresentation={handleOpenPresentation}
+              onImportProject={handleImportProjectFile}
             />
           ) : screen === 'questionnaire' ? (
             <QuestionnaireScreen
