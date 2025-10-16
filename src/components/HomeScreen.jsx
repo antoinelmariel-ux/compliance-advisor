@@ -35,20 +35,20 @@ const formatDate = (isoDate) => {
   }
 };
 
-const complexityColors = {
-  Faible: 'text-green-600',
-  Modérée: 'text-yellow-600',
-  Élevée: 'text-red-600'
+const complexityBadges = {
+  Faible: 'complexity-badge complexity-badge--faible',
+  Modérée: 'complexity-badge complexity-badge--moderee',
+  Élevée: 'complexity-badge complexity-badge--elevee'
 };
 
 const statusStyles = {
   draft: {
     label: 'Brouillon en cours',
-    className: 'bg-amber-50 border-amber-200 text-amber-600'
+    className: 'status-badge status-badge--draft'
   },
   submitted: {
     label: 'Synthèse finalisée',
-    className: 'bg-emerald-50 border-emerald-200 text-emerald-600'
+    className: 'status-badge status-badge--submitted'
   }
 };
 
@@ -188,120 +188,120 @@ export const HomeScreen = ({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50 px-4 py-8 sm:px-8 hv-background">
-      <div className="max-w-6xl mx-auto space-y-12">
-        <header className="bg-white border border-indigo-100 rounded-3xl shadow-xl p-6 sm:p-10 hv-surface" role="banner">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-            <div className="space-y-4">
-              <span className="inline-flex items-center px-3 py-1 text-sm font-semibold text-indigo-700 bg-indigo-100 rounded-full border border-indigo-200">
-                <Target className="w-4 h-4 mr-2" /> Votre copilote compliance
-              </span>
-              <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight">
-                Anticipez les besoins compliance de vos projets en quelques minutes
-              </h1>
-              <p className="text-lg text-gray-600 leading-relaxed max-w-2xl">
-                Compliance Advisor vous guide pas à pas pour qualifier votre initiative, identifier les interlocuteurs à mobiliser et sécuriser vos délais réglementaires.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3" role="group" aria-label="Actions principales">
+    <div className="min-h-screen hv-background home-screen">
+      <div className="max-w-6xl mx-auto section-stack">
+        <header className="home-hero hv-surface" role="banner">
+          <div className="space-y-6">
+            <span className="home-hero__badge">
+              <Target className="w-5 h-5" /> Votre copilote compliance
+            </span>
+            <h1 className="text-3xl sm:text-4xl leading-tight">
+              Anticipez les besoins compliance de vos projets en quelques minutes
+            </h1>
+            <p className="text-lg hv-text-muted leading-relaxed max-w-2xl">
+              Compliance Advisor vous guide pas à pas pour qualifier votre initiative, identifier les interlocuteurs à mobiliser et sécuriser vos délais réglementaires.
+            </p>
+            <div className="home-hero__actions" role="group" aria-label="Actions principales">
+              <button
+                type="button"
+                onClick={onStartNewProject}
+                className="hv-button hv-button-primary inline-flex items-center justify-center px-6 py-3 text-base"
+              >
+                <Plus className="w-5 h-5 mr-2" />
+                Créer un nouveau projet
+              </button>
+              {hasProjects && (
                 <button
                   type="button"
-                  onClick={onStartNewProject}
-                  className="inline-flex items-center justify-center px-5 py-3 text-base font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-md transition-all hv-button hv-button-primary"
+                  onClick={() => onOpenProject(sortedProjects[0]?.id)}
+                  className="hv-button hv-button-outline inline-flex items-center justify-center px-6 py-3 text-base"
                 >
-                  <Plus className="w-5 h-5 mr-2" />
-                  Créer un nouveau projet
+                  <Eye className="w-5 h-5 mr-2" />
+                  Reprendre le dernier projet
                 </button>
-                {hasProjects && (
+              )}
+              {typeof onImportProject === 'function' && (
+                <>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="application/json"
+                    onChange={handleFileChange}
+                    style={{ display: 'none' }}
+                  />
                   <button
                     type="button"
-                    onClick={() => onOpenProject(sortedProjects[0]?.id)}
-                    className="inline-flex items-center justify-center px-5 py-3 text-base font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-xl border border-indigo-200 transition-all hv-button hv-focus-ring"
+                    onClick={handleImportClick}
+                    className="hv-button hv-button-accent inline-flex items-center justify-center px-6 py-3 text-base"
                   >
-                    <Eye className="w-5 h-5 mr-2" />
-                    Reprendre le dernier projet
+                    <Upload className="w-5 h-5 mr-2" />
+                    Charger un projet
                   </button>
-                )}
-                {typeof onImportProject === 'function' && (
-                  <>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="application/json"
-                      onChange={handleFileChange}
-                      style={{ display: 'none' }}
-                    />
-                    <button
-                      type="button"
-                      onClick={handleImportClick}
-                      className="inline-flex items-center justify-center px-5 py-3 text-base font-semibold text-amber-600 bg-amber-50 hover:bg-amber-100 rounded-xl border border-amber-200 transition-all hv-button hv-focus-ring"
-                    >
-                      <Upload className="w-5 h-5 mr-2" />
-                      Charger un projet
-                    </button>
-                  </>
-                )}
-              </div>
+                </>
+              )}
             </div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 text-sm text-gray-600">
-              <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-4 hv-surface" role="listitem">
-                <p className="font-semibold text-gray-800 flex items-center">
-                  <Rocket className="w-5 h-5 mr-2" /> Démarrez simplement
-                </p>
-                <p className="mt-2 leading-relaxed">
-                  Un questionnaire dynamique pour cadrer votre projet et qualifier les impacts compliance.
-                </p>
-              </div>
-              <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 hv-surface" role="listitem">
-                <p className="font-semibold text-gray-800 flex items-center">
-                  <Compass className="w-5 h-5 mr-2" /> Visualisez la feuille de route
-                </p>
-                <p className="mt-2 leading-relaxed">
-                  Une synthèse claire avec le niveau de complexité, les équipes à mobiliser et les délais recommandés.
-                </p>
-              </div>
-              <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-4 hv-surface" role="listitem">
-                <p className="font-semibold text-gray-800 flex items-center">
-                  <Users className="w-5 h-5 mr-2" /> Collaborez efficacement
-                </p>
-                <p className="mt-2 leading-relaxed">
-                  Partagez la synthèse avec les parties prenantes pour sécuriser vos points de passage.
-                </p>
-              </div>
-              <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 hv-surface" role="listitem">
-                <p className="font-semibold text-gray-800 flex items-center">
-                  <Calendar className="w-5 h-5 mr-2" /> Gardez une trace
-                </p>
-                <p className="mt-2 leading-relaxed">
-                  Retrouvez à tout moment les projets déjà soumis et mettez-les à jour si nécessaire.
-                </p>
-              </div>
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="home-hero__detail" role="listitem">
+              <p className="home-hero__detail-title">
+                <Rocket className="w-5 h-5" /> Démarrez simplement
+              </p>
+              <p className="mt-2 hv-text-muted leading-relaxed">
+                Un questionnaire dynamique pour cadrer votre projet et qualifier les impacts compliance.
+              </p>
+            </div>
+            <div className="home-hero__detail" role="listitem">
+              <p className="home-hero__detail-title">
+                <Compass className="w-5 h-5" /> Visualisez la feuille de route
+              </p>
+              <p className="mt-2 hv-text-muted leading-relaxed">
+                Une synthèse claire avec le niveau de complexité, les équipes à mobiliser et les délais recommandés.
+              </p>
+            </div>
+            <div className="home-hero__detail" role="listitem">
+              <p className="home-hero__detail-title">
+                <Users className="w-5 h-5" /> Collaborez efficacement
+              </p>
+              <p className="mt-2 hv-text-muted leading-relaxed">
+                Partagez la synthèse avec les parties prenantes pour sécuriser vos points de passage.
+              </p>
+            </div>
+            <div className="home-hero__detail" role="listitem">
+              <p className="home-hero__detail-title">
+                <Calendar className="w-5 h-5" /> Gardez une trace
+              </p>
+              <p className="mt-2 hv-text-muted leading-relaxed">
+                Retrouvez à tout moment les projets déjà soumis et mettez-les à jour si nécessaire.
+              </p>
             </div>
           </div>
         </header>
 
-        <section aria-labelledby="projects-heading" className="space-y-6">
-          <div className="flex items-center justify-between">
+        <section aria-labelledby="projects-heading" className="section-stack">
+          <div className="home-section-heading">
             <div>
-              <h2 id="projects-heading" className="text-2xl font-bold text-gray-900">
+              <h2 id="projects-heading" className="text-2xl">
                 Vos projets enregistrés
               </h2>
-              <p className="text-sm text-gray-600">
+              <p className="hv-text-muted text-sm">
                 Accédez aux brouillons et aux synthèses finalisées pour les reprendre à tout moment.
               </p>
             </div>
-            <span className="inline-flex items-center text-sm font-semibold text-indigo-600 bg-indigo-50 border border-indigo-200 rounded-full px-3 py-1">
-              <CheckCircle className="w-4 h-4 mr-2" /> {projects.length} projet{projects.length > 1 ? 's' : ''}
+            <span className="home-section-counter">
+              <CheckCircle className="w-4 h-4" /> {projects.length} projet{projects.length > 1 ? 's' : ''}
             </span>
           </div>
 
           {!hasProjects && (
-            <div className="bg-white border border-dashed border-indigo-200 rounded-3xl p-8 text-center text-gray-600 hv-surface" role="status" aria-live="polite">
-              <p className="text-lg font-medium text-gray-800">Aucun projet enregistré pour le moment.</p>
-              <p className="mt-2">Lancez-vous dès maintenant pour préparer votre première synthèse compliance.</p>
+            <div className="home-empty" role="status" aria-live="polite">
+              <p className="text-lg font-medium">Aucun projet enregistré pour le moment.</p>
+              <p className="mt-2 hv-text-muted">
+                Lancez-vous dès maintenant pour préparer votre première synthèse compliance.
+              </p>
               <button
                 type="button"
                 onClick={onStartNewProject}
-                className="mt-4 inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-semibold transition-all hv-button hv-button-primary"
+                className="mt-4 hv-button hv-button-primary inline-flex items-center px-5 py-3 text-base"
               >
                 <Plus className="w-4 h-4 mr-2" /> Créer un projet
               </button>
@@ -309,17 +309,17 @@ export const HomeScreen = ({
           )}
 
           {hasProjects && (
-            <div className="space-y-6">
-              <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm hv-surface" role="region" aria-label="Filtres des projets">
-                <div className="flex flex-col gap-4">
+            <div className="section-stack">
+              <div className="home-filters hv-surface" role="region" aria-label="Filtres des projets">
+                <div className="flex flex-col gap-5">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="flex flex-col">
-                      <label htmlFor="owner-filter" className="text-sm font-semibold text-gray-700">
+                      <label htmlFor="owner-filter" className="filter-label">
                         Porteur de projet
                       </label>
                       <select
                         id="owner-filter"
-                        className="mt-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="filter-control"
                         value={ownerFilter}
                         onChange={event => setOwnerFilter(event.target.value)}
                       >
@@ -332,12 +332,12 @@ export const HomeScreen = ({
                       </select>
                     </div>
                     <div className="flex flex-col">
-                      <label htmlFor="target-filter" className="text-sm font-semibold text-gray-700">
+                      <label htmlFor="target-filter" className="filter-label">
                         Cible prioritaire
                       </label>
                       <select
                         id="target-filter"
-                        className="mt-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="filter-control"
                         value={targetFilter}
                         onChange={event => setTargetFilter(event.target.value)}
                       >
@@ -350,14 +350,14 @@ export const HomeScreen = ({
                       </select>
                     </div>
                     <div className="flex flex-col">
-                      <label htmlFor="name-filter" className="text-sm font-semibold text-gray-700">
+                      <label htmlFor="name-filter" className="filter-label">
                         Nom du projet
                       </label>
                       <input
                         id="name-filter"
                         type="search"
                         placeholder="Rechercher un projet"
-                        className="mt-1 rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="filter-control"
                         value={nameFilter}
                         onChange={event => setNameFilter(event.target.value)}
                       />
@@ -367,7 +367,7 @@ export const HomeScreen = ({
                     <button
                       type="button"
                       onClick={resetFilters}
-                      className="inline-flex items-center rounded-lg border border-indigo-200 px-3 py-2 text-sm font-semibold text-indigo-600 hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:border-gray-200 disabled:text-gray-400"
+                      className="hv-button hv-button-ghost px-5 py-2 text-sm"
                       disabled={!ownerFilter && !targetFilter && nameFilter.trim().length === 0}
                     >
                       Réinitialiser les filtres
@@ -389,54 +389,52 @@ export const HomeScreen = ({
                     return (
                       <article
                         key={project.id}
-                        className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all hv-surface"
+                        className="home-project-card hv-surface"
                         role="listitem"
                         aria-label={`Projet ${project.projectName || 'sans nom'}`}
                       >
                         <div className="flex items-start justify-between gap-4">
                           <div>
-                            <h3 className="text-xl font-semibold text-gray-900 flex items-center gap-2 flex-wrap">
+                            <h3 className="text-xl font-semibold flex items-center gap-2 flex-wrap">
                               <span>{project.projectName || 'Projet sans nom'}</span>
                               {project.isDemo && (
-                                <span className="inline-flex items-center px-2 py-0.5 text-xs font-semibold text-indigo-600 bg-indigo-50 border border-indigo-200 rounded-full">
+                                <span className="tag-soft">
                                   Projet démo
                                 </span>
                               )}
                             </h3>
-                            <p className="text-sm text-gray-500 mt-1">
+                            <p className="text-sm hv-text-muted mt-1">
                               Dernière mise à jour : {formatDate(project.lastUpdated || project.submittedAt)}
                             </p>
                           </div>
                           <div className="flex flex-col items-end gap-2">
-                            <span
-                              className={`px-3 py-1 text-xs font-semibold rounded-full border hv-badge ${projectStatus.className}`.trim()}
-                            >
+                            <span className={projectStatus.className}>
                               {projectStatus.label}
                             </span>
                             {complexity && (
-                              <span className={`px-3 py-1 text-xs font-semibold rounded-full border hv-badge ${complexityColors[complexity] || 'text-indigo-600'}`}>
+                              <span className={complexityBadges[complexity] || 'complexity-badge'}>
                                 {complexity}
                               </span>
                             )}
                           </div>
                         </div>
 
-                        <dl className="mt-4 grid grid-cols-1 gap-3 text-sm text-gray-600">
-                          <div className="flex items-center gap-2">
+                        <dl className="mt-4 grid grid-cols-1 gap-3 text-sm">
+                          <div className="flex items-center gap-2 hv-text-muted">
                             <FileText className="w-4 h-4" />
-                            <span className="font-medium text-gray-700">{Object.keys(project.answers || {}).length} réponse{Object.keys(project.answers || {}).length > 1 ? 's' : ''}</span>
+                            <span className="font-medium text-sm text-current">{Object.keys(project.answers || {}).length} réponse{Object.keys(project.answers || {}).length > 1 ? 's' : ''}</span>
                           </div>
                           {progress !== null && (
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 hv-text-muted">
                               <Save className="w-4 h-4" />
                               <span>{progress}% du questionnaire complété</span>
                             </div>
                           )}
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 hv-text-muted">
                             <Users className="w-4 h-4" />
                             <span>{teamsCount} équipe{teamsCount > 1 ? 's' : ''} recommandée{teamsCount > 1 ? 's' : ''}</span>
                           </div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 hv-text-muted">
                             <AlertTriangle className="w-4 h-4" />
                             <span>{risksCount} risque{risksCount > 1 ? 's' : ''} identifié{risksCount > 1 ? 's' : ''}</span>
                           </div>
@@ -458,7 +456,7 @@ export const HomeScreen = ({
                                 || typeof onOpenProject === 'function'
                               )
                             }
-                            className={`inline-flex items-center px-4 py-2 rounded-lg font-semibold transition-all hv-button hv-focus-ring bg-indigo-600 text-white hover:bg-indigo-700 hv-button-primary disabled:opacity-50 disabled:cursor-not-allowed`}
+                            className="hv-button hv-button-primary inline-flex items-center px-5 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             <Eye className="w-4 h-4 mr-2" /> Consulter la synthèse
                           </button>
@@ -466,7 +464,7 @@ export const HomeScreen = ({
                             <button
                               type="button"
                               onClick={() => onOpenPresentation(project.id)}
-                              className="inline-flex items-center px-4 py-2 bg-white border border-indigo-200 text-indigo-600 rounded-lg font-semibold hover:bg-indigo-50 transition-all hv-button hv-focus-ring"
+                              className="hv-button hv-button-outline inline-flex items-center px-5 py-2 text-sm"
                             >
                               <Sparkles className="w-4 h-4 mr-2" /> Présentation
                             </button>
@@ -486,11 +484,9 @@ export const HomeScreen = ({
                               (isDraft && typeof onOpenProject !== 'function')
                               || (!isDraft && typeof onDuplicateProject !== 'function')
                             }
-                            className={`inline-flex items-center px-4 py-2 rounded-lg font-semibold transition-all hv-button hv-focus-ring ${
-                              isDraft
-                                ? 'bg-amber-500 text-white hover:bg-amber-600'
-                                : 'bg-white border border-indigo-200 text-indigo-600 hover:bg-indigo-50'
-                            } disabled:opacity-50 disabled:cursor-not-allowed`}
+                            className={`hv-button inline-flex items-center px-5 py-2 text-sm ${
+                              isDraft ? 'hv-button-accent disabled:opacity-50 disabled:cursor-not-allowed' : 'hv-button-outline disabled:opacity-50 disabled:cursor-not-allowed'
+                            }`}
                           >
                             {isDraft ? (
                               <Edit className="w-4 h-4 mr-2" />
@@ -505,13 +501,15 @@ export const HomeScreen = ({
                   })}
                 </div>
               ) : (
-                <div className="bg-white border border-dashed border-indigo-200 rounded-3xl p-8 text-center text-gray-600 hv-surface" role="status" aria-live="polite">
-                  <p className="text-lg font-medium text-gray-800">Aucun projet ne correspond aux filtres sélectionnés.</p>
-                  <p className="mt-2">Ajustez vos critères ou réinitialisez les filtres pour visualiser à nouveau l'ensemble des projets.</p>
+                <div className="home-empty" role="status" aria-live="polite">
+                  <p className="text-lg font-medium">Aucun projet ne correspond aux filtres sélectionnés.</p>
+                  <p className="mt-2 hv-text-muted">
+                    Ajustez vos critères ou réinitialisez les filtres pour visualiser à nouveau l'ensemble des projets.
+                  </p>
                   <button
                     type="button"
                     onClick={resetFilters}
-                    className="mt-4 inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-semibold transition-all hv-button hv-button-primary"
+                    className="mt-4 hv-button hv-button-primary inline-flex items-center px-5 py-2 text-sm"
                   >
                     Réinitialiser les filtres
                   </button>

@@ -308,7 +308,7 @@ export const QuestionnaireScreen = ({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 px-4 py-6 sm:px-8 sm:py-10 hv-background">
+    <div className="min-h-screen hv-background px-4 py-16 sm:px-12">
       <div className="max-w-3xl mx-auto">
         <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 hv-surface">
           <div className="mb-8">

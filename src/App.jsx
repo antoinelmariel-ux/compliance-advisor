@@ -15,7 +15,7 @@ import { extractProjectName } from './utils/projects.js';
 import { createDemoProject } from './data/demoProject.js';
 import { verifyAdminPassword } from './utils/password.js';
 
-const APP_VERSION = 'v1.0.49';
+const APP_VERSION = 'v1.0.50';
 
 
 const isAnswerProvided = (value) => {
@@ -857,72 +857,59 @@ export const App = () => {
   }, [answers, rules, unansweredMandatoryQuestions]);
 
   return (
-    <div className="min-h-screen">
-      <nav className="bg-white shadow-sm border-b border-gray-200 hv-surface">
-        <div className="max-w-7xl mx-auto px-4 sm:px-8 py-4">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center">
-                <CheckCircle className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-lg font-bold text-gray-800 sm:text-xl">Compliance Advisor</h1>
-                <p className="text-xs text-gray-500">Outil d'aide à la décision</p>
-              </div>
+    <div className="app-shell">
+      <nav className="app-header" aria-label="Navigation principale">
+        <div className="app-header__inner">
+          <div className="app-header__brand">
+            <span className="app-header__mark">
+              <CheckCircle className="w-6 h-6" />
+            </span>
+            <div>
+              <h1 className="app-header__title">Compliance Advisor</h1>
+              <p className="app-header__subtitle">Outil d'aide à la décision</p>
             </div>
+          </div>
 
-            <div
-              className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-3 lg:justify-end"
-              role="group"
-              aria-label="Sélection du mode d'affichage"
+          <div
+            className="app-header__actions"
+            role="group"
+            aria-label="Sélection du mode d'affichage"
+          >
+            {mode === 'user' && (
+              <button
+                type="button"
+                onClick={() => setScreen('home')}
+                className={`app-header__button${screen === 'home' ? ' app-header__button--active' : ''}`}
+                aria-pressed={screen === 'home'}
+                aria-label="Retourner à l'accueil des projets"
+              >
+                Accueil projets
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => setMode('user')}
+              className={`app-header__button${mode === 'user' ? ' app-header__button--active' : ''}`}
+              aria-pressed={mode === 'user'}
+              aria-label="Basculer vers le mode chef de projet"
             >
-              {mode === 'user' && (
-                <button
-                  type="button"
-                  onClick={() => setScreen('home')}
-                  className={`w-full sm:w-auto px-4 py-2 rounded-lg font-medium text-sm sm:text-base transition-all hv-button ${
-                    screen === 'home'
-                      ? 'bg-indigo-600 text-white hv-button-primary'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                  aria-pressed={screen === 'home'}
-                  aria-label="Retourner à l'accueil des projets"
-                >
-                  Accueil projets
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={() => setMode('user')}
-                className={`w-full sm:w-auto px-4 py-2 rounded-lg font-medium text-sm sm:text-base transition-all hv-button ${
-                  mode === 'user'
-                    ? 'bg-indigo-600 text-white hv-button-primary'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-                aria-pressed={mode === 'user'}
-                aria-label="Basculer vers le mode chef de projet"
-              >
-                Mode Chef de Projet
-              </button>
-              <button
-                type="button"
-                onClick={handleEnterBackOffice}
-                className={`inline-flex items-center justify-center px-3 py-2 rounded-lg transition-all hv-button ${
-                  mode === 'admin'
-                    ? 'bg-indigo-600 text-white hv-button-primary'
-                    : 'text-gray-500 hover:text-indigo-600 hover:bg-gray-100'
-                }`}
-                aria-pressed={mode === 'admin'}
-                aria-label="Accéder au back-office"
-              >
-                <Settings className="w-5 h-5" />
-              </button>
-            </div>
+              Mode Chef de Projet
+            </button>
+            <button
+              type="button"
+              onClick={handleEnterBackOffice}
+              className={`app-header__icon-button${mode === 'admin' ? ' app-header__button--active' : ''}`}
+              aria-pressed={mode === 'admin'}
+              aria-label="Accéder au back-office"
+              title="Back-office"
+            >
+              <Settings className="w-5 h-5" />
+            </button>
           </div>
         </div>
       </nav>
 
-      <main id="main-content" tabIndex="-1" className="focus:outline-none hv-background">
+      <main id="main-content" tabIndex="-1" className="app-main focus:outline-none hv-background">
         {mode === 'user' ? (
           screen === 'home' ? (
             <HomeScreen
@@ -981,10 +968,8 @@ export const App = () => {
         )}
       </main>
 
-      <footer className="bg-white border-t border-gray-200 mt-10" aria-label="Pied de page">
-        <p className="text-xs text-gray-400 text-center py-4">
-          Compliance Advisor · Version {APP_VERSION}
-        </p>
+      <footer className="app-footer" aria-label="Pied de page">
+        <p className="app-footer__text">Compliance Advisor · Version {APP_VERSION}</p>
       </footer>
     </div>
   );
