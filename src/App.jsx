@@ -14,7 +14,7 @@ import { analyzeAnswers } from './utils/rules.js';
 import { extractProjectName } from './utils/projects.js';
 import { createDemoProject } from './data/demoProject.js';
 
-const APP_VERSION = 'v1.0.46';
+const APP_VERSION = 'v1.0.47';
 
 
 const isAnswerProvided = (value) => {
@@ -436,14 +436,14 @@ export const App = () => {
     setScreen('questionnaire');
   }, [resetProjectState]);
 
-  const handleOpenProject = useCallback((projectId) => {
+  const resolveProjectContext = useCallback((projectId) => {
     if (!projectId) {
-      return;
+      return null;
     }
 
     const project = projects.find(item => item.id === projectId);
     if (!project) {
-      return;
+      return null;
     }
 
     const projectAnswers = project.answers || {};
@@ -458,25 +458,119 @@ export const App = () => {
     const missingIndex = firstMissingId
       ? derivedQuestions.findIndex(question => question.id === firstMissingId)
       : -1;
-    const startingIndex = missingIndex >= 0 ? missingIndex : project.status === 'draft' ? sanitizedIndex : 0;
+
+    return {
+      project,
+      projectAnswers,
+      derivedAnalysis,
+      missingMandatory,
+      derivedQuestions,
+      sanitizedIndex,
+      missingIndex
+    };
+  }, [projects, questions, rules, shouldShowQuestion, analyzeAnswers]);
+
+  const handleOpenProject = useCallback((projectId) => {
+    const context = resolveProjectContext(projectId);
+    if (!context) {
+      return;
+    }
+
+    const {
+      project,
+      projectAnswers,
+      derivedAnalysis,
+      missingMandatory,
+      sanitizedIndex,
+      missingIndex
+    } = context;
 
     setAnswers(projectAnswers);
     setAnalysis(derivedAnalysis);
-    setCurrentQuestionIndex(startingIndex);
     setValidationError(null);
     setActiveProjectId(project.id);
 
     if (project.status === 'draft') {
+      const nextIndex = missingIndex >= 0 ? missingIndex : sanitizedIndex;
+      setCurrentQuestionIndex(nextIndex);
       setScreen('questionnaire');
       return;
     }
+
+    const nextIndex = missingIndex >= 0 ? missingIndex : 0;
+    setCurrentQuestionIndex(nextIndex);
 
     if (missingMandatory.length > 0) {
       setScreen('mandatory-summary');
     } else {
       setScreen('synthesis');
     }
-  }, [projects, questions, rules]);
+  }, [resolveProjectContext]);
+
+  const handleOpenSynthesis = useCallback((projectId) => {
+    const context = resolveProjectContext(projectId);
+    if (!context) {
+      return;
+    }
+
+    const {
+      project,
+      projectAnswers,
+      derivedAnalysis,
+      missingMandatory,
+      missingIndex
+    } = context;
+
+    setAnswers(projectAnswers);
+    setAnalysis(derivedAnalysis);
+    setValidationError(null);
+    setActiveProjectId(project.id);
+
+    const nextIndex = missingIndex >= 0 ? missingIndex : 0;
+    setCurrentQuestionIndex(nextIndex);
+
+    if (missingMandatory.length > 0) {
+      setScreen('mandatory-summary');
+    } else {
+      setScreen('synthesis');
+    }
+  }, [resolveProjectContext]);
+
+  const handleDuplicateProject = useCallback((projectId) => {
+    const context = resolveProjectContext(projectId);
+    if (!context) {
+      return;
+    }
+
+    const {
+      project,
+      projectAnswers,
+      derivedAnalysis,
+      sanitizedIndex
+    } = context;
+
+    const generatedId = typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+      ? `project-${crypto.randomUUID()}`
+      : `project-${Date.now()}`;
+
+    const baseName = typeof project.projectName === 'string' ? project.projectName.trim() : '';
+    const duplicateName = baseName.length > 0 ? `${baseName} (copie)` : undefined;
+
+    const entry = handleSaveProject({
+      id: generatedId,
+      projectName: duplicateName,
+      answers: projectAnswers,
+      analysis: project.analysis || derivedAnalysis,
+      status: 'draft',
+      totalQuestions: project.totalQuestions,
+      lastQuestionIndex: sanitizedIndex
+    });
+
+    if (entry) {
+      setValidationError(null);
+      setScreen('home');
+    }
+  }, [handleSaveProject, resolveProjectContext]);
 
   const handleDeleteProject = useCallback((projectId) => {
     if (!projectId) {
@@ -838,8 +932,10 @@ export const App = () => {
               projects={projects}
               onStartNewProject={handleCreateNewProject}
               onOpenProject={handleOpenProject}
+              onOpenSynthesis={handleOpenSynthesis}
               onDeleteProject={handleDeleteProject}
               onOpenPresentation={handleOpenPresentation}
+              onDuplicateProject={handleDuplicateProject}
               onImportProject={handleImportProjectFile}
             />
           ) : screen === 'questionnaire' ? (
