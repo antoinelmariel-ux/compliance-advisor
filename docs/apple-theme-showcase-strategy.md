@@ -23,9 +23,9 @@
 
 ## 6. Communication & suivi
 - Documenter l’avancement dans le wiki produit et prévoir une démo hebdomadaire.
-- Mettre à jour le footer applicatif avec la version `v1.0.51` une fois la stratégie validée.
+- Mettre à jour le footer applicatif avec la version `v1.0.52` une fois la stratégie validée.
 
 ## Mise en œuvre initiale (Sprint 1)
 - Création d’un layout React dédié (`AppleShowcase`) qui reproduit la structure de `aura-showcase-base.html` : navigation interne, sections héro, grilles et chronologie.
 - Ajout d’un socle CSS Aura pour le thème Apple (badge, cartes vitrées, listes empilées, timeline) tout en conservant le traitement visuel « keynote ».
-- Synchronisation des versions : `Campagne Aura 0.1.2` pour la maquette, `Thème Apple v1.0.51` côté application.
+- Synchronisation des versions : `Campagne Aura 0.1.2` pour la maquette, `Thème Apple v1.0.52` côté application.
