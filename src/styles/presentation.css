@@ -143,6 +143,27 @@ body.presentation-page {
   background: linear-gradient(135deg, rgba(79, 70, 229, 0.95), rgba(99, 102, 241, 0.9));
 }
 
+.presentation-button--ghost {
+  background: rgba(255, 255, 255, 0.9);
+  color: #4338ca;
+  border-color: rgba(99, 102, 241, 0.35);
+  box-shadow: none;
+}
+
+.presentation-button--ghost:hover {
+  background: rgba(255, 255, 255, 0.95);
+  color: #312e81;
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px -16px rgba(79, 70, 229, 0.35);
+}
+
+.presentation-button--ghost-active {
+  background: linear-gradient(135deg, rgba(79, 70, 229, 0.92), rgba(129, 140, 248, 0.85));
+  color: #f8fafc;
+  border-color: rgba(79, 70, 229, 0.6);
+  box-shadow: 0 16px 32px -18px rgba(79, 70, 229, 0.55);
+}
+
 .presentation-button:focus {
   outline: 3px solid rgba(129, 140, 248, 0.6);
   outline-offset: 3px;

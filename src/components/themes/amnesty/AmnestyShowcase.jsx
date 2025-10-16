@@ -8,7 +8,8 @@ export const AmnestyShowcase = ({
   themeSwitch,
   onClose,
   renderInStandalone,
-  serializedPayload
+  serializedPayload,
+  editing
 }) => {
   useShowcaseAnimations([data, themeSwitch?.selected]);
 
@@ -20,6 +21,7 @@ export const AmnestyShowcase = ({
         onClose={onClose}
         renderInStandalone={renderInStandalone}
         serializedPayload={serializedPayload}
+        editing={editing}
         classNames={{
           article: 'amnesty-showcase-canvas',
           themeSwitcher: 'animate-on-scroll amnesty-switcher',

@@ -1,0 +1,106 @@
+[data-component="project-showcase"][data-editing='enabled'] .showcase-editable {
+  position: relative;
+}
+
+.showcase-editable {
+  position: relative;
+}
+
+.showcase-editable__content {
+  position: relative;
+  z-index: 0;
+}
+
+.showcase-editable__button {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  border: 1px solid var(--showcase-border-soft, rgba(15, 23, 42, 0.12));
+  background-color: var(--showcase-color-card, rgba(255, 255, 255, 0.92));
+  color: var(--showcase-color-text-strong, #1f2937);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  transition: transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+}
+
+.showcase-editable--inactive .showcase-editable__button {
+  background-color: var(--showcase-color-surface, rgba(248, 250, 252, 0.94));
+  color: var(--showcase-color-text-soft, #475569);
+  border-style: dashed;
+  opacity: 0.85;
+}
+
+.showcase-editable__button:hover,
+.showcase-editable__button:focus-visible {
+  background-color: var(--showcase-color-surface, rgba(248, 250, 252, 0.95));
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+}
+
+.showcase-editable--inactive .showcase-editable__button:hover,
+.showcase-editable--inactive .showcase-editable__button:focus-visible {
+  transform: none;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+}
+
+.showcase-editable__button:focus-visible {
+  outline: 2px solid var(--showcase-color-accent, #4f46e5);
+  outline-offset: 2px;
+}
+
+.showcase-editable__button[disabled],
+.showcase-editable__button[aria-disabled='true'] {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.showcase-editable__icon {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+.showcase-editable--inline {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.75rem;
+}
+
+.showcase-editable--inline .showcase-editable__button {
+  position: static;
+  transform: none;
+  box-shadow: none;
+  background-color: var(--showcase-color-card, rgba(255, 255, 255, 0.92));
+}
+
+.showcase-editable--inline .showcase-editable__button:hover,
+.showcase-editable--inline .showcase-editable__button:focus-visible {
+  box-shadow: none;
+  transform: none;
+}
+
+.showcase-editable--inline .showcase-editable__button span {
+  font-size: 0.68rem;
+}
+
+.showcase-editable--block .showcase-editable__content,
+.showcase-editable--block.showcase-editable {
+  border-radius: inherit;
+}
+
+.showcase-editable--block .showcase-editable__button {
+  background-color: var(--showcase-color-surface-strong, rgba(255, 255, 255, 0.96));
+}
+
+.showcase-editable--inline .showcase-editable__content {
+  display: inline;
+}
+

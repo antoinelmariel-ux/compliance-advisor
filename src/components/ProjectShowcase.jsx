@@ -69,6 +69,18 @@ const THEME_COMPONENTS = {
   nebula: NebulaShowcase
 };
 
+const SHOWCASE_EDITABLE_FIELDS = Object.freeze({
+  projectName: { questionId: 'projectName', label: 'Nom du projet', variant: 'inline' },
+  projectSlogan: { questionId: 'projectSlogan', label: 'Slogan', variant: 'inline' },
+  targetAudience: { questionId: 'targetAudience', label: 'Audiences cibles' },
+  problemPainPoints: { questionId: 'problemPainPoints', label: 'Points de douleur' },
+  solutionDescription: { questionId: 'solutionDescription', label: 'Description de la solution' },
+  solutionBenefits: { questionId: 'solutionBenefits', label: 'Bénéfices clés' },
+  solutionComparison: { questionId: 'solutionComparison', label: 'Différenciation' },
+  teamLead: { questionId: 'teamLead', label: 'Lead du projet', variant: 'inline' },
+  teamCoreMembers: { questionId: 'teamCoreMembers', label: 'Collectif moteur' }
+});
+
 const isValidTheme = (themeId, themeOptions) =>
   typeof themeId === 'string'
     && themeOptions.some(theme => theme.id === themeId);
@@ -398,7 +410,10 @@ export const ProjectShowcase = ({
   onThemeChange,
   themeOptions: themeOptionsProp,
   isDemoProject = false,
-  projectMeta = null
+  projectMeta = null,
+  allowEditing = false,
+  onEditQuestion = null,
+  onRequestEnableEditing = null
 }) => {
   const rawProjectName = typeof projectName === 'string' ? projectName.trim() : '';
   const safeProjectName = rawProjectName.length > 0 ? rawProjectName : 'Votre projet';
@@ -590,6 +605,19 @@ export const ProjectShowcase = ({
     [selectedTheme, activeTheme, themeOptions, handleThemeChange]
   );
 
+  const editingContext = useMemo(() => {
+    if (typeof onEditQuestion !== 'function') {
+      return { enabled: false };
+    }
+
+    return {
+      enabled: Boolean(allowEditing),
+      onEdit: onEditQuestion,
+      onRequestEnable: typeof onRequestEnableEditing === 'function' ? onRequestEnableEditing : null,
+      fields: SHOWCASE_EDITABLE_FIELDS
+    };
+  }, [allowEditing, onEditQuestion, onRequestEnableEditing]);
+
   const ThemeComponent = THEME_COMPONENTS[selectedTheme] || AppleShowcase;
 
   return (
@@ -599,6 +627,7 @@ export const ProjectShowcase = ({
       onClose={typeof onClose === 'function' ? handleClose : null}
       renderInStandalone={renderInStandalone}
       serializedPayload={serializedPayload}
+      editing={editingContext}
     />
   );
 };
