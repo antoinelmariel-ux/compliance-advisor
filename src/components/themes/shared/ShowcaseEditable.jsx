@@ -1,5 +1,4 @@
 import React from '../../../react.js';
-import { Edit } from '../../icons.js';
 
 const noop = () => {};
 
@@ -11,6 +10,19 @@ const normalizeLabel = (label, fallback) => {
     return fallback.trim();
   }
   return 'ce contenu';
+};
+
+const hasActiveSelection = () => {
+  if (typeof window === 'undefined' || typeof window.getSelection !== 'function') {
+    return false;
+  }
+
+  const selection = window.getSelection();
+  if (!selection) {
+    return false;
+  }
+
+  return selection.type === 'Range' && String(selection).trim().length > 0;
 };
 
 export const ShowcaseEditable = ({
@@ -56,7 +68,28 @@ export const ShowcaseEditable = ({
     }
   };
 
-  const handleButtonClick = () => {
+  const isRequestOnly = !isEnabled && typeof onRequestEnable === 'function';
+  const isInteractive = isEnabled || isRequestOnly;
+  const childClassName = [children.props.className, 'showcase-editable__content'].filter(Boolean).join(' ');
+  const ariaLabel = isEnabled
+    ? `Modifier ${normalizedLabel}`
+    : `Activer l’édition pour ${normalizedLabel}`;
+  const hintLabel = isEnabled ? 'Cliquer pour modifier' : 'Activer l’édition';
+
+  const handleActivation = (event) => {
+    if (!isInteractive) {
+      return;
+    }
+
+    if (hasActiveSelection()) {
+      return;
+    }
+
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
     if (isEnabled) {
       handleEdit();
       return;
@@ -65,35 +98,34 @@ export const ShowcaseEditable = ({
     handleRequestEnable();
   };
 
-  const childClassName = [children.props.className, 'showcase-editable__content'].filter(Boolean).join(' ');
+  const handleKeyDown = (event) => {
+    if (!isInteractive) {
+      return;
+    }
 
-  const isRequestOnly = !isEnabled && typeof onRequestEnable === 'function';
-  const buttonDisabled = !isEnabled && !isRequestOnly;
-  const buttonLabel = isEnabled ? 'Modifier' : 'Activer l’édition';
-  const buttonAriaLabel = isEnabled
-    ? `Modifier ${normalizedLabel}`
-    : `Activer l’édition pour ${normalizedLabel}`;
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handleActivation(event);
+    }
+  };
 
   return (
     <div
-      className={`showcase-editable showcase-editable--${variant} ${isEnabled ? 'showcase-editable--active' : 'showcase-editable--inactive'}`.trim()}
+      className={`showcase-editable showcase-editable--${variant} ${isEnabled ? 'showcase-editable--active' : 'showcase-editable--inactive'}${isInteractive ? ' showcase-editable--interactive' : ''}`.trim()}
       data-edit-question={questionId}
       data-editing-active={isEnabled ? 'true' : 'false'}
+      onClick={isInteractive ? handleActivation : undefined}
+      onKeyDown={isInteractive ? handleKeyDown : undefined}
+      role={isInteractive ? 'button' : undefined}
+      tabIndex={isInteractive ? 0 : undefined}
+      aria-label={isInteractive ? ariaLabel : undefined}
     >
       {React.cloneElement(children, {
         className: childClassName
       })}
-      <button
-        type="button"
-        className="showcase-editable__button"
-        onClick={handleButtonClick}
-        aria-label={buttonAriaLabel}
-        disabled={buttonDisabled}
-        aria-disabled={buttonDisabled ? 'true' : undefined}
-      >
-        <Edit className="showcase-editable__icon" aria-hidden="true" />
-        <span>{buttonLabel}</span>
-      </button>
+      {isInteractive ? (
+        <span className="showcase-editable__hint" aria-hidden="true">{hintLabel}</span>
+      ) : null}
     </div>
   );
 };

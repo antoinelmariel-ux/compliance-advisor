@@ -1,9 +1,6 @@
-[data-component="project-showcase"][data-editing='enabled'] .showcase-editable {
-  position: relative;
-}
-
 .showcase-editable {
   position: relative;
+  border-radius: inherit;
 }
 
 .showcase-editable__content {
@@ -11,7 +8,18 @@
   z-index: 0;
 }
 
-.showcase-editable__button {
+.showcase-editable--inline {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.75rem;
+}
+
+.showcase-editable--block .showcase-editable__content,
+.showcase-editable--block.showcase-editable {
+  border-radius: inherit;
+}
+
+.showcase-editable__hint {
   position: absolute;
   top: 0.5rem;
   right: 0.5rem;
@@ -28,79 +36,69 @@
   font-weight: 600;
   letter-spacing: 0.02em;
   text-transform: uppercase;
-  transition: transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
+  pointer-events: none;
   box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+  opacity: 0;
+  transform: translateY(-4px);
+  visibility: hidden;
+  transition: opacity 120ms ease, transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
 }
 
-.showcase-editable--inactive .showcase-editable__button {
+.showcase-editable--inactive .showcase-editable__hint {
   background-color: var(--showcase-color-surface, rgba(248, 250, 252, 0.94));
   color: var(--showcase-color-text-soft, #475569);
   border-style: dashed;
   opacity: 0.85;
 }
 
-.showcase-editable__button:hover,
-.showcase-editable__button:focus-visible {
-  background-color: var(--showcase-color-surface, rgba(248, 250, 252, 0.95));
-  transform: translateY(-1px);
+.showcase-editable--interactive:hover .showcase-editable__hint,
+.showcase-editable--interactive:focus-visible .showcase-editable__hint {
+  opacity: 1;
+  transform: translateY(0);
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+  visibility: visible;
 }
 
-.showcase-editable--inactive .showcase-editable__button:hover,
-.showcase-editable--inactive .showcase-editable__button:focus-visible {
-  transform: none;
-  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
-}
-
-.showcase-editable__button:focus-visible {
+.showcase-editable--interactive:focus-visible {
   outline: 2px solid var(--showcase-color-accent, #4f46e5);
   outline-offset: 2px;
 }
 
-.showcase-editable__button[disabled],
-.showcase-editable__button[aria-disabled='true'] {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.showcase-editable__icon {
-  width: 0.75rem;
-  height: 0.75rem;
-}
-
-.showcase-editable--inline {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 0.75rem;
-}
-
-.showcase-editable--inline .showcase-editable__button {
-  position: static;
-  transform: none;
-  box-shadow: none;
-  background-color: var(--showcase-color-card, rgba(255, 255, 255, 0.92));
-}
-
-.showcase-editable--inline .showcase-editable__button:hover,
-.showcase-editable--inline .showcase-editable__button:focus-visible {
-  box-shadow: none;
-  transform: none;
-}
-
-.showcase-editable--inline .showcase-editable__button span {
-  font-size: 0.68rem;
-}
-
-.showcase-editable--block .showcase-editable__content,
-.showcase-editable--block.showcase-editable {
+.showcase-editable--interactive .showcase-editable__content::after {
+  content: '';
+  position: absolute;
+  inset: -0.4rem;
   border-radius: inherit;
+  border: 1px dashed var(--showcase-border-soft, rgba(15, 23, 42, 0.18));
+  background: linear-gradient(
+    135deg,
+    rgba(79, 70, 229, 0.12),
+    rgba(59, 130, 246, 0.1)
+  );
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 140ms ease;
+  z-index: -1;
 }
 
-.showcase-editable--block .showcase-editable__button {
-  background-color: var(--showcase-color-surface-strong, rgba(255, 255, 255, 0.96));
+.showcase-editable--interactive:hover .showcase-editable__content::after,
+.showcase-editable--interactive:focus-visible .showcase-editable__content::after {
+  opacity: 1;
 }
 
 .showcase-editable--inline .showcase-editable__content {
   display: inline;
+}
+
+.showcase-editable--inline .showcase-editable__hint {
+  position: static;
+  transform: none;
+  margin-left: 0.5rem;
+  box-shadow: none;
+}
+
+.showcase-editable--inline.showcase-editable--interactive:hover .showcase-editable__hint,
+.showcase-editable--inline.showcase-editable--interactive:focus-visible .showcase-editable__hint {
+  box-shadow: none;
 }
 

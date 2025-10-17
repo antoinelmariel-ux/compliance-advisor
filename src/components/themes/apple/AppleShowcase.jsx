@@ -715,7 +715,7 @@ export const AppleShowcase = ({
               <footer className="apple-aura__footer">
                 <div className="footer__content">
                   <p className="footer__meta">{footerVersionText}</p>
-                  <p className="footer__meta">Thème Apple — Build v1.0.52</p>
+                  <p className="footer__meta">Thème Apple — Build v1.0.53</p>
                 </div>
               </footer>
             </div>
