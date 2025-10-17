@@ -605,18 +605,90 @@ export const ProjectShowcase = ({
     [selectedTheme, activeTheme, themeOptions, handleThemeChange]
   );
 
+  const editableQuestionsById = useMemo(() => {
+    const map = new Map();
+
+    if (Array.isArray(questions)) {
+      questions.forEach((question) => {
+        if (
+          question
+          && typeof question.id === 'string'
+          && question.id.length > 0
+          && !map.has(question.id)
+        ) {
+          map.set(question.id, question);
+        }
+      });
+    }
+
+    return map;
+  }, [questions]);
+
+  const resolveEditPayload = useCallback((questionId, info) => {
+    const baseInfo = info && typeof info === 'object' ? { ...info } : {};
+    const infoQuestion = baseInfo.question && baseInfo.question.id === questionId ? baseInfo.question : null;
+    const mappedQuestion = editableQuestionsById.get(questionId) || infoQuestion || null;
+
+    if (mappedQuestion) {
+      baseInfo.question = mappedQuestion;
+    } else if (baseInfo.question && baseInfo.question.id !== questionId) {
+      delete baseInfo.question;
+    }
+
+    return baseInfo;
+  }, [editableQuestionsById]);
+
+  const editingFieldConfigs = useMemo(
+    () =>
+      Object.fromEntries(
+        Object.entries(SHOWCASE_EDITABLE_FIELDS).map(([fieldKey, config]) => {
+          const question = editableQuestionsById.get(config.questionId) || null;
+
+          if (question) {
+            return [fieldKey, { ...config, question }];
+          }
+
+          return [fieldKey, { ...config }];
+        })
+      ),
+    [editableQuestionsById]
+  );
+
+  const forwardEditRequest = useCallback((questionId, info = {}) => {
+    if (typeof onEditQuestion !== 'function') {
+      return;
+    }
+
+    onEditQuestion(questionId, resolveEditPayload(questionId, info));
+  }, [onEditQuestion, resolveEditPayload]);
+
+  const forwardRequestEnable = useCallback((questionId, info = {}) => {
+    if (typeof onRequestEnableEditing !== 'function') {
+      return;
+    }
+
+    onRequestEnableEditing(questionId, resolveEditPayload(questionId, info));
+  }, [onRequestEnableEditing, resolveEditPayload]);
+
   const editingContext = useMemo(() => {
     if (typeof onEditQuestion !== 'function') {
-      return { enabled: false };
+      return { enabled: false, fields: editingFieldConfigs };
     }
 
     return {
       enabled: Boolean(allowEditing),
-      onEdit: onEditQuestion,
-      onRequestEnable: typeof onRequestEnableEditing === 'function' ? onRequestEnableEditing : null,
-      fields: SHOWCASE_EDITABLE_FIELDS
+      onEdit: forwardEditRequest,
+      onRequestEnable: typeof onRequestEnableEditing === 'function' ? forwardRequestEnable : null,
+      fields: editingFieldConfigs
     };
-  }, [allowEditing, onEditQuestion, onRequestEnableEditing]);
+  }, [
+    allowEditing,
+    editingFieldConfigs,
+    forwardEditRequest,
+    forwardRequestEnable,
+    onEditQuestion,
+    onRequestEnableEditing
+  ]);
 
   const ThemeComponent = THEME_COMPONENTS[selectedTheme] || AppleShowcase;
 

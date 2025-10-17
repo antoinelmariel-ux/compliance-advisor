@@ -296,8 +296,9 @@ const PresentationPage = () => {
       return;
     }
 
+    const infoQuestion = info?.question && info.question.id === questionId ? info.question : null;
     const allQuestions = Array.isArray(context.allQuestions) ? context.allQuestions : [];
-    const question = allQuestions.find((entry) => entry?.id === questionId);
+    const question = infoQuestion || allQuestions.find((entry) => entry?.id === questionId);
     if (!question) {
       if (typeof console !== 'undefined' && typeof console.warn === 'function') {
         console.warn(`[Presentation] Impossible d'éditer la question ${questionId} : introuvable.`);
