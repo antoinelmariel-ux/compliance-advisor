@@ -45,10 +45,10 @@ Prototype React monopage d'aide à la décision compliance lancé directement de
 - **Authentification d'entreprise** : support SSO (Azure AD/Okta) pour sécuriser l'accès et tracer les opérations sensibles.
 
 ## Démarrage
-Aucune étape de build n'est nécessaire :
-1. Ouvrir `index.html` dans un navigateur moderne.
-2. Le point d'entrée `src/main.jsx` est compilé à la volée par Babel (préréglages `env` et `react`) et charge automatiquement les modules de l'application.
-3. React, ReactDOM et Babel Standalone sont embarqués localement (pas de dépendance CDN) ; Tailwind CSS reste chargé via CDN.
+Un build statique doit être généré avant d'ouvrir les fichiers HTML :
+1. Exécuter `node scripts/build.js` pour transpiler l'ensemble des modules `src/` vers le dossier `dist/` (JSX -> JavaScript).
+2. Ouvrir `index.html` ou `presentation.html` dans un navigateur moderne : chaque page charge directement les modules précompilés (`./dist/main.js`, `./dist/presentation.js`).
+3. React et ReactDOM restent fournis localement (`src/vendor/`), tandis que Tailwind CSS continue d'être chargé via CDN.
 
 ## Architecture de l'application
 - **`src/components`** : regroupe les composants d'interface réutilisables (navigation, formulaires, synthèses).
@@ -56,7 +56,7 @@ Aucune étape de build n'est nécessaire :
 - **`src/hooks`** : centralise la logique réutilisable (gestion d'état du questionnaire, calcul des risques, navigation).
 - **`src/utils`** : expose les fonctions d'aide (évaluation des conditions, formatage des rapports, filtres de recherche).
 - **`src/styles`** : héberge la configuration Tailwind et les styles globaux complémentaires.
-- **`index.html`** : point d'entrée statique configurant Babel Standalone, Tailwind et montant l'application.
+- **`index.html`** : point d'entrée statique chargeant React/ReactDOM et important les modules précompilés depuis `dist/`.
 
 ## Tests et qualité
 - **Validation manuelle** : ouvrir `index.html` et parcourir le questionnaire Chef de Projet pour vérifier l'enchaînement des questions, la génération de synthèse et les recommandations affichées.
