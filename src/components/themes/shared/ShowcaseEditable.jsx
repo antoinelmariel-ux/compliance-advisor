@@ -32,6 +32,7 @@ export const ShowcaseEditable = ({
   onEdit = noop,
   onRequestEnable = null,
   variant = 'block',
+  question = null,
   children
 }) => {
   if (!React.isValidElement(children)) {
@@ -48,9 +49,19 @@ export const ShowcaseEditable = ({
   const isEnabled = Boolean(enabled && canHandleEdit);
   const normalizedLabel = normalizeLabel(label, children?.props?.['aria-label']);
 
+  const buildEditPayload = () => {
+    const payload = { label: normalizedLabel };
+
+    if (question && typeof question === 'object') {
+      payload.question = question;
+    }
+
+    return payload;
+  };
+
   const handleEdit = () => {
     try {
-      onEdit(questionId, { label: normalizedLabel });
+      onEdit(questionId, buildEditPayload());
     } catch (error) {
       // Ignore errors thrown by the edit handler to avoid breaking the showcase rendering.
     }
@@ -62,7 +73,7 @@ export const ShowcaseEditable = ({
     }
 
     try {
-      onRequestEnable(questionId, { label: normalizedLabel });
+      onRequestEnable(questionId, buildEditPayload());
     } catch (error) {
       // Ignore failures when requesting edit mode enablement.
     }

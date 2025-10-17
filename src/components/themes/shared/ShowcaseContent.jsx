@@ -80,7 +80,8 @@ export const ShowcaseContent = ({
     onRequestEnable: requestEnableHandler,
     questionId: editingFields[fieldKey]?.questionId,
     label: editingFields[fieldKey]?.label,
-    variant: editingFields[fieldKey]?.variant || fallbackVariant
+    variant: editingFields[fieldKey]?.variant || fallbackVariant,
+    question: editingFields[fieldKey]?.question || null
   });
 
   return (
