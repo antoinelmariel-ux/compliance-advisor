@@ -23,7 +23,7 @@ import { createDemoProject } from './data/demoProject.js';
 import { verifyAdminPassword } from './utils/password.js';
 import { isAnswerProvided } from './utils/answers.js';
 import { computeMissingShowcaseQuestions } from './utils/showcaseRequirements.js';
-var APP_VERSION = 'v1.0.71';
+var APP_VERSION = 'v1.0.72';
 var normalizeProjectEntry = function normalizeProjectEntry() {
   var project = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
   var fallbackQuestionsLength = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : initialQuestions.length;

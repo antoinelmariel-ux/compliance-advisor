@@ -1,28 +1,29 @@
 # Vitrine du projet démo – Campagne Aura
 
-> **Version** : Campagne Aura — Version 0.1.4 — Projet de démonstration complété.
+> **Version** : Campagne Aura — Version 0.1.5 — Données showcase alignées avec l’application.
 
 ## Hero
-- **Slogan** : Illuminer chaque lancement produit
+- **Slogan** : Une expérience immersive qui transforme le storytelling en engagement mesurable.
 - **Audience principale** : Grand public / clients finaux, Investisseurs, Partenaires ou prescripteurs
 - **Runway avant lancement** : 13 sem. (91 j.), du 15/01/2024 au 15/04/2024.
 
 ## Problème
-- Les équipes perdent 3 semaines à aligner leur message sur plusieurs canaux.
-- Les preuves clients sont dispersées et difficiles à valoriser.
-- Les partenaires ne disposent pas des bons outils pour activer leur réseau.
+- Trois semaines en moyenne sont nécessaires pour aligner la narration entre le siège et les marchés.
+- Les témoignages, chiffres clés et démos restent fragmentés, limitant leur réutilisation dans les temps forts.
+- Les partenaires retail et médias manquent d’outils prêts à l’emploi pour amplifier le récit.
 
 ## Solution
 ### Expérience proposée
-Nous construisons une narration immersive combinant démonstrations live, contenus interactifs et preuves sociales activables par chaque équipe locale.
+Une narration clé en main qui combine vision produit, expérience live et arsenal d’assets activables.
 
 ### Bénéfices clés
-- +35 % d’intention d’achat mesurée lors des tests pré-lancement.
-- Bibliothèque d’assets localisés livrée en 4 semaines.
-- Plan média multi-pays orchestré avec les partenaires retail.
+- +35 % d’intention d’achat observée lors des tests pré-lancement.
+- Kit d’assets localisés produit en 4 semaines pour les équipes locales.
+- Activation coordonnée sur 91 jours avec les partenaires retail.
+- Satisfaction moyenne de 9,2/10 sur les immersions Aura.
 
 ### Différenciation
-Contrairement aux campagnes précédentes, Aura intègre dès le départ les besoins des partenaires et un plan de preuves dynamique, évitant les validations tardives.
+Contrairement aux campagnes précédentes, Aura couple un cockpit de preuves dynamique et un suivi d’impact partagé, évitant les validations tardives.
 
 ## Innovation
 - 1. Sprint storytelling de 5 jours pour cadrer le pitch.
