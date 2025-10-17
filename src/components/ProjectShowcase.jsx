@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from '../react.js';
 import { formatAnswer } from '../utils/questions.js';
-import { AppleShowcase } from './themes/apple/AppleShowcase.jsx';
 import { NetflixShowcase } from './themes/netflix/NetflixShowcase.jsx';
 import { AmnestyShowcase } from './themes/amnesty/AmnestyShowcase.jsx';
 import { NebulaShowcase } from './themes/nebula/NebulaShowcase.jsx';
@@ -35,13 +34,9 @@ const hasText = (value) => typeof value === 'string' && value.trim().length > 0;
 
 export const SHOWCASE_THEME_STORAGE_KEY = 'compliance-advisor.showcase-theme';
 
+const DEFAULT_THEME_ID = 'netflix';
+
 export const SHOWCASE_THEMES = [
-  {
-    id: 'apple',
-    label: 'Apple Keynote',
-    description:
-      'Esprit Apple Keynote : lumière diffuse, typographie SF Pro et halo bleu précis.'
-  },
   {
     id: 'netflix',
     label: 'Immersion cinéma',
@@ -63,7 +58,6 @@ export const SHOWCASE_THEMES = [
 ];
 
 const THEME_COMPONENTS = {
-  apple: AppleShowcase,
   netflix: NetflixShowcase,
   amnesty: AmnestyShowcase,
   nebula: NebulaShowcase
@@ -90,7 +84,7 @@ const resolveThemeOptions = (options) =>
 
 export const getInitialShowcaseTheme = (themeOptions = SHOWCASE_THEMES) => {
   const resolvedOptions = resolveThemeOptions(themeOptions);
-  const fallbackTheme = resolvedOptions[0]?.id || 'apple';
+  const fallbackTheme = resolvedOptions[0]?.id || DEFAULT_THEME_ID;
 
   if (typeof window === 'undefined' || typeof window.localStorage === 'undefined') {
     return fallbackTheme;
@@ -430,7 +424,7 @@ export const ProjectShowcase = ({
       return;
     }
 
-    const fallbackTheme = themeOptions[0]?.id || 'apple';
+    const fallbackTheme = themeOptions[0]?.id || DEFAULT_THEME_ID;
     if (internalTheme !== fallbackTheme) {
       setInternalTheme(fallbackTheme);
     }
@@ -439,7 +433,7 @@ export const ProjectShowcase = ({
   const isControlledTheme = isValidTheme(selectedThemeProp, themeOptions);
   const selectedTheme = isControlledTheme
     ? selectedThemeProp
-    : (isValidTheme(internalTheme, themeOptions) ? internalTheme : themeOptions[0]?.id || 'apple');
+    : (isValidTheme(internalTheme, themeOptions) ? internalTheme : themeOptions[0]?.id || DEFAULT_THEME_ID);
 
   const activeTheme = useMemo(
     () => themeOptions.find(theme => theme.id === selectedTheme) || themeOptions[0] || null,
@@ -690,7 +684,7 @@ export const ProjectShowcase = ({
     onRequestEnableEditing
   ]);
 
-  const ThemeComponent = THEME_COMPONENTS[selectedTheme] || AppleShowcase;
+  const ThemeComponent = THEME_COMPONENTS[selectedTheme] || THEME_COMPONENTS[DEFAULT_THEME_ID];
 
   return (
     <ThemeComponent
