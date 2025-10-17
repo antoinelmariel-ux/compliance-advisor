@@ -312,6 +312,7 @@ export const AppleShowcase = ({
   const buildEditableProps = (fieldKey, fallbackVariant = 'block') => ({
     enabled: editingEnabled && Boolean(editingFields[fieldKey]?.questionId),
     onEdit: editing?.onEdit,
+    onRequestEnable: editing?.onRequestEnable,
     questionId: editingFields[fieldKey]?.questionId,
     label: editingFields[fieldKey]?.label,
     variant: editingFields[fieldKey]?.variant || fallbackVariant
