@@ -17,7 +17,7 @@ import { verifyAdminPassword } from './utils/password.js';
 import { isAnswerProvided } from './utils/answers.js';
 import { computeMissingShowcaseQuestions } from './utils/showcaseRequirements.js';
 
-const APP_VERSION = 'v1.0.67';
+const APP_VERSION = 'v1.0.68';
 
 const normalizeProjectEntry = (project = {}, fallbackQuestionsLength = initialQuestions.length) => {
   const answers = typeof project.answers === 'object' && project.answers !== null ? project.answers : {};
@@ -178,11 +178,12 @@ export const App = () => {
     activeProjectId
   ]);
 
-  const exportProjectDraft = useCallback((projectEntry) => {
+  const exportProjectFile = useCallback((projectEntry, options = {}) => {
     if (!projectEntry || typeof window === 'undefined') {
       return;
     }
 
+    const status = options.status === 'submitted' ? 'submitted' : 'draft';
     const { document: targetDocument } = window;
     if (!targetDocument || typeof Blob === 'undefined') {
       return;
@@ -221,28 +222,34 @@ export const App = () => {
       String(now.getMinutes()).padStart(2, '0'),
       String(now.getSeconds()).padStart(2, '0')
     ].join('');
-    const fileName = `${safeName}-${timestamp}.json`;
+    const fileName = `${safeName}-${status}-${timestamp}.json`;
 
     const questionnaireSummary = {
       questionIds: questions.map(question => question.id),
       total: questions.length
     };
 
+    const projectPayload = {
+      id: projectEntry.id,
+      name: projectEntry.projectName,
+      projectName: projectEntry.projectName,
+      status,
+      answers: projectEntry.answers || {},
+      analysis: projectEntry.analysis || null,
+      totalQuestions: projectEntry.totalQuestions,
+      lastQuestionIndex: projectEntry.lastQuestionIndex,
+      lastUpdated: projectEntry.lastUpdated,
+      questionnaire: questionnaireSummary
+    };
+
+    if (status === 'submitted') {
+      projectPayload.submittedAt = projectEntry.submittedAt || now.toISOString();
+    }
+
     const exportPayload = {
       version: APP_VERSION,
       exportedAt: now.toISOString(),
-      project: {
-        id: projectEntry.id,
-        name: projectEntry.projectName,
-        projectName: projectEntry.projectName,
-        status: 'draft',
-        answers: projectEntry.answers || {},
-        analysis: projectEntry.analysis || null,
-        totalQuestions: projectEntry.totalQuestions,
-        lastQuestionIndex: projectEntry.lastQuestionIndex,
-        lastUpdated: projectEntry.lastUpdated,
-        questionnaire: questionnaireSummary
-      }
+      project: projectPayload
     };
 
     if (typeof URL === 'undefined' || typeof URL.createObjectURL !== 'function') {
@@ -766,19 +773,20 @@ export const App = () => {
   const handleSubmitProject = useCallback((payload = {}) => {
     const entry = handleSaveProject({ ...payload, status: 'submitted' });
     if (entry) {
+      exportProjectFile(entry, { status: 'submitted' });
       setValidationError(null);
       setScreen('home');
     }
-  }, [handleSaveProject]);
+  }, [exportProjectFile, handleSaveProject]);
 
   const handleSaveDraft = useCallback(() => {
     const entry = handleSaveProject({ status: 'draft', lastQuestionIndex: currentQuestionIndex });
     if (entry) {
-      exportProjectDraft(entry);
+      exportProjectFile(entry, { status: 'draft' });
       setValidationError(null);
       setScreen('home');
     }
-  }, [currentQuestionIndex, exportProjectDraft, handleSaveProject]);
+  }, [currentQuestionIndex, exportProjectFile, handleSaveProject]);
 
   const handleImportProjectFile = useCallback(async (file) => {
     if (!file || typeof file.text !== 'function') {
