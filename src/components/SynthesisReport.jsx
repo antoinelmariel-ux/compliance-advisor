@@ -660,43 +660,50 @@ export const SynthesisReport = ({
         <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 mb-6 hv-surface" role="region" aria-label="Synthèse du projet">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between mb-6">
             <h1 className="text-3xl font-bold text-gray-800 sm:text-4xl">Rapport de Compliance</h1>
-            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-3 w-full lg:w-auto">
-              {onBack && (
+            <div className="flex flex-col gap-3 w-full lg:w-auto">
+              <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-3 w-full lg:w-auto">
+                {onBack && (
+                  <button
+                    type="button"
+                    onClick={onBack}
+                    className="px-4 py-2 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg font-medium text-gray-700 transition-all hv-button hv-focus-ring w-full sm:w-auto justify-center text-sm sm:text-base"
+                  >
+                    Retour au questionnaire
+                  </button>
+                )}
+                {onSubmitProject && (
+                  <button
+                    type="button"
+                    onClick={handleSaveProject}
+                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium transition-all flex items-center justify-center hv-button hv-button-primary w-full sm:w-auto text-sm sm:text-base"
+                  >
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    {isExistingProject ? 'Mettre à jour le projet (JSON)' : 'Enregistrer le projet (JSON)'}
+                  </button>
+                )}
                 <button
                   type="button"
-                  onClick={onBack}
-                  className="px-4 py-2 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg font-medium text-gray-700 transition-all hv-button hv-focus-ring w-full sm:w-auto justify-center text-sm sm:text-base"
+                  onClick={handleSubmitByEmail}
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-all flex items-center justify-center hv-button hv-button-primary w-full sm:w-auto text-sm sm:text-base"
                 >
-                  Retour au questionnaire
+                  <Send className="w-4 h-4 mr-2" />
+                  Soumettre par e-mail
                 </button>
-              )}
+                {onOpenPresentation && (
+                  <button
+                    type="button"
+                    onClick={handleOpenPresentation}
+                    className="px-4 py-2 bg-white border border-indigo-200 text-indigo-600 hover:bg-indigo-50 rounded-lg font-medium transition-all flex items-center justify-center hv-button hv-focus-ring w-full sm:w-auto text-sm sm:text-base"
+                  >
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Présentation
+                  </button>
+                )}
+              </div>
               {onSubmitProject && (
-                <button
-                  type="button"
-                  onClick={handleSaveProject}
-                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium transition-all flex items-center justify-center hv-button hv-button-primary w-full sm:w-auto text-sm sm:text-base"
-                >
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  {isExistingProject ? 'Mettre à jour le projet' : 'Enregistrer le projet'}
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={handleSubmitByEmail}
-                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-all flex items-center justify-center hv-button hv-button-primary w-full sm:w-auto text-sm sm:text-base"
-              >
-                <Send className="w-4 h-4 mr-2" />
-                Soumettre par e-mail
-              </button>
-              {onOpenPresentation && (
-                <button
-                  type="button"
-                  onClick={handleOpenPresentation}
-                  className="px-4 py-2 bg-white border border-indigo-200 text-indigo-600 hover:bg-indigo-50 rounded-lg font-medium transition-all flex items-center justify-center hv-button hv-focus-ring w-full sm:w-auto text-sm sm:text-base"
-                >
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  Présentation
-                </button>
+                <p className="text-xs text-gray-500 text-center sm:text-left">
+                  Un fichier JSON sera téléchargé automatiquement lors de l'enregistrement.
+                </p>
               )}
             </div>
           </div>
