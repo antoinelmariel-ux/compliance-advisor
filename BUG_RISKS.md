@@ -20,7 +20,7 @@ Le calcul de hachage de secours convertit la chaîne saisie à l'aide de `encode
 
 **Impact possible :** l'administrateur reçoit simplement un message « mot de passe incorrect » et peut croire que l'authentification échoue, alors que le problème provient de l'encodage côté navigateur. Les mots de passe contenant certains caractères spéciaux pourraient donc être inutilisables dans ces environnements.
 
-## 5. Chargement des modules bloqué par une CSP stricte
-Le module loader transpile chaque fichier via Babel puis l'exécute au moyen de `new Function(...)`. Cette stratégie nécessite l'autorisation `unsafe-eval` dans la Content Security Policy. Dans de nombreuses configurations d'hébergement ou d'entreprises, cette permission est interdite : l'appel à `new Function` est alors bloqué par le navigateur, empêchant tout chargement des modules React et laissant l'application vide au démarrage.【F:src/module-loader.js†L1-L58】
+## 5. Dépendance à un processus de build hors-ligne
+La transformation JSX -> JavaScript est désormais effectuée lors d'une étape de build Node, en s'appuyant sur `Babel Standalone` exécuté côté serveur. Si cette étape est omise avant un déploiement (ou si le dossier `dist/` est effacé), les entrées `index.html` et `presentation.html` importent des modules inexistants (`./dist/main.js`, `./dist/presentation.js`) et l'application reste vide malgré le chargement de React.【F:scripts/build.js†L1-L94】【F:index.html†L108-L115】
 
-**Impact possible :** en production derrière une CSP restrictive, l'application ne démarre pas et affiche un écran vierge, car aucun composant n'est initialisé.
+**Impact possible :** un déploiement manuel qui oublierait de lancer `node scripts/build.js` pousserait une version inutilisable du site. Documenter cette étape et intégrer une vérification CI est recommandé.

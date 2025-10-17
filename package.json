@@ -1,0 +1,16 @@
+{
+  "name": "compliance-advisor",
+  "version": "1.0.0",
+  "description": "Prototype React monopage d'aide à la décision compliance lancé directement depuis `index.html`.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "build": "node scripts/build.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}

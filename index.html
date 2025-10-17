@@ -14,12 +14,12 @@
       href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600&family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,600&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./src/styles/main-theme.css" />
-    <link rel="stylesheet" href="./src/styles/project-showcase-theme-apple.css" />
-    <link rel="stylesheet" href="./src/styles/project-showcase-theme-netflix.css" />
-    <link rel="stylesheet" href="./src/styles/project-showcase-theme-amnesty.css" />
-    <link rel="stylesheet" href="./src/styles/project-showcase-theme-nebula.css" />
-    <link rel="stylesheet" href="./src/styles/project-showcase-editing.css" />
+    <link rel="stylesheet" href="./dist/styles/main-theme.css" />
+    <link rel="stylesheet" href="./dist/styles/project-showcase-theme-apple.css" />
+    <link rel="stylesheet" href="./dist/styles/project-showcase-theme-netflix.css" />
+    <link rel="stylesheet" href="./dist/styles/project-showcase-theme-amnesty.css" />
+    <link rel="stylesheet" href="./dist/styles/project-showcase-theme-nebula.css" />
+    <link rel="stylesheet" href="./dist/styles/project-showcase-editing.css" />
     <style>
       body.high-visibility {
         background-color: #0b0c0c;
@@ -107,11 +107,9 @@
 
     <script src="./src/vendor/react.production.min.js"></script>
     <script src="./src/vendor/react-dom.production.min.js"></script>
-    <script src="./src/vendor/babel.min.js"></script>
-    <script src="./src/module-loader.js"></script>
-    <script>
+    <script type="module">
       try {
-        window.ModuleLoader.import('./src/main.jsx');
+        import('./dist/main.js');
       } catch (error) {
         console.error('Erreur lors du chargement de l\'application :', error);
       }
