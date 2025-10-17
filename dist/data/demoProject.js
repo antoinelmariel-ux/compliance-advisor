@@ -7,16 +7,16 @@ import { initialQuestions } from './questions.js';
 import { initialRules } from './rules.js';
 import { analyzeAnswers } from '../utils/rules.js';
 export var DEMO_PROJECT_BADGE = 'Projet de démonstration';
-export var DEMO_SHOWCASE_VERSION = '0.1.4';
-var DEMO_SHOWCASE_STATUS = 'Données showcase complétées';
+export var DEMO_SHOWCASE_VERSION = '0.1.5';
+var DEMO_SHOWCASE_STATUS = 'Données showcase alignées avec l’application';
 var demoProjectAnswers = {
   projectName: 'Campagne Aura',
-  projectSlogan: 'Illuminer chaque lancement produit',
+  projectSlogan: 'Une expérience immersive qui transforme le storytelling en engagement mesurable.',
   targetAudience: ['Grand public / clients finaux', 'Investisseurs', 'Partenaires ou prescripteurs'],
-  problemPainPoints: '• Les équipes perdent 3 semaines à aligner leur message sur plusieurs canaux.\n• Les preuves clients sont dispersées et difficiles à valoriser.\n• Les partenaires ne disposent pas des bons outils pour activer leur réseau.',
-  solutionDescription: "Nous construisons une narration immersive combinant démonstrations live, contenus interactifs et preuves sociales activables par chaque équipe locale.",
-  solutionBenefits: '• +35 % d’intention d’achat mesurée lors des tests pré-lancement.\n• Bibliothèque d’assets localisés livrée en 4 semaines.\n• Plan média multi-pays orchestré avec les partenaires retail.',
-  solutionComparison: 'Contrairement aux campagnes précédentes, Aura intègre dès le départ les besoins des partenaires et un plan de preuves dynamique, évitant les validations tardives.',
+  problemPainPoints: '• Trois semaines en moyenne sont nécessaires pour aligner la narration entre le siège et les marchés.\n• Les témoignages, chiffres clés et démos restent fragmentés, limitant leur réutilisation dans les temps forts.\n• Les partenaires retail et médias manquent d’outils prêts à l’emploi pour amplifier le récit.',
+  solutionDescription: "Une narration clé en main qui combine vision produit, expérience live et arsenal d’assets activables.",
+  solutionBenefits: '• +35 % d’intention d’achat observée lors des tests pré-lancement.\n• Kit d’assets localisés produit en 4 semaines pour les équipes locales.\n• Activation coordonnée sur 91 jours avec les partenaires retail.\n• Satisfaction moyenne de 9,2/10 sur les immersions Aura.',
+  solutionComparison: 'Contrairement aux campagnes précédentes, Aura couple un cockpit de preuves dynamique et un suivi d’impact partagé, évitant les validations tardives.',
   campaignKickoffDate: '2024-01-15',
   launchDate: '2024-04-15',
   teamLead: 'Clara Dupont — Head of Narrative Design',
@@ -194,7 +194,7 @@ export var createDemoProject = function createDemoProject() {
     answeredQuestions: sanitizedTotal,
     isDemo: true,
     meta: {
-      badge: 'Showcase Aura',
+      badge: 'Campagne Aura',
       eyebrow: DEMO_PROJECT_BADGE,
       version: {
         label: demoProjectAnswers.projectName,
