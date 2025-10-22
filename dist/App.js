@@ -23,7 +23,7 @@ import { createDemoProject } from './data/demoProject.js';
 import { verifyAdminPassword } from './utils/password.js';
 import { isAnswerProvided } from './utils/answers.js';
 import { computeMissingShowcaseQuestions } from './utils/showcaseRequirements.js';
-var APP_VERSION = 'v1.0.72';
+var APP_VERSION = 'v1.0.73';
 var normalizeProjectEntry = function normalizeProjectEntry() {
   var project = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
   var fallbackQuestionsLength = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : initialQuestions.length;
@@ -510,14 +510,34 @@ export var App = () => {
     setActiveProjectId(prev => prev === projectId ? null : prev);
   }, []);
   var handleOpenPresentation = useCallback(projectId => {
+    var _context$project, _context$project2;
     var targetId = projectId || activeProjectId;
-    if (!targetId) {
+    if (!targetId || typeof window === 'undefined') {
       return;
     }
-    if (typeof window === 'undefined') {
-      return;
+    var context = resolveProjectContext(targetId);
+    var payload = {
+      id: targetId,
+      status: (context === null || context === void 0 || (_context$project = context.project) === null || _context$project === void 0 ? void 0 : _context$project.status) === 'submitted' ? 'submitted' : 'draft',
+      lastQuestionIndex: typeof (context === null || context === void 0 ? void 0 : context.sanitizedIndex) === 'number' ? context.sanitizedIndex : currentQuestionIndex
+    };
+    if (typeof (context === null || context === void 0 || (_context$project2 = context.project) === null || _context$project2 === void 0 ? void 0 : _context$project2.totalQuestions) === 'number') {
+      payload.totalQuestions = context.project.totalQuestions;
     }
-    persistState(buildPersistPayload());
+    var entry = handleSaveProject(payload) || null;
+    var persistedState = buildPersistPayload();
+    var projectToPersist = entry || (context === null || context === void 0 ? void 0 : context.project) || null;
+    if (projectToPersist) {
+      var existingProjects = Array.isArray(persistedState.projects) ? persistedState.projects : [];
+      var remainingProjects = existingProjects.filter(project => project && project.id !== projectToPersist.id);
+      persistedState.projects = [projectToPersist, ...remainingProjects];
+      persistedState.activeProjectId = projectToPersist.id;
+      if (entry) {
+        persistedState.answers = entry.answers;
+        persistedState.analysis = entry.analysis;
+      }
+    }
+    persistState(persistedState);
     try {
       var url = new URL('./presentation.html', window.location.href);
       url.searchParams.set('projectId', targetId);
@@ -525,7 +545,7 @@ export var App = () => {
     } catch (error) {
       console.error('Impossible d\'ouvrir la page de présentation :', error);
     }
-  }, [activeProjectId, buildPersistPayload]);
+  }, [activeProjectId, buildPersistPayload, currentQuestionIndex, handleSaveProject, resolveProjectContext]);
   var upsertProject = useCallback(entry => {
     return prevProjects => {
       if (!entry || !entry.id) {
