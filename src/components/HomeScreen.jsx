@@ -4,7 +4,6 @@ import {
   Target,
   Rocket,
   Compass,
-  FileText,
   Users,
   Calendar,
   CheckCircle,
@@ -380,11 +379,152 @@ export const HomeScreen = ({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6" role="list">
                   {filteredProjects.map(project => {
                     const complexity = project.analysis?.complexity;
-                    const teamsCount = project.analysis?.relevantTeams?.length ?? 0;
                     const risksCount = project.analysis?.risks?.length ?? 0;
                     const projectStatus = statusStyles[project.status] || statusStyles.submitted;
                     const progress = computeProgress(project);
                     const isDraft = project.status === 'draft';
+                    const answers = project.answers || {};
+                    const relevantTeams = Array.isArray(project.analysis?.relevantTeams)
+                      ? project.analysis.relevantTeams
+                      : [];
+
+                    const leadNameSource = [answers.teamLead, project.teamLead].find(value =>
+                      typeof value === 'string' && value.trim().length > 0
+                    );
+                    const leadName = leadNameSource ? leadNameSource.trim() : '';
+
+                    const resolveLeadTeam = () => {
+                      const directTeamSource = [
+                        answers.teamLeadTeam,
+                        answers.projectLeadTeam,
+                        answers.ownerTeam,
+                        project.teamLeadTeam,
+                        project.projectLeadTeam,
+                        project.ownerTeam
+                      ].find(value => typeof value === 'string' && value.trim().length > 0);
+
+                      if (directTeamSource) {
+                        return directTeamSource.trim();
+                      }
+
+                      const directTeamId = [
+                        answers.teamLeadTeamId,
+                        project.teamLeadTeamId,
+                        answers.teamLeadDepartment,
+                        project.teamLeadDepartment
+                      ].find(value => typeof value === 'string' && value.trim().length > 0);
+
+                      if (directTeamId) {
+                        const matchingTeam = relevantTeams.find(team => {
+                          const identifiers = [team.id, team.teamId, team.slug, team.code];
+                          return identifiers.some(identifier => identifier === directTeamId);
+                        });
+
+                        if (matchingTeam) {
+                          const teamName =
+                            typeof matchingTeam.name === 'string' && matchingTeam.name.trim().length > 0
+                              ? matchingTeam.name.trim()
+                              : typeof matchingTeam.label === 'string' && matchingTeam.label.trim().length > 0
+                                ? matchingTeam.label.trim()
+                                : null;
+
+                          if (teamName) {
+                            return teamName;
+                          }
+                        }
+                      }
+
+                      if (relevantTeams.length === 1) {
+                        const fallbackTeam = relevantTeams[0];
+                        const fallbackName =
+                          typeof fallbackTeam?.name === 'string' && fallbackTeam.name.trim().length > 0
+                            ? fallbackTeam.name.trim()
+                            : typeof fallbackTeam?.label === 'string' && fallbackTeam.label.trim().length > 0
+                              ? fallbackTeam.label.trim()
+                              : null;
+
+                        if (fallbackName) {
+                          return fallbackName;
+                        }
+                      }
+
+                      return null;
+                    };
+
+                    const leadTeam = resolveLeadTeam();
+                    const leadInformation = leadName
+                      ? leadTeam
+                        ? `${leadName} (${leadTeam})`
+                        : leadName
+                      : 'Lead non renseigné';
+
+                    const extractTextValue = (value) => {
+                      if (typeof value === 'string') {
+                        const trimmed = value.trim();
+                        return trimmed.length > 0 ? trimmed : null;
+                      }
+
+                      if (Array.isArray(value)) {
+                        const entries = value
+                          .map(item => (typeof item === 'string' ? item.trim() : ''))
+                          .filter(item => item.length > 0);
+
+                        return entries.length > 0 ? entries.join(', ') : null;
+                      }
+
+                      if (value && typeof value === 'object') {
+                        const objectLabel =
+                          typeof value.label === 'string' && value.label.trim().length > 0
+                            ? value.label.trim()
+                            : null;
+
+                        if (objectLabel) {
+                          return objectLabel;
+                        }
+
+                        const objectName =
+                          typeof value.name === 'string' && value.name.trim().length > 0
+                            ? value.name.trim()
+                            : null;
+
+                        if (objectName) {
+                          return objectName;
+                        }
+                      }
+
+                      return null;
+                    };
+
+                    const resolveProjectType = () => {
+                      const candidates = [
+                        answers.projectType,
+                        answers.projectCategory,
+                        answers.projectKind,
+                        answers.projectFormat,
+                        project.projectType,
+                        project.projectCategory,
+                        project.projectKind,
+                        project.projectFormat,
+                        project.meta?.projectType,
+                        project.meta?.eyebrow,
+                        project.meta?.badge,
+                        project.analysis?.projectType,
+                        project.analysis?.projectCategory,
+                        project.analysis?.profile?.label,
+                        project.analysis?.profile?.name
+                      ];
+
+                      for (const candidate of candidates) {
+                        const text = extractTextValue(candidate);
+                        if (text) {
+                          return text;
+                        }
+                      }
+
+                      return 'Type non renseigné';
+                    };
+
+                    const projectType = resolveProjectType();
 
                     return (
                       <article
@@ -421,8 +561,12 @@ export const HomeScreen = ({
 
                         <dl className="mt-4 grid grid-cols-1 gap-3 text-sm">
                           <div className="flex items-center gap-2 hv-text-muted">
-                            <FileText className="w-4 h-4" />
-                            <span className="font-medium text-sm text-current">{Object.keys(project.answers || {}).length} réponse{Object.keys(project.answers || {}).length > 1 ? 's' : ''}</span>
+                            <Users className="w-4 h-4" />
+                            <span className="font-medium text-sm text-current">{leadInformation}</span>
+                          </div>
+                          <div className="flex items-center gap-2 hv-text-muted">
+                            <Compass className="w-4 h-4" />
+                            <span>{projectType}</span>
                           </div>
                           {progress !== null && (
                             <div className="flex items-center gap-2 hv-text-muted">
@@ -430,10 +574,6 @@ export const HomeScreen = ({
                               <span>{progress}% du questionnaire complété</span>
                             </div>
                           )}
-                          <div className="flex items-center gap-2 hv-text-muted">
-                            <Users className="w-4 h-4" />
-                            <span>{teamsCount} équipe{teamsCount > 1 ? 's' : ''} recommandée{teamsCount > 1 ? 's' : ''}</span>
-                          </div>
                           <div className="flex items-center gap-2 hv-text-muted">
                             <AlertTriangle className="w-4 h-4" />
                             <span>{risksCount} risque{risksCount > 1 ? 's' : ''} identifié{risksCount > 1 ? 's' : ''}</span>

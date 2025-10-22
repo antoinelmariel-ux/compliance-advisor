@@ -17,7 +17,7 @@ import { verifyAdminPassword } from './utils/password.js';
 import { isAnswerProvided } from './utils/answers.js';
 import { computeMissingShowcaseQuestions } from './utils/showcaseRequirements.js';
 
-const APP_VERSION = 'v1.0.73';
+const APP_VERSION = 'v1.0.74';
 
 const normalizeProjectEntry = (project = {}, fallbackQuestionsLength = initialQuestions.length) => {
   const answers = typeof project.answers === 'object' && project.answers !== null ? project.answers : {};
