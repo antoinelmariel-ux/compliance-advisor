@@ -17,7 +17,7 @@ import { verifyAdminPassword } from './utils/password.js';
 import { isAnswerProvided } from './utils/answers.js';
 import { computeMissingShowcaseQuestions } from './utils/showcaseRequirements.js';
 
-const APP_VERSION = 'v1.0.72';
+const APP_VERSION = 'v1.0.73';
 
 const normalizeProjectEntry = (project = {}, fallbackQuestionsLength = initialQuestions.length) => {
   const answers = typeof project.answers === 'object' && project.answers !== null ? project.answers : {};
@@ -663,15 +663,42 @@ export const App = () => {
 
   const handleOpenPresentation = useCallback((projectId) => {
     const targetId = projectId || activeProjectId;
-    if (!targetId) {
+    if (!targetId || typeof window === 'undefined') {
       return;
     }
 
-    if (typeof window === 'undefined') {
-      return;
+    const context = resolveProjectContext(targetId);
+
+    const payload = {
+      id: targetId,
+      status: context?.project?.status === 'submitted' ? 'submitted' : 'draft',
+      lastQuestionIndex:
+        typeof context?.sanitizedIndex === 'number' ? context.sanitizedIndex : currentQuestionIndex
+    };
+
+    if (typeof context?.project?.totalQuestions === 'number') {
+      payload.totalQuestions = context.project.totalQuestions;
     }
 
-    persistState(buildPersistPayload());
+    const entry = handleSaveProject(payload) || null;
+    const persistedState = buildPersistPayload();
+    const projectToPersist = entry || context?.project || null;
+
+    if (projectToPersist) {
+      const existingProjects = Array.isArray(persistedState.projects) ? persistedState.projects : [];
+      const remainingProjects = existingProjects.filter(
+        (project) => project && project.id !== projectToPersist.id
+      );
+
+      persistedState.projects = [projectToPersist, ...remainingProjects];
+      persistedState.activeProjectId = projectToPersist.id;
+      if (entry) {
+        persistedState.answers = entry.answers;
+        persistedState.analysis = entry.analysis;
+      }
+    }
+
+    persistState(persistedState);
 
     try {
       const url = new URL('./presentation.html', window.location.href);
@@ -680,7 +707,13 @@ export const App = () => {
     } catch (error) {
       console.error('Impossible d\'ouvrir la page de présentation :', error);
     }
-  }, [activeProjectId, buildPersistPayload]);
+  }, [
+    activeProjectId,
+    buildPersistPayload,
+    currentQuestionIndex,
+    handleSaveProject,
+    resolveProjectContext
+  ]);
 
   const upsertProject = useCallback((entry) => {
     return prevProjects => {
