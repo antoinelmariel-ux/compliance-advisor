@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useState } from '../react.js';
-import { Plus, Target, Rocket, Compass, FileText, Users, Calendar, CheckCircle, Eye, Sparkles, AlertTriangle, Edit, Save, Upload, Copy } from './icons.js';
+import { Plus, Target, Rocket, Compass, Users, Calendar, CheckCircle, Eye, Sparkles, AlertTriangle, Edit, Save, Upload, Copy } from './icons.js';
 var formatDate = isoDate => {
   if (!isoDate) {
     return 'Date inconnue';
@@ -306,13 +306,78 @@ export var HomeScreen = _ref => {
     className: "grid grid-cols-1 md:grid-cols-2 gap-6",
     role: "list"
   }, filteredProjects.map(project => {
-    var _project$analysis, _project$analysis$rel, _project$analysis2, _project$analysis$ris, _project$analysis3;
+    var _project$analysis, _project$analysis$ris, _project$analysis2, _project$analysis3;
     var complexity = (_project$analysis = project.analysis) === null || _project$analysis === void 0 ? void 0 : _project$analysis.complexity;
-    var teamsCount = (_project$analysis$rel = (_project$analysis2 = project.analysis) === null || _project$analysis2 === void 0 || (_project$analysis2 = _project$analysis2.relevantTeams) === null || _project$analysis2 === void 0 ? void 0 : _project$analysis2.length) !== null && _project$analysis$rel !== void 0 ? _project$analysis$rel : 0;
-    var risksCount = (_project$analysis$ris = (_project$analysis3 = project.analysis) === null || _project$analysis3 === void 0 || (_project$analysis3 = _project$analysis3.risks) === null || _project$analysis3 === void 0 ? void 0 : _project$analysis3.length) !== null && _project$analysis$ris !== void 0 ? _project$analysis$ris : 0;
+    var risksCount = (_project$analysis$ris = (_project$analysis2 = project.analysis) === null || _project$analysis2 === void 0 || (_project$analysis2 = _project$analysis2.risks) === null || _project$analysis2 === void 0 ? void 0 : _project$analysis2.length) !== null && _project$analysis$ris !== void 0 ? _project$analysis$ris : 0;
     var projectStatus = statusStyles[project.status] || statusStyles.submitted;
     var progress = computeProgress(project);
     var isDraft = project.status === 'draft';
+    var answers = project.answers || {};
+    var relevantTeams = Array.isArray((_project$analysis3 = project.analysis) === null || _project$analysis3 === void 0 ? void 0 : _project$analysis3.relevantTeams) ? project.analysis.relevantTeams : [];
+    var leadNameSource = [answers.teamLead, project.teamLead].find(value => typeof value === 'string' && value.trim().length > 0);
+    var leadName = leadNameSource ? leadNameSource.trim() : '';
+    var resolveLeadTeam = () => {
+      var directTeamSource = [answers.teamLeadTeam, answers.projectLeadTeam, answers.ownerTeam, project.teamLeadTeam, project.projectLeadTeam, project.ownerTeam].find(value => typeof value === 'string' && value.trim().length > 0);
+      if (directTeamSource) {
+        return directTeamSource.trim();
+      }
+      var directTeamId = [answers.teamLeadTeamId, project.teamLeadTeamId, answers.teamLeadDepartment, project.teamLeadDepartment].find(value => typeof value === 'string' && value.trim().length > 0);
+      if (directTeamId) {
+        var matchingTeam = relevantTeams.find(team => {
+          var identifiers = [team.id, team.teamId, team.slug, team.code];
+          return identifiers.some(identifier => identifier === directTeamId);
+        });
+        if (matchingTeam) {
+          var teamName = typeof matchingTeam.name === 'string' && matchingTeam.name.trim().length > 0 ? matchingTeam.name.trim() : typeof matchingTeam.label === 'string' && matchingTeam.label.trim().length > 0 ? matchingTeam.label.trim() : null;
+          if (teamName) {
+            return teamName;
+          }
+        }
+      }
+      if (relevantTeams.length === 1) {
+        var fallbackTeam = relevantTeams[0];
+        var fallbackName = typeof (fallbackTeam === null || fallbackTeam === void 0 ? void 0 : fallbackTeam.name) === 'string' && fallbackTeam.name.trim().length > 0 ? fallbackTeam.name.trim() : typeof (fallbackTeam === null || fallbackTeam === void 0 ? void 0 : fallbackTeam.label) === 'string' && fallbackTeam.label.trim().length > 0 ? fallbackTeam.label.trim() : null;
+        if (fallbackName) {
+          return fallbackName;
+        }
+      }
+      return null;
+    };
+    var leadTeam = resolveLeadTeam();
+    var leadInformation = leadName ? leadTeam ? "".concat(leadName, " (").concat(leadTeam, ")") : leadName : 'Lead non renseigné';
+    var extractTextValue = value => {
+      if (typeof value === 'string') {
+        var trimmed = value.trim();
+        return trimmed.length > 0 ? trimmed : null;
+      }
+      if (Array.isArray(value)) {
+        var entries = value.map(item => typeof item === 'string' ? item.trim() : '').filter(item => item.length > 0);
+        return entries.length > 0 ? entries.join(', ') : null;
+      }
+      if (value && typeof value === 'object') {
+        var objectLabel = typeof value.label === 'string' && value.label.trim().length > 0 ? value.label.trim() : null;
+        if (objectLabel) {
+          return objectLabel;
+        }
+        var objectName = typeof value.name === 'string' && value.name.trim().length > 0 ? value.name.trim() : null;
+        if (objectName) {
+          return objectName;
+        }
+      }
+      return null;
+    };
+    var resolveProjectType = () => {
+      var _project$meta, _project$meta2, _project$meta3, _project$analysis4, _project$analysis5, _project$analysis6, _project$analysis7;
+      var candidates = [answers.projectType, answers.projectCategory, answers.projectKind, answers.projectFormat, project.projectType, project.projectCategory, project.projectKind, project.projectFormat, (_project$meta = project.meta) === null || _project$meta === void 0 ? void 0 : _project$meta.projectType, (_project$meta2 = project.meta) === null || _project$meta2 === void 0 ? void 0 : _project$meta2.eyebrow, (_project$meta3 = project.meta) === null || _project$meta3 === void 0 ? void 0 : _project$meta3.badge, (_project$analysis4 = project.analysis) === null || _project$analysis4 === void 0 ? void 0 : _project$analysis4.projectType, (_project$analysis5 = project.analysis) === null || _project$analysis5 === void 0 ? void 0 : _project$analysis5.projectCategory, (_project$analysis6 = project.analysis) === null || _project$analysis6 === void 0 || (_project$analysis6 = _project$analysis6.profile) === null || _project$analysis6 === void 0 ? void 0 : _project$analysis6.label, (_project$analysis7 = project.analysis) === null || _project$analysis7 === void 0 || (_project$analysis7 = _project$analysis7.profile) === null || _project$analysis7 === void 0 ? void 0 : _project$analysis7.name];
+      for (var candidate of candidates) {
+        var text = extractTextValue(candidate);
+        if (text) {
+          return text;
+        }
+      }
+      return 'Type non renseigné';
+    };
+    var projectType = resolveProjectType();
     return /*#__PURE__*/React.createElement("article", {
       key: project.id,
       className: "home-project-card hv-surface",
@@ -336,19 +401,19 @@ export var HomeScreen = _ref => {
       className: "mt-4 grid grid-cols-1 gap-3 text-sm"
     }, /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-2 hv-text-muted"
-    }, /*#__PURE__*/React.createElement(FileText, {
+    }, /*#__PURE__*/React.createElement(Users, {
       className: "w-4 h-4"
     }), /*#__PURE__*/React.createElement("span", {
       className: "font-medium text-sm text-current"
-    }, Object.keys(project.answers || {}).length, " r\xE9ponse", Object.keys(project.answers || {}).length > 1 ? 's' : '')), progress !== null && /*#__PURE__*/React.createElement("div", {
+    }, leadInformation)), /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center gap-2 hv-text-muted"
+    }, /*#__PURE__*/React.createElement(Compass, {
+      className: "w-4 h-4"
+    }), /*#__PURE__*/React.createElement("span", null, projectType)), progress !== null && /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-2 hv-text-muted"
     }, /*#__PURE__*/React.createElement(Save, {
       className: "w-4 h-4"
     }), /*#__PURE__*/React.createElement("span", null, progress, "% du questionnaire compl\xE9t\xE9")), /*#__PURE__*/React.createElement("div", {
-      className: "flex items-center gap-2 hv-text-muted"
-    }, /*#__PURE__*/React.createElement(Users, {
-      className: "w-4 h-4"
-    }), /*#__PURE__*/React.createElement("span", null, teamsCount, " \xE9quipe", teamsCount > 1 ? 's' : '', " recommand\xE9e", teamsCount > 1 ? 's' : '')), /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-2 hv-text-muted"
     }, /*#__PURE__*/React.createElement(AlertTriangle, {
       className: "w-4 h-4"
